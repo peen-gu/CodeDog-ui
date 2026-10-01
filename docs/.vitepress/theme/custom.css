@@ -1,19 +1,67 @@
 /*
- * 文档站的少量定制。
- * 刻意只覆盖变量、不重写 VitePress 的 layout —— 组件页面是我们自己的内容，
- * 站点 chrome 跟着上游走能省下后续升级成本。
+ * 文档站的定制。
+ *
+ * 原则与组件库一致：只覆盖变量，不重写 VitePress 的 layout ——
+ * 站点 chrome 跟着上游走，能省下后续升级成本；颜色、圆角、阴影全部交给
+ * CodeDogUI 的运行期令牌，因此这里不需要写 .dark 分支：切暗色时
+ * --cd-* 自己会变，下面的映射自动生效。
  */
+
 :root {
-  --vp-c-brand-1: #3d7eff;
-  --vp-c-brand-2: #6699ff;
-  --vp-c-brand-3: #8fb3ff;
-  --vp-c-brand-soft: rgba(61, 126, 255, 0.14);
+  /* 品牌色 —— 直接映射次日 CodeDogUI 令牌 */
+  --vp-c-brand-1: var(--cd-color-primary, #3b76f6);
+  --vp-c-brand-2: var(--cd-color-primary-hover, #6094fa);
+  --vp-c-brand-3: var(--cd-color-primary-active, #2560eb);
+  --vp-c-brand-soft: var(--cd-color-primary-soft, #dbe8fe);
+
+  /* 中性背景与描边 */
+  --vp-c-bg: var(--cd-bg-page, #f8fafc);
+  --vp-c-bg-alt: var(--cd-bg-sunken, #f1f5f9);
+  --vp-c-bg-elv: var(--cd-bg-container, #ffffff);
+  --vp-c-bg-soft: var(--cd-bg-elevated, #ffffff);
+  --vp-c-border: var(--cd-border-color, #e2e8f0);
+  --vp-c-divider: var(--cd-border-color-light, #e2e8f0);
+
+  /* 文本层级沿用 L2 语义令牌，保证与组件内部观感一致 */
+  --vp-c-text-1: var(--cd-text-primary, #0f172a);
+  --vp-c-text-2: var(--cd-text-regular, #334155);
+  --vp-c-text-3: var(--cd-text-secondary, #64748b);
+  --vp-c-text-code: var(--cd-text-primary, #0f172a);
+
+  /* 提示容器（tip / warning / danger）跟随功能色 */
+  --vp-c-tip-1: var(--cd-color-primary, #3b76f6);
+  --vp-c-tip-soft: var(--cd-color-primary-soft, #dbe8fe);
+  --vp-c-warning-1: var(--cd-color-warning, #d97706);
+  --vp-c-warning-soft: var(--cd-color-warning-soft, #fef3c7);
+  --vp-c-danger-1: var(--cd-color-danger, #dc2626);
+  --vp-c-danger-soft: var(--cd-color-danger-soft, #fee2e2);
+  --vp-c-success-1: var(--cd-color-success, #16a34a);
+  --vp-c-success-soft: var(--cd-color-success-soft, #dcfce7);
+
+  /* 代码块底色走 sunken，避免与站点背景糊在一起 */
+  --vp-code-bg: var(--cd-bg-sunken, #f1f5f9);
+  --vp-code-color: var(--cd-text-primary, #0f172a);
+
+  /* 控件形态对齐 cd-* 组件 */
+  --vp-c-radius: var(--cd-radius-md, 8px);
+  --vp-shadow-1: var(--cd-shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.06));
+  --vp-shadow-2: var(--cd-shadow-md, 0 4px 12px rgba(15, 23, 42, 0.08));
+  --vp-custom-block-radius: var(--cd-radius-lg, 12px);
 }
 
-.dark {
-  --vp-c-brand-1: #7aa2ff;
-  --vp-c-brand-2: #5b86f5;
-  --vp-c-brand-3: #4c78e8;
+/*
+ * 兜底：CodeDogUI 的模板写的是 uni-app 的 view / text，
+ * 浏览器里它们是未知元素、默认 inline，会让布局塌掉。
+ * 这一条只作用于文档站引入的组件（宿主兜底），不进组件库本身。
+ */
+.cd-host view,
+view {
+  display: block;
+}
+
+.cd-host text,
+text {
+  display: inline;
 }
 
 /* 组件标题下的组件名标签 */
@@ -49,4 +97,25 @@
 /* 用法代码块标注来源 */
 .vp-doc div[class*='language-vue'] {
   position: relative;
+}
+
+/* 组件演示区：在 VitePress 里给 cd-* 组件一个干净容器 */
+.cd-demo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid var(--vp-c-border);
+  border-radius: var(--vp-c-radius);
+  background: var(--vp-c-bg-elv);
+}
+
+/* 首页与组件页的一行 horizontal 排列 */
+.cd-row-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
 }

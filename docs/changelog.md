@@ -7,6 +7,15 @@ title: 更新日志
 第五批：导航/列表/容器/展示工具类大补齐。新增 25 个组件目录（含 4 组父子组合）。
 组件总数 37 → 62。双端（H5 + 微信小程序）构建与四象限截图核验均通过。
 
+### 项目归属
+
+本版本起正式写入：**长期维护团队 Codedog.tech**、**官方站点 https://ui.codedog.tech**、
+**在线文档 https://doc.ui.codedog.tech**、**UI 作者 Penn.Gu**。
+联系方式：源码仓库 <https://github.com/peen-gu/CodeDog-ui> ·
+邮箱 codedog.tech@icloud.com · 微信 penngu777。
+已同步到 `package.json`（author / homepage / repository / bugs / `_codedog`）、`LICENSE`、
+包内 README 与文档站（canonical / OG / 社交链接 / 页脚）。
+
 ### 新增组件（25 个）
 
 **容器与列表**

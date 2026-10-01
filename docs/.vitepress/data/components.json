@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T10:48:10.932Z",
+  "generatedAt": "2026-10-01T13:32:25.399Z",
   "total": 62,
   "categories": [
     {
@@ -430,7 +430,7 @@
       "emits": 1,
       "slots": 1,
       "expose": 0,
-      "demo": 1,
+      "demo": 2,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -469,7 +469,7 @@
       "emits": 1,
       "slots": 2,
       "expose": 0,
-      "demo": 25,
+      "demo": 26,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -794,7 +794,7 @@
       "emits": 7,
       "slots": 2,
       "expose": 0,
-      "demo": 3,
+      "demo": 4,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -872,7 +872,7 @@
       "emits": 0,
       "slots": 1,
       "expose": 0,
-      "demo": 1,
+      "demo": 2,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -1041,7 +1041,7 @@
       "emits": 3,
       "slots": 0,
       "expose": 0,
-      "demo": 3,
+      "demo": 4,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -1080,7 +1080,7 @@
       "emits": 2,
       "slots": 1,
       "expose": 0,
-      "demo": 2,
+      "demo": 3,
       "missingInMeta": false,
       "noDemo": false
     },

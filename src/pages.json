@@ -9,6 +9,12 @@
 
   "pages": [
     {
+      "path": "pages/site/index",
+      "style": {
+        "navigationBarTitleText": "CodeDogUI · 跨端 UI 框架"
+      }
+    },
+    {
       "path": "pages/index/index",
       "style": {
         "navigationBarTitleText": "CodeDogUI 总览"

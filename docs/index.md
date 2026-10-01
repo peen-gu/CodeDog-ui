@@ -55,3 +55,56 @@ CodeDogUI 由 **Codedog.tech** 长期维护，UI 由 **Penn.Gu** 设计开发。
 |---|---|---|
 | **uni_modules**（推荐） | 拷贝 `src/uni_modules/codedog-ui` 整个目录，或从 HBuilderX 插件市场导入 | HBuilderX 工程 |
 | **npm 包** | `npm i codedog-ui` | 走 CLI 的 uni-app 工程 |
+
+## 在线预览
+
+下面这些**不是截图**，是文档站里真实运行的 CodeDogUI 组件——与 npm 包里的同一份源码、同一套运行期令牌。
+切换右上角的暗色模式，它们会跟着一起变，因为颜色全部来自 `var(--cd-*)`。
+
+<div class="cd-demo cd-host">
+  <CdButton type="primary" size="small">主操作</CdButton>
+  <CdButton size="small" plain>次级</CdButton>
+  <CdButton type="danger" size="small" round>危险</CdButton>
+  <CdButton type="primary" size="small" round><template #icon><CdIcon name="download" :size="14" /></template>安装</CdButton>
+</div>
+
+<div class="cd-demo cd-host">
+  <CdTag type="primary" size="small" round>primary</CdTag>
+  <CdTag type="success" size="small" round>success</CdTag>
+  <CdTag type="warning" size="small" round>warning</CdTag>
+  <CdTag type="info" size="small" plain round>info</CdTag>
+  <CdBadge value="62" />
+  <CdProgress :percentage="72" />
+</div>
+
+### 版本进展
+
+<CdTimeline class="cd-host">
+  <CdTimelineItem timestamp="2026-10-01" type="success" icon="check">
+    <div><strong>v0.5.0 · 发布到 npm</strong></div>
+    <div>62 个组件、9 组组合组件，MIT 许可。</div>
+  </CdTimelineItem>
+  <CdTimelineItem timestamp="2026-10-01" type="primary" icon="grid">
+    <div><strong>第五批 25 个组件</strong></div>
+    <div>导航、容器与工具类全部补齐。</div>
+  </CdTimelineItem>
+  <CdTimelineItem timestamp="规划中" type="info" icon="cloud">
+    <div><strong>Trusted Publishing 自动发版</strong></div>
+    <div>走 GitHub Actions OIDC，仓库不再保存任何 token。</div>
+  </CdTimelineItem>
+</CdTimeline>
+
+### 三步接入
+
+<CdSteps :current="3" status="success" class="cd-host">
+  <CdStep title="安装" description="npm i codedog-ui" icon="download" />
+  <CdStep title="配置 easycom" description="^cd-(.*) → codedog-ui/components/cd-$1/cd-$1.vue" icon="setting" />
+  <CdStep title="直接使用" description="模板里写 cd-button 即可" icon="check" />
+</CdSteps>
+
+```bash
+npm i codedog-ui
+```
+
+> 组件 API 表格由脚本从 SFC 源码自动抽取（`npm run docs:gen`），
+> 出现在 `/components/*` 的每个页面里，与本页预览用的是同一份源码。

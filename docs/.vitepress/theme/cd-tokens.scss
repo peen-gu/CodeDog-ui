@@ -1,0 +1,14 @@
+/*
+ * 把 CodeDogUI 的运行期令牌挂到 VitePress 的根。
+ * tokens.scss 原本挂在 uni-app 的 `page` 元素上，而 VitePress 没有这个元素，
+ * 所以这里显式挂 html / html.dark，亮暗由同一份令牌驱动。
+ */
+@use '../../../src/uni_modules/codedog-ui/styles/tokens.scss' as *;
+
+html {
+  @include cd-theme-light;
+}
+
+html.dark {
+  @include cd-theme-dark;
+}

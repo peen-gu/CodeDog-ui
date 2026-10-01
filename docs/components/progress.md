@@ -36,6 +36,40 @@ title: Progress 进度条
 </view>
 ```
 
+```vue // 来自演示页 site
+<template #extra>
+  <cd-badge value="62" />
+</template>
+
+<view class="preview">
+  <view class="preview__row">
+    <cd-button type="primary" size="small">主操作</cd-button>
+    <cd-button size="small" plain>次级</cd-button>
+    <cd-button type="danger" size="small" round>危险</cd-button>
+  </view>
+
+  <view class="preview__row">
+    <cd-tag type="primary" size="small" round>primary</cd-tag>
+    <cd-tag type="success" size="small" round>success</cd-tag>
+    <cd-tag type="warning" size="small" round>warning</cd-tag>
+    <cd-tag type="info" size="small" plain round>info</cd-tag>
+  </view>
+
+  <view class="preview__row preview__row--between">
+    <cd-switch v-model="demoSwitch" />
+    <cd-progress :percentage="72" />
+  </view>
+
+  <view class="preview__row">
+    <cd-input v-model="demoText" placeholder="cd-input 输入中…" />
+  </view>
+</view>
+
+<template #footer>
+  <text class="preview__foot">切换右上角「亮色 / 暗色」，所有元素随令牌即时变化</text>
+</template>
+```
+
 ## Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
