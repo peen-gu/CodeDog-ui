@@ -7,6 +7,9 @@ docs/.vitepress/dist/
 docs/.vitepress/.temp/
 docs-dist/
 
+# VitePress 临时产物
+docs/.vitepress/config.mjs.timestamp-*
+
 # 构建前挪走的旧产物（沙箱禁止批量删除，改名规避）
 dist/build/_h5_old_*/
 docs/.vitepress/_dist_old_*/
