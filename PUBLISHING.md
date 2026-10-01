@@ -141,7 +141,7 @@ cd src\uni_modules\codedog-ui; npm publish
 :::
 :::
 
-拿到 200 之后：
+若仍选择手搓 token 方式，拿到 200 之后：
 
 ```bash
 # 换掉当前 session token（session token 只能 whoami，不能 publish）
@@ -180,11 +180,33 @@ node scripts/publish.mjs --token-file=~/.npm-token
 
 发布后即可在 <https://www.npmjs.com/package/codedog-ui> 查看。
 
-::: tip 更长远的路：Trusted Publishing
-npm 已宣布 **2027 年 1 月**起移除「bypass-2FA token 直接发布」，推荐改用
-[Trusted Publishing](https://docs.npmjs.com/trusted-publishers)（GitHub Actions 走 OIDC，
-仓库里不需要存任何 token）。首版发布成功后建议切过去。
+## Trusted Publishing（推荐，仓库零密钥）
+
+`.github/workflows/publish.yml` 已就位，推 `v*` tag 即自动发布，走 OIDC 短时凭证，
+完全不需要 granular token，也不受 2027-01「bypass-2FA 禁止直发」政策影响。
+
+**启用只需两步：**
+
+1. npm 网站：<https://www.npmjs.com/package/codedog-ui> → Settings → Publishing access
+   （首版未发布时，先在 Willing to publish 表单里填 `codedog-ui` 占位申请包名）
+   → **Add trusted publisher** → GitHub Actions | Owner `peen-gu` | Repo `CodeDog-ui` | Workflow `publish.yml`
+2. GitHub 仓库：Settings → Environments / Actions 允许读写；`id-token: write` 已在 workflow 里声明，无需改
+
+**触发发布：**
+
+```bash
+git tag -a v0.5.0 -m "v0.5.0"
+git push origin main --follow-tags
+# 或 Actions 页面手动 Run workflow（workflow_dispatch 已开）
+```
+
+::: warning 两个坑
+- **不要**给 `setup-node` 传 `registry-url`：它会把 `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`
+  写进 `.npmrc`，而 OIDC 模式下该变量为空，发布反而失败
+- workflow 里必须升级 npm（`npm i -g npm@latest`）：Trusted Publishing 要求 CLI ≥ 11.5.1 + Node ≥ 22.14
 :::
+
+工作流跑完，到 Actions 页面查看 `npm view codedog-ui version` 的输出即为最终核验。
 
 ## 四、发布后验证
 
