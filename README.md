@@ -393,14 +393,19 @@ cd src/uni_modules/codedog-ui && npm pack   # 干跑验证包内容
 npx license-checker --failOn "GPL;AGPL;SSPL"
 ```
 
-### 关于框架名称
+### 反馈与支持
 
-`codedog` 这个名字在 npm 上已被占用（是他人的 markdown 工具，与本框架无关），
-且 **"CodeDog" 是腾讯云代码分析产品的内部代号**（2012 年起，现 6.0）。
+用得不顺手、发现 Bug、想要某个组件、或者文档没写清楚——**别憋着，直接来找我们**。
+反馈越具体，我们修得越快。
 
-二者都不构成对 UI 组件库的直接权利冲突，但**正式对外商用前建议做一次商标检索**
-（第 9 类"计算机软件" + 第 42 类"计算机软件设计开发"），避免品牌混淆。
-`codedog-ui` 这个包名本身在 npm 上未被占用。
+| 场景 | 去哪儿 |
+|---|---|
+| 提 Bug / 要新组件 | [GitHub Issues](https://github.com/peen-gu/CodeDog-ui/issues) |
+| 使用咨询 / 意见建议 | 官网 [ui.codedog.tech](https://ui.codedog.tech) 的反馈入口 |
+| 商用授权咨询 / 定制合作 | codedog.tech@icloud.com |
+| 微信交流 | 加 `penngu777`，备注 CodeDogUI |
+
+> `codedog` 这个 npm 包名已被他人占用（与本框架无关的 markdown 工具），因此正式发布名为 `codedog-ui`。
 
 ## 已知限制
 

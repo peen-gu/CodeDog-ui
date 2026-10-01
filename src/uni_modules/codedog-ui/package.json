@@ -2,7 +2,7 @@
   "name": "codedog-ui",
   "id": "codedog-ui",
   "displayName": "CodeDogUI 跨端组件库",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "面向 uni-app 的跨端 UI 框架。一套 Vue3 代码同时覆盖 H5 移动端、H5 PC 浏览器、微信小程序与 Electron 桌面套壳；通过 Design Tokens + 平台适配层 + 双形态组件三层架构，让同一组件在手机与 PC 上呈现各自的交互形态。",
   "keywords": [
     "uni-app",
@@ -43,14 +43,12 @@
     "url": "https://github.com/peen-gu/CodeDog-ui/issues",
     "email": "codedog.tech@icloud.com"
   },
-
   "_codedog": {
     "team": "Codedog.tech",
     "site": "https://ui.codedog.tech",
     "docs": "https://doc.ui.codedog.tech",
     "author": "Penn.Gu"
   },
-
   "main": "./index.js",
   "module": "./index.js",
   "types": "./index.d.ts",
@@ -87,12 +85,10 @@
     "**/*.scss",
     "**/*.css"
   ],
-
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
-
   "engines": {
     "uni-app": ">=3.0.0-5020620260917001"
   },
@@ -102,9 +98,11 @@
   "dependencies": {
     "wot-design-uni": "1.14.0"
   },
-
   "dcloudext": {
-    "category": ["前端组件", "通用组件"],
+    "category": [
+      "前端组件",
+      "通用组件"
+    ],
     "sale": {
       "regular": {
         "price": "0.00"
