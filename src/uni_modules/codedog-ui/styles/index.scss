@@ -1,0 +1,14 @@
+/**
+ * CodeDogUI 样式总入口。
+ *
+ * 使用方式（只需一次，写在 App.vue 的全局样式里）：
+ *   <style lang="scss">
+ *     @import '@/uni_modules/codedog-ui/styles/index.scss';
+ *   </style>
+ *
+ * 它会输出 CSS 变量挂载点（page / .cd-root / 亮暗主题）。
+ * 组件自身样式随组件走，不需要额外引入。
+ */
+
+@import './tokens.scss';
+@import './utilities.scss';

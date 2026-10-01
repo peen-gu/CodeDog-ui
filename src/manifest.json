@@ -1,0 +1,45 @@
+{
+  "name": "CodeDogUI",
+  "appid": "",
+  "description": "面向 uni-app 的跨端 UI 框架演示工程",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "transformPx": false,
+
+  /* H5 端（同时服务手机浏览器、PC 浏览器、Electron 套壳） */
+  "h5": {
+    /* hash 路由 + 相对路径：Electron 以 file:// 加载时必须如此，否则路由与静态资源全部 404 */
+    "router": {
+      "base": "./",
+      "mode": "hash"
+    },
+    /* rpx 在大屏会失控。这里把 rpx 的换算上限压到 750，第三方库（如 wot-design-uni）
+       即使内部用了 rpx，在 1440/1920 宽屏上也不会被拉爆。
+       CodeDogUI 自身组件完全不用 rpx，只使用 px + CSS 变量。 */
+    "rpxCalcMaxDeviceWidth": 750,
+    "rpxCalcBaseDeviceWidth": 375,
+    "rpxCalcIncludeWidth": 750,
+    "optimization": {
+      "treeShaking": {
+        "enable": true
+      }
+    }
+  },
+
+  /* 微信小程序 */
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "minified": true
+    },
+    "usingComponents": true,
+    "darkmode": true
+  },
+
+  "uniStatistics": {
+    "enable": false
+  },
+  "vueVersion": "3"
+}

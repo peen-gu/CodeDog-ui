@@ -1,0 +1,73 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^cd-(.*)": "@/uni_modules/codedog-ui/components/cd-$1/cd-$1.vue",
+      "^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
+    }
+  },
+
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "CodeDogUI 总览"
+      }
+    },
+    {
+      "path": "pages/tokens/index",
+      "style": {
+        "navigationBarTitleText": "设计变量"
+      }
+    },
+    {
+      "path": "pages/desktop/index",
+      "style": {
+        "navigationBarTitleText": "PC 布局示例"
+      }
+    },
+    {
+      "path": "pages/components/index",
+      "style": {
+        "navigationBarTitleText": "组件库"
+      }
+    },
+    {
+      "path": "pages/showcase/index",
+      "style": {
+        "navigationBarTitleText": "展示与表单控件"
+      }
+    },
+    {
+      "path": "pages/service/index",
+      "style": {
+        "navigationBarTitleText": "命令式反馈"
+      }
+    },
+    {
+      "path": "pages/feedback/index",
+      "style": {
+        "navigationBarTitleText": "反馈与录入"
+      }
+    },
+    {
+      "path": "pages/navigation/index",
+      "style": {
+        "navigationBarTitleText": "结构与导航"
+      }
+    },
+    {
+      "path": "pages/widgets/index",
+      "style": {
+        "navigationBarTitleText": "交互与展示"
+      }
+    }
+  ],
+
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "CodeDogUI",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#F8FAFC"
+  }
+}

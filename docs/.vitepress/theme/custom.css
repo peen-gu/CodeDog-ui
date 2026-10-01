@@ -1,0 +1,52 @@
+/*
+ * 文档站的少量定制。
+ * 刻意只覆盖变量、不重写 VitePress 的 layout —— 组件页面是我们自己的内容，
+ * 站点 chrome 跟着上游走能省下后续升级成本。
+ */
+:root {
+  --vp-c-brand-1: #3d7eff;
+  --vp-c-brand-2: #6699ff;
+  --vp-c-brand-3: #8fb3ff;
+  --vp-c-brand-soft: rgba(61, 126, 255, 0.14);
+}
+
+.dark {
+  --vp-c-brand-1: #7aa2ff;
+  --vp-c-brand-2: #5b86f5;
+  --vp-c-brand-3: #4c78e8;
+}
+
+/* 组件标题下的组件名标签 */
+.cd-api-tag {
+  display: inline-block;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--vp-c-text-2);
+}
+
+.cd-api-tag code {
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12px;
+}
+
+/* API 表格：属性名与默认值用等宽，长说明允许换行 */
+.vp-doc table {
+  font-size: 14px;
+}
+
+.vp-doc table td:nth-child(2) {
+  white-space: nowrap;
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc table td:last-child {
+  min-width: 200px;
+}
+
+/* 用法代码块标注来源 */
+.vp-doc div[class*='language-vue'] {
+  position: relative;
+}

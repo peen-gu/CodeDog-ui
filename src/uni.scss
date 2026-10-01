@@ -1,0 +1,9 @@
+/**
+ * uni.scss 会被 uni-app 自动注入到每一个 SFC 的 <style> 中。
+ * 因此这里只能放「不产生任何 CSS 输出」的内容：SCSS 变量、mixin、function。
+ *
+ * 编译期的 SCSS 令牌统一放在 codedog-ui 里维护，
+ * 运行期的令牌（CSS 变量）由 App.vue 的全局样式输出。
+ */
+
+@import '@/uni_modules/codedog-ui/styles/scss-tokens.scss';

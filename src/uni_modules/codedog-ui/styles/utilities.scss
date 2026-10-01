@@ -1,0 +1,141 @@
+/**
+ * CodeDogUI / 轻量工具类
+ * ---------------------------------------------------------------
+ * 刻意保持极小体积。小程序 WXSS 不支持通配符与属性选择器，
+ * 所以这里的类全部是「显式单个类名」，不做后代穿透。
+ *
+ * 只保留布局与文本两类高频工具类，不提供完整 Tailwind 式体系 ——
+ * 业务样式应该写在业务组件的 scoped style 里。
+ */
+
+/* 弹性布局 */
+.cd-flex {
+  display: flex;
+}
+.cd-flex-col {
+  display: flex;
+  flex-direction: column;
+}
+.cd-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cd-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cd-flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 纯容器面板（工具类）
+   与 cd-card 组件的区别是刻意的：
+     .cd-panel  只是个「白底 + 描边 + 圆角 + 内边距」的盒子，没有结构，随手可用；
+     cd-card    是结构化组件，带 header / footer / extra 插槽、可点击、密度可调。
+   两者职责不同，所以类名也必须不同 —— 一旦重名，两套 padding 会叠加，
+   排查这种问题非常费时。 */
+.cd-panel {
+  box-sizing: border-box;
+  background: var(--cd-bg-container, #ffffff);
+  border: var(--cd-border-width, 1px) solid var(--cd-border-color, #e2e8f0);
+  border-radius: var(--cd-radius-lg, 12px);
+  padding: var(--cd-space-5, 20px);
+}
+
+.cd-panel__title {
+  display: block;
+  font-size: var(--cd-font-size-md, 16px);
+  font-weight: var(--cd-font-weight-semibold, 600);
+  color: var(--cd-text-primary, #0f172a);
+  line-height: var(--cd-line-height-tight, 1.25);
+  margin-bottom: var(--cd-space-2, 8px);
+}
+
+.cd-panel__desc {
+  display: block;
+  font-size: var(--cd-font-size-sm, 12px);
+  color: var(--cd-text-secondary, #64748b);
+  line-height: var(--cd-line-height-base, 1.5);
+}
+
+/* 文本 */
+.cd-text-secondary {
+  color: var(--cd-text-secondary, #64748b);
+}
+.cd-text-mono {
+  font-family: var(--cd-font-family-mono, monospace);
+  font-size: var(--cd-font-size-sm, 12px);
+}
+.cd-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 间距（只保留 demo 用得到的几档，避免体积膨胀） */
+.cd-mt-2 {
+  margin-top: var(--cd-space-2, 8px);
+}
+.cd-mt-4 {
+  margin-top: var(--cd-space-4, 16px);
+}
+.cd-mt-6 {
+  margin-top: var(--cd-space-6, 24px);
+}
+.cd-mb-2 {
+  margin-bottom: var(--cd-space-2, 8px);
+}
+.cd-mb-4 {
+  margin-bottom: var(--cd-space-4, 16px);
+}
+.cd-p-4 {
+  padding: var(--cd-space-4, 16px);
+}
+
+/* 页面容器 */
+.cd-page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  background: var(--cd-bg-page, #f8fafc);
+  padding: var(--cd-space-4, 16px);
+}
+
+/* PC 端页面容器：宽屏下限制内容宽度并居中，这是 PC 与移动最直观的差异之一 */
+.cd-page--desktop {
+  @media (min-width: 1024px) {
+    padding: var(--cd-space-8, 32px) var(--cd-space-10, 40px);
+  }
+}
+
+.cd-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (min-width: 1024px) {
+    max-width: 1200px;
+  }
+
+  @media (min-width: 1440px) {
+    max-width: 1360px;
+  }
+}
+
+/* 演示页里的「代码块」 */
+.cd-code {
+  box-sizing: border-box;
+  display: block;
+  background: var(--cd-bg-sunken, #f1f5f9);
+  border: var(--cd-border-width, 1px) solid var(--cd-border-color-light, #f1f5f9);
+  border-radius: var(--cd-radius-md, 8px);
+  padding: var(--cd-space-3, 12px);
+  font-family: var(--cd-font-family-mono, monospace);
+  font-size: var(--cd-font-size-sm, 12px);
+  line-height: var(--cd-line-height-loose, 1.75);
+  color: var(--cd-text-regular, #334155);
+  white-space: pre-wrap;
+  word-break: break-all;
+}

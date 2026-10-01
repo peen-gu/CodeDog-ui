@@ -1,0 +1,132 @@
+/**
+ * CodeDogUI / 编译期令牌（SCSS）
+ * ---------------------------------------------------------------
+ * 本文件被 src/uni.scss 引入，uni-app 会把它注入到每一个 SFC 的 <style> 中。
+ * 因此这里 **绝对不能产生任何 CSS 输出**，否则每个组件都会被打包一份重复样式。
+ *
+ * 只放两样东西：
+ *   1. $ 变量   —— 供 @media 等「编译期必须确定」的场景使用（CSS 变量不能用在媒体查询里）
+ *   2. @mixin   —— 断点、悬停能力、文本截断等跨端样式套路
+ *
+ * 运行期可切换的令牌在 tokens.scss（CSS 变量）里维护，两者边界不要混。
+ */
+
+/* ============ 断点（与 composables/use-breakpoint.js 中的 BREAKPOINTS 必须保持一致） ============ */
+$cd-bp-sm: 576px; // 大屏手机横屏
+$cd-bp-md: 768px; // 平板 / 分界线
+$cd-bp-lg: 1024px; // 桌面
+$cd-bp-xl: 1440px; // 宽屏
+
+/* ============ 动效曲线 ============ */
+$cd-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+$cd-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+/* ============ 命名空间 ============ */
+$cd-ns: 'cd';
+
+/* ------------------------------------------------------------------
+ * 断点 mixin
+ * 移动端优先：cd-mobile 是「小于平板」，其余是「大于等于」。
+ * ------------------------------------------------------------------ */
+@mixin cd-mobile {
+  @media (max-width: ($cd-bp-md - 1px)) {
+    @content;
+  }
+}
+
+@mixin cd-tablet {
+  @media (min-width: $cd-bp-md) and (max-width: ($cd-bp-lg - 1px)) {
+    @content;
+  }
+}
+
+@mixin cd-desktop {
+  @media (min-width: $cd-bp-lg) {
+    @content;
+  }
+}
+
+@mixin cd-wide {
+  @media (min-width: $cd-bp-xl) {
+    @content;
+  }
+}
+
+@mixin cd-not-mobile {
+  @media (min-width: $cd-bp-md) {
+    @content;
+  }
+}
+
+/**
+ * 悬停态 mixin —— 跨端最容易被忽略的坑
+ * 触屏设备上 :hover 会在点击后「粘住」，导致按钮一点就变蓝不恢复。
+ * 所以任何 hover 样式都必须包在 (hover: hover) 里。
+ *
+ * 注意：这里只包媒体查询，不自动拼 `&:hover`。
+ * 因为调用位置既可能是嵌套内（`.child { @include cd-hover { &:hover {} } }`），
+ * 也可能是顶层（`@include cd-hover { .child:hover {} }`），
+ * 而 `&` 在顶层是非法选择器。把 :hover 交给调用方写，两种位置都能用。
+ *
+ * @example
+ *   @include cd-hover {
+ *     .cd-button:hover { background: red; }
+ *   }
+ */
+@mixin cd-hover {
+  @media (hover: hover) and (pointer: fine) {
+    @content;
+  }
+}
+
+/* ============ 文本截断（小程序支持 -webkit-line-clamp） ============ */
+@mixin cd-ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+@mixin cd-ellipsis-multi($lines: 2) {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $lines;
+}
+
+/* ============ 隐藏滚动条（H5 端弹层内滚动用） ============ */
+@mixin cd-scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
+/* ============ 安全区 ============ */
+@mixin cd-safe-area-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@mixin cd-safe-area-top {
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
+}
+
+/**
+ * 组件外壳统一入口。
+ * 每个组件的根节点都应该 @include 它 —— 这是「不用通配符选择器也能统一盒模型」的办法。
+ * 小程序 WXSS 不支持 * 选择器和属性选择器，所以 box-sizing 只能逐个组件显式声明。
+ *
+ * 两个刻意的取舍：
+ *   1. 不含 &::before / &::after 规则 —— 框架内的装饰件（关闭叉、下拉箭头、
+ *      选中勾、加载转圈）一律用真实节点而不是伪元素，跨端表现更可控；
+ *   2. 不产生任何嵌套规则 —— 否则调用方在 @include 之后写的声明会触发
+ *      Sass 的 mixed-decls 弃用警告，噪音很大。
+ */
+@mixin cd-reset {
+  box-sizing: border-box;
+}

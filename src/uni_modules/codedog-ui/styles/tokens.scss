@@ -1,0 +1,579 @@
+/**
+ * CodeDogUI / 运行期令牌（CSS 变量）
+ * ---------------------------------------------------------------
+ * 三层结构，改动永远从上往下传导，禁止下层反向引用：
+ *
+ *   L1 原始令牌 primitive   --cd-brand-500 / --cd-neutral-200
+ *        ↓ 只被 L2 引用，业务代码不要直接用它
+ *   L2 语义令牌 semantic    --cd-color-primary / --cd-text-secondary
+ *        ↓ 只被 L3 引用，业务代码用这一层
+ *   L3 组件令牌 component   --cd-button-height / --cd-dialog-width
+ *        ↓ 只在具体组件内部使用
+ *
+ * 挂载点说明（这是跨端最关键的一处设计）：
+ *   - `page`     全局兜底，让不使用 Provider 的页面也能拿到全部变量
+ *   - `.cd-root` cd-config-provider 的根节点，用于运行期切换亮 / 暗主题
+ *   - 每个组件内部一律写 var(--cd-x, 兜底值) 形式，
+ *     因此即使三级挂载点全部失效，组件仍然按内置默认值正确渲染。
+ *
+ * 为什么用 CSS 变量而不是 SCSS 变量：SCSS 是编译期的，切主题必须重新编译；
+ * CSS 变量是运行期的，一次编译即可亮暗切换。
+ */
+
+/* ==================================================================
+ * LIGHT —— 亮色主题（默认）
+ * ================================================================== */
+@mixin cd-theme-light {
+  /* ---------- L1 原始令牌 ---------- */
+
+  /* 品牌蓝色阶 */
+  --cd-brand-50: #eff5ff;
+  --cd-brand-100: #dbe8fe;
+  --cd-brand-200: #bfd6fe;
+  --cd-brand-300: #93bafd;
+  --cd-brand-400: #6094fa;
+  --cd-brand-500: #3b76f6;
+  --cd-brand-600: #2560eb;
+  --cd-brand-700: #1d4cd8;
+  --cd-brand-800: #1e42a8;
+  --cd-brand-900: #1e3a8a;
+
+  /* 中性色阶 */
+  --cd-neutral-0: #ffffff;
+  --cd-neutral-50: #f8fafc;
+  --cd-neutral-100: #f1f5f9;
+  --cd-neutral-200: #e2e8f0;
+  --cd-neutral-300: #cbd5e1;
+  --cd-neutral-400: #94a3b8;
+  --cd-neutral-500: #64748b;
+  --cd-neutral-600: #475569;
+  --cd-neutral-700: #334155;
+  --cd-neutral-800: #1e293b;
+  --cd-neutral-900: #0f172a;
+
+  /* 功能色 */
+  --cd-green-50: #ecfdf5;
+  --cd-green-500: #10b981;
+  --cd-green-600: #059669;
+
+  --cd-amber-50: #fffbeb;
+  --cd-amber-500: #f59e0b;
+  --cd-amber-600: #d97706;
+
+  --cd-red-50: #fef2f2;
+  --cd-red-500: #ef4444;
+  --cd-red-600: #dc2626;
+
+  /* ---------- L2 语义令牌 ---------- */
+
+  /* 主色与状态色 */
+  --cd-color-primary: var(--cd-brand-500);
+  --cd-color-primary-hover: var(--cd-brand-600);
+  --cd-color-primary-active: var(--cd-brand-700);
+  --cd-color-primary-soft: var(--cd-brand-50);
+  --cd-color-primary-border: var(--cd-brand-200);
+
+  --cd-color-success: var(--cd-green-500);
+  --cd-color-success-hover: var(--cd-green-600);
+  --cd-color-success-soft: var(--cd-green-50);
+
+  --cd-color-warning: var(--cd-amber-500);
+  --cd-color-warning-hover: var(--cd-amber-600);
+  --cd-color-warning-soft: var(--cd-amber-50);
+
+  --cd-color-danger: var(--cd-red-500);
+  --cd-color-danger-hover: var(--cd-red-600);
+  --cd-color-danger-soft: var(--cd-red-50);
+
+  --cd-color-info: var(--cd-neutral-500);
+  --cd-color-info-hover: var(--cd-neutral-600);
+  --cd-color-info-soft: var(--cd-neutral-100);
+
+  /* 文本 */
+  --cd-text-primary: #0f172a;
+  --cd-text-regular: #334155;
+  --cd-text-secondary: #64748b;
+  --cd-text-placeholder: #94a3b8;
+  --cd-text-disabled: #cbd5e1;
+  --cd-text-inverse: #ffffff;
+  --cd-text-link: var(--cd-color-primary);
+
+  /* 背景 */
+  --cd-bg-page: #f8fafc;
+  --cd-bg-container: #ffffff;
+  --cd-bg-elevated: #ffffff;
+  --cd-bg-sunken: #f1f5f9;
+  --cd-bg-hover: rgba(15, 23, 42, 0.04);
+  --cd-bg-active: rgba(15, 23, 42, 0.08);
+  --cd-bg-disabled: #f1f5f9;
+  --cd-bg-mask: rgba(15, 23, 42, 0.45);
+
+  /* 描边 */
+  --cd-border-color: #e2e8f0;
+  --cd-border-color-light: #f1f5f9;
+  --cd-border-color-strong: #cbd5e1;
+  --cd-border-width: 1px;
+
+  /* 圆角 */
+  --cd-radius-sm: 4px;
+  --cd-radius-md: 8px;
+  --cd-radius-lg: 12px;
+  --cd-radius-xl: 16px;
+  --cd-radius-round: 999px;
+
+  /* 间距（4px 标尺，注意单位是 px 不是 rpx —— 这是框架的核心约定） */
+  --cd-space-0: 0px;
+  --cd-space-1: 4px;
+  --cd-space-2: 8px;
+  --cd-space-3: 12px;
+  --cd-space-4: 16px;
+  --cd-space-5: 20px;
+  --cd-space-6: 24px;
+  --cd-space-8: 32px;
+  --cd-space-10: 40px;
+  --cd-space-12: 48px;
+
+  /* 字号 */
+  --cd-font-size-xs: 11px;
+  --cd-font-size-sm: 12px;
+  --cd-font-size-base: 14px;
+  --cd-font-size-md: 16px;
+  --cd-font-size-lg: 18px;
+  --cd-font-size-xl: 20px;
+  --cd-font-size-2xl: 24px;
+
+  --cd-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --cd-font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+  --cd-line-height-tight: 1.25;
+  --cd-line-height-base: 1.5;
+  --cd-line-height-loose: 1.75;
+
+  --cd-font-weight-regular: 400;
+  --cd-font-weight-medium: 500;
+  --cd-font-weight-semibold: 600;
+
+  /* 阴影 */
+  --cd-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --cd-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.1);
+  --cd-shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.16);
+
+  /* 动效 */
+  --cd-duration-fast: 150ms;
+  --cd-duration-base: 250ms;
+  --cd-duration-slow: 400ms;
+  --cd-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --cd-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 层级 */
+  --cd-z-normal: 1;
+  --cd-z-sticky: 1100;
+  --cd-z-dropdown: 1500;
+  --cd-z-mask: 2000;
+  --cd-z-popup: 2100;
+  --cd-z-dialog: 2200;
+  --cd-z-modal: 2400;
+  --cd-z-loading: 2900;
+  --cd-z-toast: 3000;
+
+  /* 控件尺寸（同时服务两端：移动端用手指点，PC 端用鼠标点，密度不同） */
+  --cd-control-height-sm: 28px;
+  --cd-control-height: 36px;
+  --cd-control-height-lg: 44px;
+
+  /* ---------- L3 组件令牌 ---------- */
+  --cd-button-height-sm: var(--cd-control-height-sm);
+  --cd-button-height: var(--cd-control-height);
+  --cd-button-height-lg: var(--cd-control-height-lg);
+  --cd-button-padding-x: var(--cd-space-4);
+  --cd-button-padding-x-sm: var(--cd-space-3);
+  --cd-button-padding-x-lg: var(--cd-space-5);
+  --cd-button-font-size: var(--cd-font-size-base);
+
+  --cd-dialog-width: 480px;
+  --cd-dialog-radius: var(--cd-radius-lg);
+  --cd-dialog-padding: var(--cd-space-5);
+
+  --cd-table-header-height: 44px;
+  --cd-table-row-height: 48px;
+
+  --cd-pagination-item-size: 32px;
+
+  /* 图标 —— 默认 1em 是为了让图标自动跟随所在文字的字号，
+     业务里写 <cd-icon name="user" /> 放在 14px 文字旁就是 14px 大小 */
+  --cd-icon-size-sm: 14px;
+  --cd-icon-size: 16px;
+  --cd-icon-size-lg: 20px;
+  --cd-icon-size-xl: 24px;
+
+  /* 输入框 */
+  --cd-input-height-sm: var(--cd-control-height-sm);
+  --cd-input-height: var(--cd-control-height);
+  --cd-input-height-lg: var(--cd-control-height-lg);
+  --cd-input-padding-x: var(--cd-space-3);
+  --cd-input-radius: var(--cd-radius-md);
+
+  /* 卡片 */
+  --cd-card-padding: var(--cd-space-5);
+  --cd-card-radius: var(--cd-radius-lg);
+  --cd-card-header-gap: var(--cd-space-4);
+
+  /* 标签页 */
+  --cd-tabs-height: 40px;
+  --cd-tabs-gap: var(--cd-space-6);
+  --cd-tabs-indicator-width: 20px;
+  --cd-tabs-indicator-height: 2px;
+
+  /* 表单 */
+  --cd-form-label-width: 96px;
+  --cd-form-item-gap: var(--cd-space-5);
+  --cd-form-label-font-size: var(--cd-font-size-base);
+
+  /* 栅格：全部默认 0，由 cd-row 在运行期按 gutter 覆盖。
+     变量名对应「半间距 / 负外扩」，都是算好的绝对值 ——
+     组件层因此不需要写 calc 除法（小程序对 CSS 变量参与 calc 除法支持不一致） */
+  --cd-row-gutter-x-half: 0px;
+  --cd-row-gutter-y: 0px;
+  --cd-row-pull: 0px;
+  --cd-row-pull-y: 0px;
+
+  /* 标签 */
+  --cd-tag-height-sm: 20px;
+  --cd-tag-height: 24px;
+  --cd-tag-height-lg: 30px;
+  --cd-tag-radius: var(--cd-radius-sm);
+
+  /* 徽标 */
+  --cd-badge-height: 18px;
+  --cd-badge-dot-size: 8px;
+  --cd-badge-font-size: var(--cd-font-size-xs);
+
+  /* 头像 */
+  --cd-avatar-radius: var(--cd-radius-md);
+  --cd-avatar-bg: var(--cd-bg-sunken);
+  --cd-avatar-font-size: 0.4em;
+
+  /* 分割线 */
+  --cd-divider-color: var(--cd-border-color);
+  --cd-divider-margin: var(--cd-space-4);
+  --cd-divider-margin-x: var(--cd-space-3);
+  --cd-divider-lead: 5%;
+
+  /* 空状态 */
+  --cd-empty-padding: var(--cd-space-10) var(--cd-space-5);
+  --cd-empty-icon-size-sm: 40px;
+  --cd-empty-icon-size: 64px;
+  --cd-empty-icon-size-lg: 88px;
+  --cd-empty-icon-color: var(--cd-border-color-strong);
+
+  /* 骨架屏 */
+  --cd-skeleton-bg: var(--cd-bg-sunken);
+  --cd-skeleton-highlight: var(--cd-border-color);
+  --cd-skeleton-radius: var(--cd-radius-sm);
+  --cd-skeleton-title-height: 20px;
+  --cd-skeleton-line-height: 14px;
+  --cd-skeleton-line-gap: var(--cd-space-3);
+
+  /* 进度条 */
+  --cd-progress-stroke: 6px;
+  --cd-progress-track: var(--cd-bg-sunken);
+
+  /* 加载 */
+  --cd-loading-color: var(--cd-color-primary);
+  --cd-loading-mask: var(--cd-bg-mask);
+  --cd-loading-radius: var(--cd-radius-lg);
+  --cd-loading-ring-width: 2px;
+
+  /* 提示条 */
+  --cd-alert-padding: var(--cd-space-3) var(--cd-space-4);
+  --cd-alert-radius: var(--cd-radius-md);
+
+  /* 开关。滑块色刻意固定成白色而不跟 --cd-bg-container：
+     暗色主题下后者是深色，深色滑块压在亮色主色轨道上会显得脏 */
+  --cd-switch-thumb-color: #ffffff;
+  --cd-switch-width-sm: 32px;
+  --cd-switch-height-sm: 18px;
+  --cd-switch-thumb-sm: 14px;
+  --cd-switch-width: 44px;
+  --cd-switch-height: 24px;
+  --cd-switch-thumb: 20px;
+  --cd-switch-width-lg: 52px;
+  --cd-switch-height-lg: 28px;
+  --cd-switch-thumb-lg: 24px;
+
+  /* 复选 / 单选 */
+  --cd-checkbox-size-sm: 16px;
+  --cd-checkbox-size: 18px;
+  --cd-checkbox-size-lg: 22px;
+  --cd-checkbox-radius: var(--cd-radius-sm);
+  --cd-checkbox-gap: var(--cd-space-5);
+  --cd-radio-size-sm: 16px;
+  --cd-radio-size: 18px;
+  --cd-radio-size-lg: 22px;
+  --cd-radio-gap: var(--cd-space-5);
+  --cd-radio-button-radius: var(--cd-radius-md);
+
+  /* 步进器 */
+  --cd-stepper-btn-sm: 26px;
+  --cd-stepper-btn: 32px;
+  --cd-stepper-btn-lg: 40px;
+  --cd-stepper-radius: var(--cd-radius-md);
+
+  /* toast（反色表面：亮暗两套主题都用深底浅字，只调深浅） */
+  --cd-toast-bg: rgba(15, 23, 42, 0.92);
+  --cd-toast-text: #ffffff;
+  --cd-toast-success: #4ade80;
+  --cd-toast-error: #f87171;
+  --cd-toast-warning: #fbbf24;
+  --cd-toast-info: #93c5fd;
+
+  /* 气泡 / 菜单 */
+  --cd-dropdown-item-height: 34px;
+
+  /* 上传 */
+  --cd-upload-card: 84px;
+
+  /* ------------------------------------------------------------------
+   * 第五批：容器 / 导航 / 交互 / 展示
+   * ------------------------------------------------------------------ */
+
+  /* 单元格 */
+  --cd-cell-min-height: 48px;
+  --cd-cell-padding-x: var(--cd-space-4);
+  --cd-cell-padding-y: var(--cd-space-3);
+  --cd-cell-label-color: var(--cd-text-primary);
+  --cd-cell-value-color: var(--cd-text-secondary);
+  --cd-cell-desc-color: var(--cd-text-secondary);
+  --cd-cell-icon-color: var(--cd-text-secondary);
+  --cd-cell-arrow-color: var(--cd-text-placeholder);
+  --cd-cell-required-color: var(--cd-color-danger);
+  --cd-cell-group-title-color: var(--cd-text-secondary);
+  --cd-cell-group-radius: var(--cd-radius-lg);
+
+  /* 宫格 */
+  --cd-grid-item-padding: var(--cd-space-4) var(--cd-space-2);
+  --cd-grid-item-color: var(--cd-text-regular);
+  --cd-grid-item-icon-size: 24px;
+  --cd-grid-divider-color: var(--cd-border-color-light);
+
+  /* 折叠面板 */
+  --cd-collapse-header-height: 46px;
+  --cd-collapse-padding-x: var(--cd-space-4);
+  --cd-collapse-body-padding: var(--cd-space-1) var(--cd-space-4) var(--cd-space-4);
+  --cd-collapse-arrow-color: var(--cd-text-placeholder);
+  --cd-collapse-radius: var(--cd-radius-lg);
+
+  /* 步骤条 */
+  --cd-step-icon-size: 24px;
+  --cd-step-icon-font-size: var(--cd-font-size-sm);
+  --cd-step-line-color: var(--cd-border-color);
+  --cd-step-line-width: 2px;
+  --cd-step-wait-color: var(--cd-text-placeholder);
+  --cd-step-wait-border: var(--cd-border-color-strong);
+  --cd-step-title-font-size: var(--cd-font-size-base);
+  --cd-step-desc-font-size: var(--cd-font-size-sm);
+  --cd-step-gap: var(--cd-space-2);
+
+  /* 时间线 */
+  --cd-timeline-rail-width: 24px;
+  --cd-timeline-dot-size: 10px;
+  --cd-timeline-hollow-size: 12px;
+  --cd-timeline-icon-size: 24px;
+  --cd-timeline-line-width: 2px;
+  --cd-timeline-line-color: var(--cd-border-color);
+  --cd-timeline-content-gap: var(--cd-space-3);
+  --cd-timeline-item-gap: var(--cd-space-2);
+
+  /* 面包屑 */
+  --cd-breadcrumb-font-size: var(--cd-font-size-base);
+  --cd-breadcrumb-color: var(--cd-text-secondary);
+  --cd-breadcrumb-current-color: var(--cd-text-primary);
+  --cd-breadcrumb-separator-color: var(--cd-text-placeholder);
+  --cd-breadcrumb-gap: var(--cd-space-2);
+
+  /* 多行文本 */
+  --cd-textarea-min-height: 88px;
+  --cd-textarea-radius: var(--cd-radius-md);
+
+  /* 滑块。滑块圆点与开关一样刻意固定成白色：
+     它压在亮色主色填充条上，跟随主题变深会显得脏 */
+  --cd-slider-hit-height: 32px;
+  --cd-slider-track-height: 4px;
+  --cd-slider-thumb-size: 18px;
+  --cd-slider-track-color: var(--cd-bg-sunken);
+  --cd-slider-fill-color: var(--cd-color-primary);
+  --cd-slider-thumb-color: #ffffff;
+  --cd-slider-tooltip-bg: rgba(15, 23, 42, 0.86);
+
+  /* 评分 */
+  --cd-rate-size: 22px;
+  --cd-rate-gap: var(--cd-space-1);
+  --cd-rate-color: var(--cd-amber-500);
+  --cd-rate-void-color: var(--cd-border-color-strong);
+  --cd-rate-text-color: var(--cd-text-secondary);
+
+  /* 搜索栏 */
+  --cd-search-height: var(--cd-control-height);
+  --cd-search-radius: var(--cd-radius-md);
+  --cd-search-bg: var(--cd-bg-sunken);
+  --cd-search-icon-color: var(--cd-text-placeholder);
+
+  /* 通知栏 */
+  --cd-notice-height: 36px;
+  --cd-notice-radius: var(--cd-radius-md);
+  --cd-notice-speed: 18s;
+
+  /* 结果页 */
+  --cd-result-padding: var(--cd-space-10) var(--cd-space-5);
+  --cd-result-badge-size: 72px;
+  --cd-result-icon-size: 34px;
+  --cd-result-gap: var(--cd-space-4);
+
+  /* 倒计时 */
+  --cd-countdown-font-size: var(--cd-font-size-base);
+  --cd-countdown-bg: var(--cd-bg-sunken);
+  --cd-countdown-radius: var(--cd-radius-sm);
+
+  /* 动作面板 */
+  --cd-action-item-height: 50px;
+  --cd-action-radius: var(--cd-radius-xl);
+  --cd-action-danger-color: var(--cd-color-danger);
+
+  /* 图片 */
+  --cd-image-radius: var(--cd-radius-md);
+  --cd-image-placeholder: var(--cd-bg-sunken);
+  --cd-image-loading-color: var(--cd-text-placeholder);
+
+  /* 回到顶部 / 固钉 */
+  --cd-backtop-size: 44px;
+  --cd-backtop-bg: var(--cd-bg-elevated);
+  --cd-backtop-color: var(--cd-text-secondary);
+
+  /* 悬浮按钮 */
+  --cd-fab-size: 48px;
+}
+
+/* ==================================================================
+ * DARK —— 暗色主题
+ * 注意：只覆盖 L2 语义层与少量 L3。L1 原始色阶保持不变，
+ * 这正是分层带来的好处 —— 暗色适配只需要改十几行。
+ * ================================================================== */
+@mixin cd-theme-dark {
+  /* 主色在暗色底上需要提亮一档，否则对比度不足 */
+  --cd-color-primary: var(--cd-brand-400);
+  --cd-color-primary-hover: var(--cd-brand-300);
+  --cd-color-primary-active: var(--cd-brand-200);
+  --cd-color-primary-soft: rgba(59, 118, 246, 0.16);
+  --cd-color-primary-border: rgba(96, 148, 250, 0.4);
+
+  --cd-color-success-soft: rgba(16, 185, 129, 0.16);
+  --cd-color-warning-soft: rgba(245, 158, 11, 0.16);
+  --cd-color-danger-soft: rgba(239, 68, 68, 0.16);
+  --cd-color-info-soft: rgba(148, 163, 184, 0.16);
+
+  --cd-text-primary: #f1f5f9;
+  --cd-text-regular: #cbd5e1;
+  --cd-text-secondary: #94a3b8;
+  --cd-text-placeholder: #64748b;
+  --cd-text-disabled: #475569;
+  --cd-text-inverse: #0f172a;
+
+  --cd-bg-page: #0b1120;
+  --cd-bg-container: #131c2e;
+  --cd-bg-elevated: #1a2436;
+  --cd-bg-sunken: #0f172a;
+  --cd-bg-hover: rgba(255, 255, 255, 0.06);
+  --cd-bg-active: rgba(255, 255, 255, 0.1);
+  --cd-bg-disabled: #1e293b;
+  --cd-bg-mask: rgba(0, 0, 0, 0.6);
+
+  --cd-border-color: #253048;
+  --cd-border-color-light: #1c2436;
+  --cd-border-color-strong: #35435f;
+
+  --cd-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --cd-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --cd-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+
+  /* 骨架屏必须在这里重新定义。
+     亮色下骨架块是「比背景深一点」，到了暗色必须反过来变成「比背景浅一点」；
+     如果只依赖 --cd-bg-sunken 的自动跟随，暗色下骨架块会反而比卡片背景更暗，
+     看起来像一块块空洞而不是「正在加载的占位」 */
+  --cd-skeleton-bg: #1b2537;
+  --cd-skeleton-highlight: #263149;
+
+  /* toast 是反色表面：亮色主题里它比页面深，暗色主题里要比页面浅一点，
+     否则会和背景融成一片，失去「浮在上面」的层次感 */
+  --cd-toast-bg: rgba(51, 65, 85, 0.95);
+  --cd-toast-text: #f1f5f9;
+
+  /* 滑块气泡同理：亮色下是深色表面，暗色下要反过来变浅 */
+  --cd-slider-tooltip-bg: rgba(71, 85, 105, 0.95);
+
+  /* 暗色下描边色本身已经够浅，评分未选中星再浅一档会糊成一片 */
+  --cd-rate-void-color: #475569;
+
+  /* 宫格 / 单元格的分隔线在暗色下要更弱，否则像格子纸 */
+  --cd-grid-divider-color: #1c2436;
+  --cd-cell-group-title-color: var(--cd-text-placeholder);
+}
+
+/* ==================================================================
+ * 挂载点
+ * ================================================================== */
+
+/* 1. 全局兜底：不包 Provider 也能用 */
+page {
+  @include cd-theme-light;
+}
+
+/* H5 端补一个 html 挂载点：
+   1. 弹层被 teleport 到 body 下时依然能继承到变量
+   2. useTheme 切暗色时会给 <html> 打 .cd-theme-dark，无需 Provider 也能全局换肤 */
+/* #ifdef H5 */
+html {
+  @include cd-theme-light;
+}
+
+html.cd-theme-dark {
+  @include cd-theme-dark;
+}
+/* #endif */
+
+/* 2. Provider 挂载点：cd-config-provider 的根节点 */
+.cd-root {
+  @include cd-theme-light;
+  display: block;
+}
+
+/* 3. 运行期主题切换 */
+.cd-root.cd-theme-dark {
+  @include cd-theme-dark;
+}
+
+/* theme="auto" 时跟随系统；仅 H5 与开启 darkmode 的小程序生效 */
+.cd-root.cd-theme-auto {
+  @media (prefers-color-scheme: dark) {
+    @include cd-theme-dark;
+  }
+}
+
+/**
+ * 组件尺寸档位。
+ * 放在 Provider 上而不是每个组件上，好处是「一处切换全局密度」，
+ * 这正是 PC（紧凑）与移动（宽松）最需要的能力差异。
+ */
+.cd-root.cd-size-small {
+  --cd-control-height: 30px;
+  --cd-control-height-lg: 36px;
+  --cd-space-4: 12px;
+  --cd-space-5: 16px;
+  --cd-font-size-base: 13px;
+}
+
+.cd-root.cd-size-large {
+  --cd-control-height: 44px;
+  --cd-control-height-lg: 52px;
+  --cd-font-size-base: 15px;
+}

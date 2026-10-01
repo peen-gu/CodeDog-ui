@@ -1,0 +1,41 @@
+name: Publish to npm
+
+# 走 npm Trusted Publishing（OIDC 短时凭证），仓库里不存任何 token，
+# 也不受 2027-01「bypass-2FA token 禁止直发」政策影响。
+#
+# 前置：npm 网站上把本仓库配为该包的 Trusted Publisher
+#   https://www.npmjs.com/package/codedog-ui  → Settings → Publishing access
+#   Provider: GitHub Actions | Owner: peen-gu | Repo: CodeDog-ui | Workflow: publish.yml
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # OIDC 必需，缺这一行发布会被拒
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 注意：不要给 setup-node 传 registry-url。
+      # 它会往 .npmrc 写 //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}，
+      # 而 Trusted Publishing 下该变量为空，会导致认证失败。
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Upgrade npm (Trusted Publishing 需 >= 11.5.1)
+        run: npm i -g npm@latest
+
+      - name: Verify tarball contents
+        working-directory: src/uni_modules/codedog-ui
+        run: npm pack --dry-run
+
+      - name: Publish
+        working-directory: src/uni_modules/codedog-ui
+        run: npm publish --provenance --access public

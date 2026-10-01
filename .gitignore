@@ -1,0 +1,23 @@
+node_modules/
+dist/
+electron/dist/
+.shots/
+.workbuddy/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+
+*.tgz
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# 本机私有配置（含镜像地址，切勿入库）
+.npmrc
+
+.env
+.env.local
+.env.*.local
+
+.DS_Store
+Thumbs.db
+*.swp
