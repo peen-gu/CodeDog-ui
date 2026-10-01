@@ -7,6 +7,9 @@ docs/.vitepress/dist/
 docs/.vitepress/.temp/
 docs-dist/
 
+# 对外交付的站点压缩包与解压验证目录（不入库）
+release/
+
 # VitePress 临时产物
 docs/.vitepress/config.mjs.timestamp-*
 
