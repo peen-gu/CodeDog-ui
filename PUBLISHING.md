@@ -1,6 +1,12 @@
 # 发布到 npm
 
-`codedog-ui` 目前在 npm 上不存在（<https://registry.npmjs.org/codedog-ui> 返回 404），包名未被占用，可以直接发布。
+::: tip ✅ codedog-ui@0.5.0 已上线
+发布时间 **2026-10-01**（`dist-tags: latest → 0.5.0`），详见 <https://www.npmjs.com/package/codedog-ui>。
+已通过真实安装核验：`npm i codedog-ui` → 62 个组件目录 + LICENSE + README + index.d.ts 齐全。
+下文是完整操作记录与下次发版流程。
+:::
+
+这个包在发布前控制权归我们（`registry.npmjs.org/codedog-ui` 曾返回 404），包名未被占用，已顺利注册为公开包。
 
 ## 零、已经做完的准备（无需重复）
 
@@ -78,7 +84,21 @@ npm run release:publish
 |---|---|---|
 | 1 | `npm publish` | **E403** `Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages.` |
 | 2 | `npm publish --otp=00242346` | **同样的 E403**，一字未变 |
-| 3 | 新生成的 granular token `whoami` 自检 | **401** `{}` —— token 串本身无效（同一调用方式下 session token 能正常 whoami 返回 `penngu`） |
+| 3 | 新粘贴的 granular token `whoami` 自检 | **401** `{}` —— token 串本身无效（同一调用方式下 session token 能正常 whoami 返回 `penngu`） |
+| 4 | `npm run release:interactive` + 新 granular token | ✅ **成功**，见顶部提示 |
+
+**最后成功的 token 配置**（对照检查）：
+
+| 字段 | 取值 |
+|---|---|
+| Bypass two-factor authentication | ✅ 勾选（选了 read and write 权限后该复选框才出现） |
+| Permissions | Read and write (publish and stage) |
+| Select packages | All packages |
+| Allowed IP ranges | **留空**（填了 CIDR 会让非白名单出口 401） |
+| Expiration | 30 天（到期前需重新签发，或改走 Trusted Publishing） |
+
+那次 401 的 40 字符串后来确认是 **Recovery Codes**（启用 2FA 时页面给的那组）——它既不是 token 也不能拿来登录，
+一旦用恢复码登录会触发 **72 小时安全冻结**，期间禁止 publish / 创建 token。
 
 **根因不是验证码。** `npm profile get` 显示账号 `two-factor auth: disabled`，同时 `npm login`
 浏览器流程拿到的是 **session token**。自 2025 年 11 月起 npm 已移除 legacy token，
@@ -188,9 +208,13 @@ node scripts/publish.mjs --token-file=~/.npm-token
 **启用只需两步：**
 
 1. npm 网站：<https://www.npmjs.com/package/codedog-ui> → Settings → Publishing access
-   （首版未发布时，先在 Willing to publish 表单里填 `codedog-ui` 占位申请包名）
    → **Add trusted publisher** → GitHub Actions | Owner `peen-gu` | Repo `CodeDog-ui` | Workflow `publish.yml`
+   （包已发布，这一步随时可以做；做完即可停用手搓 token）
 2. GitHub 仓库：Settings → Environments / Actions 允许读写；`id-token: write` 已在 workflow 里声明，无需改
+
+> ⚠️ 前提：本机到 github.com:443 目前**不可达**（21 秒超时），所以 `git push` 只能在打通网络后做。
+> 本地已 `git init` 完毕（commit `005b52d`）并打好 `v0.5.0` tag，网络通了直接：
+> `git push -u origin main --follow-tags`（远端为空仓库，不会冲突；被拒的话用 `--allow-unrelated-histories`，**禁止 `-f` 强推**）
 
 **触发发布：**
 
@@ -208,7 +232,14 @@ git push origin main --follow-tags
 
 工作流跑完，到 Actions 页面查看 `npm view codedog-ui version` 的输出即为最终核验。
 
-## 四、发布后验证
+## 四、发布后验证（0.5.0 已全项通过 ✅）
+
+| 检查 | 结果 |
+|---|---|
+| `npm view codedog-ui version` | `0.5.0` |
+| `dist-tags.latest` | `0.5.0`（versions 仅此一版） |
+| 元信息 | MIT / Penn.Gu / ui.codedog.tech / repo 均正确写入 registry |
+| 冷启动真实安装 | `npm i codedog-ui` → 62 组件 + LICENSE + README.md + index.d.ts + styles 齐全 |
 
 ```bash
 # 1. 换一个空目录，真实拉一次

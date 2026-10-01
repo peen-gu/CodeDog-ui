@@ -1,5 +1,7 @@
 # CodeDogUI
 
+[![npm](https://img.shields.io/npm/v/codedog-ui)](https://www.npmjs.com/package/codedog-ui) [![npm downloads](https://img.shields.io/npm/dm/codedog-ui)](https://www.npmjs.com/package/codedog-ui) [![license](https://img.shields.io/npm/l/codedog-ui)](./LICENSE) [![components](https://img.shields.io/badge/components-62-blue)](https://doc.ui.codedog.tech)
+
 面向 uni-app 的跨端 UI 框架。**一套 Vue3 代码，同时覆盖 H5 移动端、H5 PC 浏览器、微信小程序与 Electron 桌面套壳。**
 
 | 归　属 | |
@@ -28,6 +30,35 @@ npm run build:mp-weixin  # 微信小程序构建
 
 npm run electron:start   # Electron 套壳加载 dist/build/h5
 ```
+
+## 安装 npm 包
+
+包已发布：<https://www.npmjs.com/package/codedog-ui>
+
+```bash
+npm i codedog-ui
+```
+
+uni-app 项目在 `pages.json` 里配 easycom，即可直接使用全部组件，无需逐个 import：
+
+```jsonc
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^cd-(.*)": "codedog-ui/components/cd-$1/cd-$1.vue"
+    }
+  }
+}
+```
+
+再在 `App.vue` 里引入样式（或直接 `@import 'codedog-ui/styles';`）：
+
+```scss
+@import 'codedog-ui/styles';
+```
+
+> uni-app 对 `node_modules` 内的包**同样执行条件编译**，实测 H5 / 微信小程序双端产物均正确，小程序产物里不会出现 H5 分支代码。
 
 ## 技术基线
 
