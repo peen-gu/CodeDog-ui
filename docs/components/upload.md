@@ -10,6 +10,8 @@ title: Upload 上传
 
 ## 用法
 
+<CdDemo id="upload-0"></CdDemo>
+
 ```vue // 来自演示页 feedback
 <view class="grid2">
   <view class="grid2__item">
@@ -38,6 +40,7 @@ title: Upload 上传
 | `maxCount` | Number | `0` | — | 最多几个文件，0 表示不限制 |
 | `maxSize` | Number | `0` | — | 单文件大小上限（MB），0 表示不限制 |
 | `listType` | String | `'picture-card'` | — | 'picture-card' \| 'list' |
+| `autoUpload` | Boolean | `true` | — | 选完文件是否立即上传。false 时为「先选后传」， 业务在提交表单时自己调用接口。 |
 | `disabled` | Boolean | `false` | — | — |
 | `error` | Boolean | `false` | — | — |
 | `customClass` | String | `''` | — | — |

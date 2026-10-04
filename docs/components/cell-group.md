@@ -10,6 +10,8 @@ title: CellGroup 单元格组
 
 ## 用法
 
+<CdDemo id="cell-group-0"></CdDemo>
+
 ```vue // 来自演示页 navigation
 <view class="split">
   <view class="split__col">

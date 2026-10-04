@@ -106,11 +106,14 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'change', 'click'])
 
-const { formDisabled, notifyChange } = useField()
+const { field, formDisabled, notifyChange } = useField()
 
 const isChecked = computed(() => props.modelValue === props.activeValue)
 
 const isDisabled = computed(() => props.disabled || formDisabled.value)
+
+/** 表单校验失败时开关自身也要变红，否则看不出是哪个控件错了 */
+const hasFormError = computed(() => !!(field && field.validateState && field.validateState.value === 'error'))
 
 const rootClass = computed(() =>
   [
@@ -118,6 +121,7 @@ const rootClass = computed(() =>
     isChecked.value ? 'cd-switch--checked' : '',
     isDisabled.value ? 'cd-switch--disabled' : '',
     props.loading ? 'cd-switch--loading' : '',
+    hasFormError.value ? 'cd-switch--error' : '',
     props.customClass,
   ]
     .filter(Boolean)
@@ -132,20 +136,32 @@ const rootStyle = computed(() => {
   return parts.join('')
 })
 
+/**
+ * 异步钩子期间的内部锁。
+ * beforeChange 常用于「弹个确认框」，等用户点确定的那几百毫秒里
+ * 开关仍然是可点的：连点两次会发起两个钩子，而只有先返回的那个能改到值，
+ * 另一个的结果被静默吞掉 —— 用户看到的是「点了两次只生效一次」。
+ * pending 期间直接 return，第二次点击被忽略掉。
+ */
+let pending = false
+
 async function handleToggle(event) {
   emit('click', event)
 
-  if (isDisabled.value || props.loading) return
+  if (isDisabled.value || props.loading || pending) return
 
   const nextValue = isChecked.value ? props.inactiveValue : props.activeValue
 
   /* 钩子先跑，通过了才改值 —— 这样开关不会出现「先动再弹回」的闪烁 */
   if (props.beforeChange) {
+    pending = true
     let allowed = false
     try {
       allowed = await props.beforeChange(nextValue)
     } catch (error) {
       allowed = false
+    } finally {
+      pending = false
     }
     if (allowed === false) return
   }
@@ -277,6 +293,15 @@ export default {
 /* 禁用时滑块不该还有投影，否则看起来仍然「可以点」 */
 .cd-switch--disabled .cd-switch__thumb {
   box-shadow: none;
+}
+
+/**
+ * 校验失败：给轨道套一圈红环。
+ * 用 box-shadow 而不是 border —— 轨道尺寸是按 px 写死的，
+ * 加 border 会撑大尺寸并让滑块位移量对不上。
+ */
+.cd-switch--error .cd-switch__track {
+  box-shadow: 0 0 0 2px var(--cd-color-danger, #ef4444);
 }
 
 .cd-switch__text {

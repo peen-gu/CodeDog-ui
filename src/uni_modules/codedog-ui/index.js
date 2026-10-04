@@ -19,9 +19,10 @@ export * from './utils/validate'
 /* 日期工具是纯函数，业务做自定义日历 / 报表时可以直接复用 */
 export * from './utils/date'
 
-/* 命令式反馈服务：toast / confirm / alert / loading。
+/* 命令式反馈服务：toast / confirm / alert / loading / previewImage。
    宿主组件（cd-toast-host）不在静态依赖里 —— H5 端由服务在首次调用时
-   动态 import（独立 chunk，用到才加载）；小程序端走 easycom / 手动引用。 */
+   动态 import（独立 chunk，用到才加载）；小程序端走 easycom / 手动引用。
+   previewImage 同此套路：H5 动态挂载 cd-image-preview，小程序降级 uni.previewImage。 */
 export {
   toast,
   confirm,
@@ -30,17 +31,28 @@ export {
   hideLoading,
   settleModal,
   dismissToast,
+  previewImage,
 } from './service'
 
 export { buildWotThemeVars, wotThemePresets } from './theme/bridge'
 
 export { kebabCase, toWotStyleString, useWotScope } from './composables/use-wot-scope'
 
+/* 注入键全部导出：自定义控件要接入某个容器（比如自己写一个复选框去接
+   cd-checkbox-group）就得拿到对应的 key。只导出一部分的话，
+   index.d.ts 上写着的那些键运行时是 undefined —— 类型不报错、一跑就炸。 */
 export {
   NS,
   CD_CONFIG_KEY,
   CD_FORM_KEY,
   CD_FORM_ITEM_KEY,
+  CD_CHECKBOX_GROUP_KEY,
+  CD_RADIO_GROUP_KEY,
+  CD_CELL_GROUP_KEY,
+  CD_COLLAPSE_KEY,
+  CD_STEPS_KEY,
+  CD_TIMELINE_KEY,
+  CD_BREADCRUMB_KEY,
   THEME_STORAGE_KEY,
   SIZE_PRESETS,
   SHAPE_MODES,

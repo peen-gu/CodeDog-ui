@@ -452,6 +452,61 @@
 
   /* 悬浮按钮 */
   --cd-fab-size: 48px;
+
+  /* ------------------------------------------------------------------
+   * 图片预览：整屏深色反相表面
+   * 深浅两套主题下都以「黑底 + 半透明白」呈现（图片本身才是主角），
+   * 所以这一组不像其它令牌那样跟着主题反相，只在深浅上做微调。
+   * ------------------------------------------------------------------ */
+  --cd-preview-mask: rgba(0, 0, 0, 0.92);
+  --cd-preview-on-dark: rgba(255, 255, 255, 0.72);
+  --cd-preview-btn-bg: rgba(255, 255, 255, 0.14);
+  --cd-preview-btn-bg-hover: rgba(255, 255, 255, 0.28);
+  --cd-preview-btn-bg-active: rgba(255, 255, 255, 0.4);
+
+  /* 文字气泡：与 toast 同一套反色表面 */
+  --cd-tooltip-bg: rgba(15, 23, 42, 0.92);
+  --cd-tooltip-text: #ffffff;
+
+  /* ------------------------------------------------------------------
+   * 补齐令牌
+   * 下面这几个此前「全仓零定义」：组件里写的全是 var(--cd-x, 兜底值)，
+   * 引用永远命中兜底，暗色主题下也不会跟着变（等于换肤对它们无效）。
+   * 其中 --cd-checkbox-color / --cd-radio-color 连兜底链都只到
+   * --cd-color-primary，业务想单独改单选色根本无从下手。
+   * 现在按亮 / 暗两套补齐，取值正式纳入令牌体系。
+   * ------------------------------------------------------------------ */
+
+  /* 第三级文字：比 secondary 再弱一档，用于最次要的说明与角标 */
+  --cd-text-tertiary: var(--cd-neutral-400);
+
+  /* 浅色遮罩：亮底容器上的「处理中」蒙层（与 --cd-bg-mask 的深遮罩相对） */
+  --cd-bg-mask-light: rgba(255, 255, 255, 0.6);
+
+  /* 图标底色。默认 currentColor，让图标自动跟随所在文字的颜色 */
+  --cd-icon-color: currentColor;
+
+  /* 复选 / 单选中「选中态」的主色，默认跟主色走 */
+  --cd-checkbox-color: var(--cd-color-primary);
+  --cd-radio-color: var(--cd-color-primary);
+
+  /* button 形态单选的高度 */
+  --cd-radio-button-height: var(--cd-control-height);
+
+  /* 骨架屏顶部图片块的圆角 */
+  --cd-skeleton-image-radius: var(--cd-radius-md);
+
+  /* 顺带补齐另外几个同样是「全仓零定义」的组件私有令牌。
+     取值与它们原先的兜底值完全一致，因此不会改变任何现有观感，
+     只是把它们纳入令牌体系（暗色主题才能真正覆盖到）。 */
+  --cd-upload-mask-bg: rgba(15, 23, 42, 0.55);
+  --cd-upload-mask-error-bg: rgba(239, 68, 68, 0.72);
+  --cd-upload-mask-color: #ffffff;
+  --cd-upload-remove-bg: rgba(15, 23, 42, 0.6);
+  --cd-upload-remove-bar: #ffffff;
+  --cd-slider-tooltip-color: #ffffff;
+  --cd-date-picker-clear-bar: #ffffff;
+  --cd-time-picker-clear-bar: #ffffff;
 }
 
 /* ==================================================================
@@ -517,6 +572,49 @@
   /* 宫格 / 单元格的分隔线在暗色下要更弱，否则像格子纸 */
   --cd-grid-divider-color: #1c2436;
   --cd-cell-group-title-color: var(--cd-text-placeholder);
+
+  /* 图片预览：暗色下遮罩再压深一档，按钮与文字相应减淡，
+     免得在已经很暗的界面里又浮出一块高对比的控件 */
+  --cd-preview-mask: rgba(0, 0, 0, 0.94);
+  --cd-preview-on-dark: rgba(255, 255, 255, 0.66);
+  --cd-preview-btn-bg: rgba(255, 255, 255, 0.1);
+  --cd-preview-btn-bg-hover: rgba(255, 255, 255, 0.22);
+  --cd-preview-btn-bg-active: rgba(255, 255, 255, 0.34);
+
+  /* 气泡同 toast：暗色下要比页面浅，否则和背景融成一片 */
+  --cd-tooltip-bg: rgba(51, 65, 85, 0.95);
+  --cd-tooltip-text: #f1f5f9;
+
+  /* ---- 补齐令牌的暗色一套 ---- */
+
+  /* 暗色底上「更弱的一档文字」要往更暗走，否则次要文字会跟正文抢注意力 */
+  --cd-text-tertiary: var(--cd-neutral-500);
+
+  /* 浅色遮罩在暗色下必须反相成深色：白纱压在深色卡片上会糊成一片 */
+  --cd-bg-mask-light: rgba(0, 0, 0, 0.45);
+
+  /* 图标仍然跟随父级文字色 —— 暗色下文字色已经反相，这里无需另给值 */
+  --cd-icon-color: currentColor;
+
+  /* 主色在暗色已整体提亮一档，复选 / 单选跟着它走即可 */
+  --cd-checkbox-color: var(--cd-color-primary);
+  --cd-radio-color: var(--cd-color-primary);
+
+  --cd-radio-button-height: var(--cd-control-height);
+  --cd-skeleton-image-radius: var(--cd-radius-md);
+
+  /* 暗色下遮罩要更深、蒙层文字要更亮，否则压在深色卡片上分不出层次 */
+  --cd-upload-mask-bg: rgba(0, 0, 0, 0.6);
+  --cd-upload-mask-error-bg: rgba(239, 68, 68, 0.6);
+  --cd-upload-mask-color: #f1f5f9;
+  --cd-upload-remove-bg: rgba(0, 0, 0, 0.65);
+
+  /* 下面这几个是「白色横杠压在实心圆按钮上」，两个主题都该保持白色，
+     这里显式写出是为了让暗色表完整 —— 不写则沿用亮色值，结果一样但查起来费劲 */
+  --cd-upload-remove-bar: #ffffff;
+  --cd-slider-tooltip-color: #f1f5f9;
+  --cd-date-picker-clear-bar: #ffffff;
+  --cd-time-picker-clear-bar: #ffffff;
 }
 
 /* ==================================================================

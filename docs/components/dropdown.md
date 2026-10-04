@@ -10,6 +10,8 @@ title: Dropdown 下拉菜单
 
 ## 用法
 
+<CdDemo id="dropdown-0"></CdDemo>
+
 ```vue // 来自演示页 feedback
 <view class="row">
   <cd-dropdown

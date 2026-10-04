@@ -10,6 +10,8 @@ title: Breadcrumb 面包屑
 
 ## 用法
 
+<CdDemo id="breadcrumb-0"></CdDemo>
+
 ```vue // 来自演示页 navigation
 <cd-breadcrumb>
   <cd-breadcrumb-item to="/pages/index/index">首页</cd-breadcrumb-item>

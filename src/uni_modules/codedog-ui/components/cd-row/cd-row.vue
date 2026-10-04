@@ -26,10 +26,18 @@ const props = defineProps({
   /**
    * 列间距。数字表示水平间距；
    * 数组 [水平, 垂直] 可分别控制两个方向（垂直间距在换行时生效）
+   *
+   * 负数是非法的：它会让「行的负外扩」变成正外扩、列的 padding 变成负值
+   * （负 padding 浏览器直接忽略），整个栅格往一边歪且看不出原因。
+   * 这里在 prop 校验期告警、在计算期钳到 0，两层都不放过。
    */
   gutter: {
     type: [Number, String, Array],
     default: 0,
+    validator: (value) => {
+      const list = Array.isArray(value) ? value : [value]
+      return list.every((item) => item === '' || Number(item) >= 0)
+    },
   },
   /** start / center / end / between / around */
   justify: {
@@ -56,12 +64,19 @@ const props = defineProps({
   },
 })
 
+/** 负值一律钳到 0：负 gutter 会同时污染 padding（被忽略）与外扩（方向反转） */
+function safe(value) {
+  if (typeof value === 'number' && value < 0) return 0
+  if (typeof value === 'string' && value && Number(value) < 0) return 0
+  return value
+}
+
 const normGutter = computed(() => {
   const g = props.gutter
   if (Array.isArray(g)) {
-    return { x: g[0], y: g[1] }
+    return { x: safe(g[0]), y: safe(g[1]) }
   }
-  return { x: g, y: 0 }
+  return { x: safe(g), y: 0 }
 })
 
 /**

@@ -17,8 +17,9 @@
  * DOM 顺序没变、视觉顺序反了，于是「谁在上面」也反了 ——
  * 项的上下引线要跟着对调，否则最先写的那一项会在视觉上拖着一条断头线。
  */
-import { computed, provide, ref } from 'vue'
+import { computed, provide } from 'vue'
 import { CD_TIMELINE_KEY } from '../../constants'
+import { createOrderRegistry } from '../../utils/slot-order'
 
 defineOptions({
   name: 'cd-timeline',
@@ -40,34 +41,16 @@ const props = defineProps({
   },
 })
 
-const registry = []
-let uidSeed = 0
-const version = ref(0)
-
-function register() {
-  uidSeed += 1
-  registry.push(uidSeed)
-  version.value += 1
-  return uidSeed
-}
-
-function unregister(uid) {
-  const i = registry.indexOf(uid)
-  if (i > -1) registry.splice(i, 1)
-  version.value += 1
-}
+/** 顺序按真实渲染顺序校正，理由与时机见 utils/slot-order */
+const order = createOrderRegistry()
 
 provide(CD_TIMELINE_KEY, {
   reverse: computed(() => props.reverse),
-  register,
-  unregister,
-  indexOf(uid) {
-    void version.value
-    return registry.indexOf(uid)
-  },
+  register: order.register,
+  unregister: order.unregister,
+  indexOf: order.indexOf,
   get total() {
-    void version.value
-    return registry.length
+    return order.total
   },
 })
 

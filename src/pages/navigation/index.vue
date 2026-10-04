@@ -351,12 +351,24 @@ function log(message) {
   align-items: center;
 }
 
-.row > * {
+/* .row 不用通配符 >*：WXSS 不支持。小程序端 <view>/<text> 编译成原标签，H5 端编译成 uni-view / uni-text，两端标签都列 */
+.row > view,
+.row > uni-view,
+.row > text,
+.row > uni-text,
+.row > button,
+.row > uni-button {
   margin: 0 var(--cd-space-2, 8px) var(--cd-space-2, 8px) 0;
 }
 
-.stack > * {
-  margin-bottom: var(--cd-space-5, 20px);
+/* .stack 不用通配符 >*：WXSS 不支持。小程序端 <view>/<text> 编译成原标签，H5 端编译成 uni-view / uni-text，两端标签都列 */
+.stack > view,
+.stack > uni-view,
+.stack > text,
+.stack > uni-text,
+.stack > button,
+.stack > uni-button {
+  margin-bottom: var(--cd-space-2, 8px);
 }
 
 /* 两栏对照：窄屏堆叠，宽屏并排 */

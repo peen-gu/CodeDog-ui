@@ -10,6 +10,8 @@ title: Grid 宫格
 
 ## 用法
 
+<CdDemo id="grid-0"></CdDemo>
+
 ```vue // 来自演示页 navigation
 <view class="stack">
   <view>

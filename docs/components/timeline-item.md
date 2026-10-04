@@ -10,6 +10,8 @@ title: TimelineItem 时间线项
 
 ## 用法
 
+<CdDemo id="timeline-item-0"></CdDemo>
+
 ```vue // 来自演示页 navigation
 <view class="row">
   <cd-button size="small" @click="timelineReverse = !timelineReverse">
@@ -82,6 +84,14 @@ title: TimelineItem 时间线项
 | `dot` | — | — |
 | `timestamp` | — | — |
 | `default` | — | 默认插槽 |
+
+## Expose
+
+通过 `ref` 调用：
+
+| 方法 / 属性 | 说明 |
+|---|---|
+| `__cdOrderUid` | — |
 
 ## 设计说明
 

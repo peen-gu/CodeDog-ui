@@ -64,7 +64,10 @@ defineOptions({
 })
 
 const props = defineProps({
-  /** 面板标识，v-model 里存的就是它 */
+  /**
+   * 面板标识，v-model 里存的就是它。
+   * 不传时自动回退到实例唯一值，因此「不传 name 的多个面板」互不干扰。
+   */
   name: {
     type: [String, Number],
     default: '',
@@ -108,10 +111,27 @@ const instance = getCurrentInstance()
 
 const collapse = inject(CD_COLLAPSE_KEY, null)
 
+/**
+ * 内部实际使用的标识。
+ *
+ * name 的默认值是空串，于是「三个面板都不传 name」时它们共用同一个标识 ''，
+ * 点任意一个都会被 toggle('') 命中全部 —— 三个面板同时展开 / 收起。
+ * 这种 bug 只在「不传 name」这种最省事的写法下出现，而那恰恰是默认写法。
+ *
+ * 所以 name 缺省（'' / null / undefined）时回退到实例唯一的 uid 串。
+ * 用 Vue 分配的 instance.uid 而不是自增计数器，理由与 cd-tabs 相同：
+ * 写在 <script setup> 顶层的 `let uid = 0` 编译后落在 setup() 体内，
+ * 每个实例都会从 0 重来。
+ */
+const itemName = computed(() => {
+  const name = props.name
+  return name === '' || name === null || name === undefined ? `cd-collapse-item-${instance ? instance.uid : 0}` : name
+})
+
 /** 脱离容器独立使用时，自己持有一份状态 */
 const standaloneOpen = ref(false)
 
-const open = computed(() => (collapse ? collapse.isActive(props.name) : standaloneOpen.value))
+const open = computed(() => (collapse ? collapse.isActive(itemName.value) : standaloneOpen.value))
 
 const everOpened = ref(open.value)
 
@@ -166,7 +186,7 @@ function handleToggle() {
      切换之后再读 open.value 拿到的是新值，取反就得到旧值了 */
   const next = !open.value
 
-  if (collapse) collapse.toggle(props.name)
+  if (collapse) collapse.toggle(itemName.value)
   else standaloneOpen.value = next
 
   emit('change', next)

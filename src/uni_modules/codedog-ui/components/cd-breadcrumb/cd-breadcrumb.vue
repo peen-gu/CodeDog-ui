@@ -15,8 +15,9 @@
  * 和步骤条 / 时间线共用同一套注册表机制（普通数组 + 版本号），
  * 为什么不用 ref 数组的理由写在那两个组件里，不再重复。
  */
-import { computed, provide, ref } from 'vue'
+import { computed, provide } from 'vue'
 import { CD_BREADCRUMB_KEY } from '../../constants'
+import { createOrderRegistry } from '../../utils/slot-order'
 
 defineOptions({
   name: 'cd-breadcrumb',
@@ -43,31 +44,16 @@ const props = defineProps({
   },
 })
 
-const registry = []
-let uidSeed = 0
-const version = ref(0)
-
-function register() {
-  uidSeed += 1
-  registry.push(uidSeed)
-  version.value += 1
-  return uidSeed
-}
-
-function unregister(uid) {
-  const i = registry.indexOf(uid)
-  if (i > -1) registry.splice(i, 1)
-  version.value += 1
-}
+/** 顺序按真实渲染顺序校正，理由与时机见 utils/slot-order */
+const order = createOrderRegistry()
 
 provide(CD_BREADCRUMB_KEY, {
   separator: computed(() => props.separator),
   separatorIcon: computed(() => props.separatorIcon),
-  register,
-  unregister,
+  register: order.register,
+  unregister: order.unregister,
   isLast(uid) {
-    void version.value
-    return registry.indexOf(uid) === registry.length - 1
+    return order.indexOf(uid) === order.total - 1
   },
 })
 </script>

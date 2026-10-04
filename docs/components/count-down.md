@@ -10,6 +10,8 @@ title: CountDown 倒计时
 
 ## 用法
 
+<CdDemo id="count-down-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <view class="row">
   <cd-button size="small" @click="startCountdown">开始</cd-button>
@@ -34,7 +36,7 @@ title: CountDown 倒计时
 |---|---|---|---|---|
 | `time` | Number | `0` | — | 倒计时时长（毫秒） |
 | `autoStart` | Boolean | `true` | — | 是否自动开始 |
-| `format` | String | `'HH:mm:ss'` | — | 输出格式。支持 D / DD / H / HH / m / mm / s / ss / S / SS / SSS。 注意 m 是分钟、S 是毫秒 —— 大小写在这里是有语义的。 |
+| `format` | String | `'HH:mm:ss'` | — | 输出格式。支持 D / DD / H / HH / m / mm / s / ss / S / SS / SSS。 注意 m 是分钟、S 是毫秒 —— 大小写在这里是有语义的。 需要写字面英文时把它放进方括号：`[Ends in] HH:mm:ss`， 否则 Ends 里的 s 会被当成「秒」的 token。 |
 | `millisecond` | Boolean | `false` | — | 毫秒级刷新（默认只按秒刷新，省电且不闪） |
 | `customClass` | String | `''` | — | — |
 | `customStyle` | String | `''` | — | — |
@@ -64,6 +66,8 @@ title: CountDown 倒计时
 - 这样即使丢了几次回调，显示也永远是准的。
 - 小程序端另有一个必须处理的现实：切后台后定时器会被挂起。
 - 因此这里额外提供了 onShow 的同步入口（sync）， 由组件的 onShow 钩子里调用，回到前台立刻纠正显示。
+- 时长常常是异步来的（:time="remainMs"，接口 100ms 后才返回真实值）。
+- 因此「time 从 0 变成正数」必须能把定时器补起来， 而「time 一直是 0」不能误报 finish —— 这两件事见 watch 与 onMounted 处的注释。
 
 ## 关联
 

@@ -10,15 +10,33 @@ title: Dialog 对话框
 
 ## 用法
 
-```vue // 来自演示页 desktop
+<CdDemo id="dialog-0"></CdDemo>
+
+```vue
+<cd-button size="small" @click="visible = true">打开对话框</cd-button>
 <cd-dialog
-  v-model="detailVisible"
-  :title="detailTitle"
-  :content="detailContent"
-  :show-cancel="false"
-  confirm-text="知道了"
-  @confirm="detailVisible = false"
+  v-model="visible"
+  title="删除确认"
+  content="删除后不可恢复，确定继续吗？"
+  @confirm="visible = false"
+  @cancel="visible = false"
 />
+```
+
+<CdDemo id="dialog-1"></CdDemo>
+
+```vue
+<cd-button size="small" type="danger" @click="delVisible = true">删除这个项目</cd-button>
+<cd-dialog
+  v-model="delVisible"
+  title="危险操作"
+  content="删除后无法恢复，确认要继续吗？"
+  confirm-text="确认删除"
+  :confirm-loading="submitting"
+  @confirm="runDelete"
+  @cancel="delVisible = false"
+/>
+<cd-tag v-if="done" type="success">已模拟删除完成</cd-tag>
 ```
 
 ## Props

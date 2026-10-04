@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-01T13:32:25.399Z",
-  "total": 62,
+  "generatedAt": "2026-10-04T14:18:54.918Z",
+  "total": 80,
   "categories": [
     {
       "id": "infrastructure",
@@ -36,6 +36,16 @@
           "name": "divider",
           "title": "Divider 分割线",
           "desc": "水平/垂直双向、支持中间标题与虚线。用 border 画线，因此切换 dashed 只是换一个 border-style。"
+        },
+        {
+          "name": "typing",
+          "title": "Typing 打字机",
+          "desc": "逐字输出的流式文本，给 AI 回复与引导文案用。调度用 setTimeout 链而非 setInterval（切后台回来不会一次性补一大段），推进用索引而非字符串拼接（中途换文案不会新旧串味）。"
+        },
+        {
+          "name": "watermark",
+          "title": "Watermark 水印",
+          "desc": "纯 text 节点平铺，不用 canvas 生成背景图。画布放大倍数由旋转角算出来，而不是硬写 1.5 —— 宽屏上能少铺近一半节点。整层 pointer-events:none，绝不会挡住底下的操作。"
         }
       ]
     },
@@ -93,6 +103,11 @@
           "name": "form-item",
           "title": "FormItem 表单项",
           "desc": "单个字段的上下文提供者：向下给控件传 value/disabled，向上回报 blur/change 触发校验。自定义控件只要 useField() 就能接入同一套校验链。"
+        },
+        {
+          "name": "form-render",
+          "title": "FormRender Schema 表单引擎",
+          "desc": "给一份字段描述数组（schema）和一个对象，自动渲染整张表单：内建 12 种控件、显隐与禁用联动、栅格布局、默认值注入，校验直接复用 cd-form 那套规则。适合中后台里大量「结构相似、字段不同」的表单页。"
         },
         {
           "name": "input",
@@ -163,6 +178,36 @@
           "name": "time-picker",
           "title": "TimePicker 时间选择",
           "desc": "移动端原生、PC 双列（时/分）。刻意不做秒。"
+        },
+        {
+          "name": "calendar",
+          "title": "Calendar 日历",
+          "desc": "常驻日历面板（不是弹层），single / multiple / range 三种模式。与 date-picker 的分工：date-picker 是「点一下选完就走」的录入控件，calendar 是「要一直看着月份做安排」的展示面板。marks 支持打点与底部小字，formatter 可拦截单个格子的文案与可选性。"
+        },
+        {
+          "name": "picker",
+          "title": "Picker 多列选择器",
+          "desc": "选自定义数据的通用弹层：columns 传「列数组的数组」是独立多列，加 cascade 后传树即为级联。用 scroll-view 受控定位而不是原生 picker-view——后者在 H5 与小程序上的手感与样式差异太大且几乎不可控。草稿与提交分离：点确定才落到 modelValue。"
+        },
+        {
+          "name": "cascader",
+          "title": "Cascader 级联选择",
+          "desc": "省市区、品类树这类「选一条从根到叶路径」的控件。与 picker 的分工：picker 是弹层、要点确定；cascader 是表单字段、点选即提交。面板多列并排而不是一级一屏，一眼能看到完整路径。check-strictly 控制父级是否可选，emit-path 决定回传整条路径还是末级值。"
+        },
+        {
+          "name": "color-picker",
+          "title": "ColorPicker 颜色选择器",
+          "desc": "HSV 面板 + 色相条 + 透明度，纯 view 实现不用 canvas。输入与面板双向驱动，粘贴任意合法色值都能解析。"
+        },
+        {
+          "name": "transfer",
+          "title": "Transfer 穿梭框",
+          "desc": "左右两栏 + 搜索过滤 + 全选。禁用项不可移，direction 可调（窄屏自动竖排）。"
+        },
+        {
+          "name": "signature",
+          "title": "Signature 手写签名",
+          "desc": "笔画拼成 SVG 再以内联 data URI 交给背景图渲染（与 cd-icon 同一套路），不用 canvas 因此四端一致。已完成笔画与正在画的一笔分成两组节点，移动时只重建后者。"
         }
       ]
     },
@@ -226,6 +271,16 @@
           "desc": "统一封装 loading / loaded / error 三态，并内置 uni 的 image mode 与 CSS object-fit 的映射表，让同一套写法在两个端表现一致。"
         },
         {
+          "name": "image-preview",
+          "title": "ImagePreview 图片预览",
+          "desc": "全屏图片预览。声明式用 v-model 控制开关，命令式直接 previewImage({ urls, current })——后者在 H5 动态挂载宿主、小程序降级 uni.previewImage。支持手势滑动翻页、双指与滚轮缩放、循环、角标计数。刻意不依赖 wd 的预览组件：那套只覆盖小程序原生通道，H5 上的缩放与手势行为要靠自己实现。"
+        },
+        {
+          "name": "swiper",
+          "title": "Swiper 轮播",
+          "desc": "底层是 uni 原生 swiper（手感与惯性由端上保证），上层补一层统一的设计语言：指示点样式、桌面形态的左右翻页箭头、list 既接受 { image, text } 也接受纯图片地址。autoplay 由组件内部按 visible 状态自行启停，避免页面切走后定时器还在跑。"
+        },
+        {
           "name": "count-down",
           "title": "CountDown 倒计时",
           "desc": "锚定结束时间戳而非递减计数：每次都重算 endAt - Date.now()，定时器只负责「多久看一眼」。这样切后台、改系统时间、GC 停顿都不会漂移。"
@@ -249,6 +304,21 @@
           "name": "result",
           "title": "Result 结果页",
           "desc": "操作结果反馈页，内置成功/失败预设，提供 icon、title、desc、extra、actions 五个插槽。"
+        },
+        {
+          "name": "tree",
+          "title": "Tree 树形控件",
+          "desc": "勾选走「向下全量 + 向上回算」两趟，父子联动带半选态；checkStrictly 打开时父子各算各的。扁平渲染而非嵌套递归，节点再多也不会爆栈。"
+        },
+        {
+          "name": "descriptions",
+          "title": "Descriptions 描述列表",
+          "desc": "一份 items 渲染整张详情表，支持列数、跨列与横竖两种排布。比手写一堆 cell 少 80% 的模板代码。"
+        },
+        {
+          "name": "qrcode",
+          "title": "Qrcode 二维码",
+          "desc": "编码核心自研零依赖（版本 1~10 / L M Q H / 字节模式），与 npm qrcode 包逐位比对通过。渲染是纯 view 节点且坐标全部取整，不会出现 1px 白缝。"
         }
       ]
     },
@@ -300,6 +370,21 @@
           "name": "backtop",
           "title": "BackTop 回到顶部",
           "desc": "滚动超过 visibility-height 后出现的回顶按钮，与 cd-affix 共用 usePageScroll 处理「H5 自动监听 / 小程序页面传入」的差异。"
+        },
+        {
+          "name": "navbar",
+          "title": "Navbar 导航栏",
+          "desc": "顶部导航栏。状态栏留白由 statusBar 开关 × 实测高度决定，拿不到就退回 0；标题绝对居中，左右内容不等长也不偏心。"
+        },
+        {
+          "name": "tabbar",
+          "title": "Tabbar 底部标签栏",
+          "desc": "支持徽标与小红点，fixed 时自动等高占位，safeArea 走小程序安全区。选中值可以是 value 也可以是下标。"
+        },
+        {
+          "name": "index-bar",
+          "title": "IndexBar 字母索引栏",
+          "desc": "只做「手指落在第几个字母」，结果 emit 出去由业务用 scroll-into-view 自己跳 —— 锚点滚动要遍历业务列表的 offsetTop，组件既量不准也管不动。整条 pointer-events:none，只有字母本身可点。"
         }
       ]
     },
@@ -351,6 +436,11 @@
           "name": "tooltip",
           "title": "Tooltip 文字提示",
           "desc": "纯文字气泡。PC 端 hover 触发且进出都带延迟（防鼠标轨迹穿越时闪烁），移动端长按或点击触发。"
+        },
+        {
+          "name": "guide",
+          "title": "Guide 用户指引",
+          "desc": "分步遮罩引导。遮罩用 box-shadow 挖洞而不是四块挡板拼，圆角与位置动画都只需改一个节点；placement 支持 auto，目标下方空间不足自动翻到上方。"
         }
       ]
     }
@@ -404,7 +494,7 @@
       "emits": 2,
       "slots": 1,
       "expose": 0,
-      "demo": 3,
+      "demo": 4,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -430,7 +520,7 @@
       "emits": 1,
       "slots": 1,
       "expose": 0,
-      "demo": 2,
+      "demo": 1,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -455,7 +545,7 @@
       "props": 4,
       "emits": 1,
       "slots": 2,
-      "expose": 0,
+      "expose": 1,
       "demo": 1,
       "missingInMeta": false,
       "noDemo": false
@@ -469,7 +559,20 @@
       "emits": 1,
       "slots": 2,
       "expose": 0,
-      "demo": 26,
+      "demo": 33,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "calendar",
+      "title": "Calendar 日历",
+      "desc": "常驻日历面板（不是弹层），single / multiple / range 三种模式。与 date-picker 的分工：date-picker 是「点一下选完就走」的录入控件，calendar 是「要一直看着月份做安排」的展示面板。marks 支持打点与底部小字，formatter 可拦截单个格子的文案与可选性。",
+      "category": "form",
+      "props": 16,
+      "emits": 5,
+      "slots": 3,
+      "expose": 0,
+      "demo": 1,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -481,6 +584,19 @@
       "props": 9,
       "emits": 1,
       "slots": 4,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "cascader",
+      "title": "Cascader 级联选择",
+      "desc": "省市区、品类树这类「选一条从根到叶路径」的控件。与 picker 的分工：picker 是弹层、要点确定；cascader 是表单字段、点选即提交。面板多列并排而不是一级一屏，一眼能看到完整路径。check-strictly 控制父级是否可选，emit-path 决定回传整条路径还是末级值。",
+      "category": "form",
+      "props": 15,
+      "emits": 4,
+      "slots": 0,
       "expose": 0,
       "demo": 1,
       "missingInMeta": false,
@@ -521,7 +637,7 @@
       "emits": 2,
       "slots": 1,
       "expose": 0,
-      "demo": 2,
+      "demo": 3,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -572,6 +688,19 @@
       "props": 8,
       "emits": 1,
       "slots": 5,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "color-picker",
+      "title": "ColorPicker 颜色选择器",
+      "desc": "HSV 面板 + 色相条 + 透明度，纯 view 实现不用 canvas。输入与面板双向驱动，粘贴任意合法色值都能解析。",
+      "category": "form",
+      "props": 6,
+      "emits": 2,
+      "slots": 1,
       "expose": 0,
       "demo": 1,
       "missingInMeta": false,
@@ -630,6 +759,19 @@
       "noDemo": false
     },
     {
+      "name": "descriptions",
+      "title": "Descriptions 描述列表",
+      "desc": "一份 items 渲染整张详情表，支持列数、跨列与横竖两种排布。比手写一堆 cell 少 80% 的模板代码。",
+      "category": "data",
+      "props": 10,
+      "emits": 0,
+      "slots": 1,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
       "name": "dialog",
       "title": "Dialog 对话框",
       "desc": "双形态弹窗：移动端从底部升起成抽屉、PC 居中模态。复用 wd-popup 内核，支持 Esc 关闭与 beforeClose 异步拦截。",
@@ -651,7 +793,7 @@
       "emits": 0,
       "slots": 1,
       "expose": 0,
-      "demo": 10,
+      "demo": 11,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -734,6 +876,19 @@
       "noDemo": false
     },
     {
+      "name": "form-render",
+      "title": "FormRender Schema 表单引擎",
+      "desc": "给一份字段描述数组（schema）和一个对象，自动渲染整张表单：内建 12 种控件、显隐与禁用联动、栅格布局、默认值注入，校验直接复用 cd-form 那套规则。适合中后台里大量「结构相似、字段不同」的表单页。",
+      "category": "form",
+      "props": 14,
+      "emits": 3,
+      "slots": 3,
+      "expose": 5,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
       "name": "grid",
       "title": "Grid 宫格",
       "desc": "等分宫格容器。列宽由 JS 预算成 `--cd-grid-item-w` 下发，边框采用「容器画外框、格子画内线」的方案，全程零 nth-child——小程序 WXSS 对该选择器支持不一致。",
@@ -760,6 +915,19 @@
       "noDemo": false
     },
     {
+      "name": "guide",
+      "title": "Guide 用户指引",
+      "desc": "分步遮罩引导。遮罩用 box-shadow 挖洞而不是四块挡板拼，圆角与位置动画都只需改一个节点；placement 支持 auto，目标下方空间不足自动翻到上方。",
+      "category": "feedback",
+      "props": 14,
+      "emits": 4,
+      "slots": 2,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
       "name": "icon",
       "title": "Icon 图标",
       "desc": "内置 72 个 24×24 描边图标，CSS mask + data URI 实现，颜色跟随 currentColor。刻意不复用 wd-icon——它在小程序走阿里图库外链字体，需配域名白名单且弱网闪空。",
@@ -768,7 +936,7 @@
       "emits": 1,
       "slots": 0,
       "expose": 0,
-      "demo": 4,
+      "demo": 5,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -786,6 +954,32 @@
       "noDemo": false
     },
     {
+      "name": "image-preview",
+      "title": "ImagePreview 图片预览",
+      "desc": "全屏图片预览。声明式用 v-model 控制开关，命令式直接 previewImage({ urls, current })——后者在 H5 动态挂载宿主、小程序降级 uni.previewImage。支持手势滑动翻页、双指与滚轮缩放、循环、角标计数。刻意不依赖 wd 的预览组件：那套只覆盖小程序原生通道，H5 上的缩放与手势行为要靠自己实现。",
+      "category": "data",
+      "props": 0,
+      "emits": 0,
+      "slots": 0,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "index-bar",
+      "title": "IndexBar 字母索引栏",
+      "desc": "只做「手指落在第几个字母」，结果 emit 出去由业务用 scroll-into-view 自己跳 —— 锚点滚动要遍历业务列表的 offsetTop，组件既量不准也管不动。整条 pointer-events:none，只有字母本身可点。",
+      "category": "navigation",
+      "props": 8,
+      "emits": 1,
+      "slots": 0,
+      "expose": 1,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
       "name": "input",
       "title": "Input 输入框",
       "desc": "支持清除按钮、密码可见切换、字数统计与前后缀插槽；type=\"textarea\" 时切换为多行形态。placeholder 颜色必须走 placeholder-class——原生组件解析不了 CSS var()。",
@@ -794,7 +988,7 @@
       "emits": 7,
       "slots": 2,
       "expose": 0,
-      "demo": 4,
+      "demo": 5,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -805,6 +999,19 @@
       "category": "feedback",
       "props": 9,
       "emits": 0,
+      "slots": 1,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "navbar",
+      "title": "Navbar 导航栏",
+      "desc": "顶部导航栏。状态栏留白由 statusBar 开关 × 实测高度决定，拿不到就退回 0；标题绝对居中，左右内容不等长也不偏心。",
+      "category": "navigation",
+      "props": 14,
+      "emits": 3,
       "slots": 1,
       "expose": 0,
       "demo": 1,
@@ -833,6 +1040,19 @@
       "emits": 3,
       "slots": 0,
       "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "picker",
+      "title": "Picker 多列选择器",
+      "desc": "选自定义数据的通用弹层：columns 传「列数组的数组」是独立多列，加 cascade 后传树即为级联。用 scroll-view 受控定位而不是原生 picker-view——后者在 H5 与小程序上的手感与样式差异太大且几乎不可控。草稿与提交分离：点确定才落到 modelValue。",
+      "category": "form",
+      "props": 15,
+      "emits": 5,
+      "slots": 0,
+      "expose": 2,
       "demo": 1,
       "missingInMeta": false,
       "noDemo": false
@@ -873,6 +1093,19 @@
       "slots": 1,
       "expose": 0,
       "demo": 2,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "qrcode",
+      "title": "Qrcode 二维码",
+      "desc": "编码核心自研零依赖（版本 1~10 / L M Q H / 字节模式），与 npm qrcode 包逐位比对通过。渲染是纯 view 节点且坐标全部取整，不会出现 1px 白缝。",
+      "category": "data",
+      "props": 12,
+      "emits": 2,
+      "slots": 2,
+      "expose": 0,
+      "demo": 1,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -968,6 +1201,19 @@
       "noDemo": false
     },
     {
+      "name": "signature",
+      "title": "Signature 手写签名",
+      "desc": "笔画拼成 SVG 再以内联 data URI 交给背景图渲染（与 cd-icon 同一套路），不用 canvas 因此四端一致。已完成笔画与正在画的一笔分成两组节点，移动时只重建后者。",
+      "category": "form",
+      "props": 12,
+      "emits": 6,
+      "slots": 0,
+      "expose": 6,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
       "name": "skeleton",
       "title": "Skeleton 骨架屏",
       "desc": "加载占位，最后一行默认收窄 60% 让轮廓更像真实文本。暗色下必须显式重定义块色——亮色比背景深，暗色要反过来。",
@@ -1001,7 +1247,7 @@
       "props": 6,
       "emits": 0,
       "slots": 3,
-      "expose": 0,
+      "expose": 1,
       "demo": 1,
       "missingInMeta": false,
       "noDemo": false
@@ -1033,6 +1279,19 @@
       "noDemo": false
     },
     {
+      "name": "swiper",
+      "title": "Swiper 轮播",
+      "desc": "底层是 uni 原生 swiper（手感与惯性由端上保证），上层补一层统一的设计语言：指示点样式、桌面形态的左右翻页箭头、list 既接受 { image, text } 也接受纯图片地址。autoplay 由组件内部按 visible 状态自行启停，避免页面切走后定时器还在跑。",
+      "category": "data",
+      "props": 15,
+      "emits": 3,
+      "slots": 2,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
       "name": "switch",
       "title": "Switch 开关",
       "desc": "两种状态之间的即时切换，支持加载态与自定义选中/未选中文案。已接入表单校验。",
@@ -1042,6 +1301,19 @@
       "slots": 0,
       "expose": 0,
       "demo": 4,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "tabbar",
+      "title": "Tabbar 底部标签栏",
+      "desc": "支持徽标与小红点，fixed 时自动等高占位，safeArea 走小程序安全区。选中值可以是 value 也可以是下标。",
+      "category": "navigation",
+      "props": 13,
+      "emits": 2,
+      "slots": 1,
+      "expose": 0,
+      "demo": 1,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -1080,7 +1352,7 @@
       "emits": 2,
       "slots": 1,
       "expose": 0,
-      "demo": 3,
+      "demo": 4,
       "missingInMeta": false,
       "noDemo": false
     },
@@ -1118,7 +1390,7 @@
       "props": 9,
       "emits": 0,
       "slots": 3,
-      "expose": 0,
+      "expose": 1,
       "demo": 1,
       "missingInMeta": false,
       "noDemo": false
@@ -1150,12 +1422,64 @@
       "noDemo": false
     },
     {
+      "name": "transfer",
+      "title": "Transfer 穿梭框",
+      "desc": "左右两栏 + 搜索过滤 + 全选。禁用项不可移，direction 可调（窄屏自动竖排）。",
+      "category": "form",
+      "props": 13,
+      "emits": 2,
+      "slots": 0,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "tree",
+      "title": "Tree 树形控件",
+      "desc": "勾选走「向下全量 + 向上回算」两趟，父子联动带半选态；checkStrictly 打开时父子各算各的。扁平渲染而非嵌套递归，节点再多也不会爆栈。",
+      "category": "data",
+      "props": 15,
+      "emits": 5,
+      "slots": 2,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "typing",
+      "title": "Typing 打字机",
+      "desc": "逐字输出的流式文本，给 AI 回复与引导文案用。调度用 setTimeout 链而非 setInterval（切后台回来不会一次性补一大段），推进用索引而非字符串拼接（中途换文案不会新旧串味）。",
+      "category": "general",
+      "props": 10,
+      "emits": 4,
+      "slots": 0,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
       "name": "upload",
       "title": "Upload 上传",
       "desc": "受控优先——列表真值在 modelValue，可用 customRequest 完全接管上传接口。图片卡片与文件列表双形态，含进度、重试、超量与超大回调。刻意不做拖拽：小程序没有 drag 事件体系。",
       "category": "form",
-      "props": 14,
+      "props": 15,
       "emits": 8,
+      "slots": 1,
+      "expose": 0,
+      "demo": 1,
+      "missingInMeta": false,
+      "noDemo": false
+    },
+    {
+      "name": "watermark",
+      "title": "Watermark 水印",
+      "desc": "纯 text 节点平铺，不用 canvas 生成背景图。画布放大倍数由旋转角算出来，而不是硬写 1.5 —— 宽屏上能少铺近一半节点。整层 pointer-events:none，绝不会挡住底下的操作。",
+      "category": "general",
+      "props": 13,
+      "emits": 0,
       "slots": 1,
       "expose": 0,
       "demo": 1,

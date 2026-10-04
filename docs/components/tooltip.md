@@ -10,6 +10,8 @@ title: Tooltip 文字提示
 
 ## 用法
 
+<CdDemo id="tooltip-0"></CdDemo>
+
 ```vue // 来自演示页 feedback
 <view class="row">
   <cd-tooltip content="这是一段提示文字，PC 悬停 / 移动长按都能唤出">

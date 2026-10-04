@@ -69,7 +69,18 @@ const slots = useSlots()
 
 const isVertical = computed(() => props.direction === 'vertical')
 
-const hasContent = computed(() => !!(slots.default && slots.default().length))
+/**
+ * 只判存在性，不调用 slots.default()。
+ *
+ * 依据（每条都有出处，无推测）：
+ *   1. 2026-10-03 微信开发者工具运行日志出现
+ *      TypeError: i.default is not a function（i 即本文件 useSlots() 的返回值）；
+ *   2. 全量检索 mp 产物 js，.default( 调用仅此一处，变量名正是 i；
+ *   3. H5 端 slots.default 是函数，因此同样写法在 H5 不报错 —— 两端行为差异；
+ *   4. wot-design-uni 同需求处（wd-divider / wd-avatar）均写作 !!slots.default、
+ *      从不调用，此处对齐成熟库写法。
+ */
+const hasContent = computed(() => !!slots.default)
 
 const rootClass = computed(() =>
   [

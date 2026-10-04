@@ -4,7 +4,7 @@ title: 设计令牌
 
 # 设计令牌
 
-位置：`src/uni_modules/codedog-ui/styles/tokens.scss`，当前共 **342** 个 CSS 变量。
+位置：`src/uni_modules/codedog-ui/styles/tokens.scss`，当前共 **319** 个唯一 CSS 变量（口径：该文件中  的唯一定义名；暗色段覆盖其中 64 个，暗色无独有令牌）。
 
 ## 为什么是 CSS 变量而不是 SCSS 变量
 

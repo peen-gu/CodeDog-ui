@@ -10,88 +10,13 @@ title: Select 选择器
 
 ## 用法
 
-```vue // 来自演示页 components
-<template #extra>
-  <cd-button size="small" @click="toggleLabelPosition">
-    {{ labelPosition === 'top' ? '改成左标签' : '改成上标签' }}
-  </cd-button>
-</template>
+<CdDemo id="select-0"></CdDemo>
 
-<cd-form
-  ref="formRef"
-  :model="form"
-  :rules="rules"
-  :label-position="labelPosition"
-  :label-width="96"
-  :disabled="formDisabled"
->
-  <cd-form-item label="用户名" prop="username">
-    <cd-input v-model="form.username" placeholder="4-16 位字母或数字" clearable />
-  </cd-form-item>
-
-  <cd-form-item label="手机号" prop="phone">
-    <cd-input v-model="form.phone" type="number" :maxlength="11" placeholder="11 位手机号" clearable />
-  </cd-form-item>
-
-  <cd-form-item label="邮箱" prop="email" help="选填。留空则不校验格式。">
-    <cd-input v-model="form.email" placeholder="name@example.com" clearable />
-  </cd-form-item>
-
-  <cd-form-item label="年龄" prop="age">
-    <cd-input v-model="form.age" type="number" align="right" placeholder="18 - 120" />
-  </cd-form-item>
-
-  <cd-form-item label="交付方式" prop="delivery">
-    <cd-select v-model="form.delivery" placeholder="请选择" clearable :options="deliveryOptions" />
-  </cd-form-item>
-
-  <cd-form-item label="备注" prop="remark">
-    <cd-input v-model="form.remark" type="textarea" :rows="2" :maxlength="50" show-word-limit placeholder="最多 50 字" />
-  </cd-form-item>
-</cd-form>
-
-<view class="row form-actions">
-  <cd-button type="primary" :loading="submitting" @click="handleSubmit">提交校验</cd-button>
-  <cd-button @click="handleReset">重置</cd-button>
-  <cd-button :type="formDisabled ? 'warning' : 'info'" plain @click="formDisabled = !formDisabled">
-    {{ formDisabled ? '解除禁用' : '整体禁用' }}
-  </cd-button>
-</view>
-
-<view class="result-block">
-  <text class="result-block__label">表单数据</text>
-  <text class="cd-code">{{ formSnapshot }}</text>
-</view>
-```
-
-```vue // 来自演示页 showcase
+```vue
+<cd-select v-model="picked" :options="pickOptions" placeholder="请选择" />
 <view class="row">
-  <cd-button size="small" @click="formDisabled = !formDisabled">
-    {{ formDisabled ? '解除禁用' : '禁用下方表单' }}
-  </cd-button>
+  <cd-tag type="info">当前值：{{ picked || "（未选）" }}</cd-tag>
 </view>
-
-<cd-form :model="disabledModel" :disabled="formDisabled" label-position="top">
-  <cd-form-item prop="name" label="名称">
-    <cd-input v-model="disabledModel.name" placeholder="输入框" />
-  </cd-form-item>
-
-  <cd-form-item prop="type" label="类型（下拉框）">
-    <cd-select
-      v-model="disabledModel.type"
-      :options="typeOptions"
-      placeholder="下拉框"
-    />
-  </cd-form-item>
-
-  <cd-form-item prop="enabled" label="启用">
-    <cd-switch v-model="disabledModel.enabled" />
-  </cd-form-item>
-
-  <cd-form-item prop="count" label="数量">
-    <cd-stepper v-model="disabledModel.count" :min="0" />
-  </cd-form-item>
-</cd-form>
 ```
 
 ## Props

@@ -31,6 +31,29 @@ export const loadingState = ref(null)
  */
 export const hostReady = ref(false)
 
+/**
+ * 宿主挂载计数。
+ *
+ * 小程序端每个页面都要挂一份宿主（没有 body 可挂），页面栈里会同时存在多个。
+ * 如果 hostReady 只是个「挂载时置 true」的开关，那么 A 页面卸载时把它置 false，
+ * 而 B 页面的宿主明明还在渲染 —— 服务会因此降级到原生通道，
+ * 结果就是跨页之后 toast / confirm 静默不显示。
+ * 所以改成计数：有任意一份宿主活着就算就绪。
+ */
+let hostCount = 0
+
+/** 宿主挂载时调用 */
+export function acquireHost() {
+  hostCount += 1
+  hostReady.value = true
+}
+
+/** 宿主卸载时调用 */
+export function releaseHost() {
+  hostCount = Math.max(0, hostCount - 1)
+  hostReady.value = hostCount > 0
+}
+
 /** 小程序端宿主挂载失败 / 不存在时的降级开关（H5 挂载失败也会打开它） */
 export const forceFallback = ref(false)
 

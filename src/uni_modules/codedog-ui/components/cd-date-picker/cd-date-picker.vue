@@ -7,7 +7,7 @@
       :value="innerValue || ''"
       :start="min || ''"
       :end="max || ''"
-      :disabled="disabled"
+      :disabled="isDisabled"
       @change="onNativeChange"
       @cancel="onFieldBlur"
     >
@@ -344,6 +344,12 @@ const hasError = computed(() => props.error || !!(field && field.validateState &
 <style lang="scss">
 @import '../../styles/scss-tokens.scss';
 
+/**
+ * 颜色命名约定：本组件私有的颜色令牌统一 --cd-date-picker-* 前缀，
+ * 一律写成 var(--x, 兜底原色) —— 业务不传变量时视觉与此前完全一致。
+ * 共用语义色（--cd-color-danger 等）走库级令牌，不另起名字。
+ */
+
 .cd-date-picker {
   @include cd-reset;
   display: inline-flex;
@@ -380,7 +386,7 @@ const hasError = computed(() => props.error || !!(field && field.validateState &
 }
 
 .cd-date-picker--error .cd-date-picker__trigger {
-  border-color: var(--cd-color-danger, #dc2626);
+  border-color: var(--cd-color-danger, #ef4444);
 }
 
 .cd-date-picker__value {
@@ -429,7 +435,7 @@ const hasError = computed(() => props.error || !!(field && field.validateState &
   height: 1.5px;
   margin-top: -0.75px;
   margin-left: -4px;
-  background-color: #ffffff;
+  background-color: var(--cd-date-picker-clear-bar, #ffffff);
   border-radius: 2px;
 }
 

@@ -10,6 +10,8 @@ title: Slider 滑块
 
 ## 用法
 
+<CdDemo id="slider-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <view class="stack">
   <view>

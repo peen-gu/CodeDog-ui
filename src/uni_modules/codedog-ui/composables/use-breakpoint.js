@@ -42,6 +42,25 @@ let bound = false
 /* -------------------- 内部工具 -------------------- */
 
 function readSize() {
+  /*
+   * H5 端必须直接读 window.innerWidth / innerHeight，不能走 getSystemInfo()。
+   *
+   * getSystemInfo() 的结果被永久缓存（平台信息不变，缓存是对的），
+   * 于是 windowWidth 永远停留在首帧那个值 ——
+   * PC 上拖动窗口缩放、分屏、手机横竖屏切换，断点全部不更新，
+   * 双形态组件会一直停在首屏判定的形态上。
+   *
+   * window.innerWidth 才是「此刻真实视口宽度」的唯一可靠来源。
+   */
+  /* #ifdef H5 */
+  if (typeof window !== 'undefined') {
+    return {
+      width: window.innerWidth || 375,
+      height: window.innerHeight || 667,
+    }
+  }
+  /* #endif */
+
   const info = getSystemInfo()
   return {
     width: info.windowWidth || 375,
@@ -216,8 +235,15 @@ export function resolveDesktopShape(mode, pcSignal) {
     : !!pcSignal
 }
 
-/** 供非组件环境（工具函数 / 路由守卫）读取当前尺寸，不建立订阅 */
+/**
+ * 供非组件环境（工具函数 / 路由守卫）读取当前尺寸，不建立订阅。
+ *
+ * 必须先 bind() 再读：state.width 的初值是 375（移动端兜底），
+ * 在第一个 useBreakpoint() 订阅出现之前直接读，会拿到
+ * 「width 来自真实视口、breakpoint 却按 375 算」这种自相矛盾的结果。
+ */
 export function getViewport() {
+  bind()
   const s = readSize()
   return {
     width: s.width,

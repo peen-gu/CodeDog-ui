@@ -10,11 +10,9 @@ title: Row 行
 
 ## 用法
 
-```vue // 来自演示页 components
-<template #extra>
-  <text class="muted">gutter 16</text>
-</template>
+<CdDemo id="row-0"></CdDemo>
 
+```vue // 来自演示页 components
 <cd-row :gutter="[16, 16]">
   <cd-col v-for="n in 4" :key="`a-${n}`" :span="{ xs: 24, sm: 12, md: 6 }">
     <view class="grid-box"><text class="grid-box__text">xs24 / sm12 / md6</text></view>
@@ -41,79 +39,11 @@ title: Row 行
 </cd-row>
 ```
 
-```vue // 来自演示页 components
-<cd-row :gutter="[16, 16]">
-  <cd-col :span="{ xs: 24, md: 12 }">
-    <view class="field">
-      <text class="field__label">基础</text>
-      <cd-input v-model="inputDemo.basic" placeholder="请输入内容" clearable />
-    </view>
-  </cd-col>
-
-  <cd-col :span="{ xs: 24, md: 12 }">
-    <view class="field">
-      <text class="field__label">前置图标 + 后缀</text>
-      <cd-input v-model="inputDemo.search" placeholder="搜索关键字" prefix-icon="search">
-        <template #suffix>
-          <text class="field__suffix">条</text>
-        </template>
-      </cd-input>
-    </view>
-  </cd-col>
-
-  <cd-col :span="{ xs: 24, md: 12 }">
-    <view class="field">
-      <text class="field__label">密码（可切换可见）</text>
-      <cd-input v-model="inputDemo.password" type="password" placeholder="请输入密码" clearable />
-    </view>
-  </cd-col>
-
-  <cd-col :span="{ xs: 24, md: 12 }">
-    <view class="field">
-      <text class="field__label">金额（右对齐）</text>
-      <cd-input v-model="inputDemo.amount" align="right" prefix-icon="chart" placeholder="0.00" />
-    </view>
-  </cd-col>
-
-  <cd-col :span="24">
-    <view class="field">
-      <text class="field__label">多行文本（带字数统计）</text>
-      <cd-input
-        v-model="inputDemo.remark"
-        type="textarea"
-        :rows="3"
-        :maxlength="120"
-        show-word-limit
-        placeholder="最多 120 字"
-      />
-    </view>
-  </cd-col>
-
-  <cd-col :span="{ xs: 24, md: 12 }">
-    <view class="field">
-      <text class="field__label">禁用 / 只读</text>
-      <cd-input :model-value="'已锁定的内容'" disabled />
-    </view>
-  </cd-col>
-
-  <cd-col :span="{ xs: 24, md: 12 }">
-    <view class="field">
-      <text class="field__label">尺寸档位</text>
-      <view class="stack">
-        <cd-input v-model="inputDemo.s1" size="small" placeholder="small" />
-        <cd-input v-model="inputDemo.s2" size="medium" placeholder="medium" />
-        <cd-input v-model="inputDemo.s3" size="large" placeholder="large" />
-      </view>
-    </view>
-  </cd-col>
-</cd-row>
-```
-
 ## Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 |---|---|---|---|---|
-| `gutter` | Number \| String \| Array | `0` | — | 列间距。数字表示水平间距； 数组 [水平, 垂直] 可分别控制两个方向（垂直间距在换行时生效） |
+| `gutter` | Number \| String \| Array | `0` | — | 列间距。数字表示水平间距； 数组 [水平, 垂直] 可分别控制两个方向（垂直间距在换行时生效） 负数是非法的：它会让「行的负外扩」变成正外扩、列的 padding 变成负值 （负 padding 浏览器直接忽略），整个栅格往一边歪且看不出原因。 这里在 prop 校验期告警、在计算期钳到 0，两层都不放过。 |
 | `justify` | String | `'start'` | — | start / center / end / between / around |
 | `align` | String | `'top'` | — | top / middle / bottom / stretch |
 | `wrap` | Boolean | `true` | — | 是否允许换行 |

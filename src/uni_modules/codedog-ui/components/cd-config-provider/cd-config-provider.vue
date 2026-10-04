@@ -29,7 +29,7 @@
  * theme 传空字符串表示「跟随全局主题状态」，适合作为应用根容器；
  * 传入具体值则锁定该子树，适合局部固定主题的场景（如强制亮色的打印区）。
  */
-import { computed, provide } from 'vue'
+import { computed, provide, watch } from 'vue'
 import { useTheme } from '../../composables/use-theme'
 import { buildWotThemeVars } from '../../theme/bridge'
 import { CD_CONFIG_KEY } from '../../constants'
@@ -104,6 +104,28 @@ function setTheme(value) {
   setMode(value)
   emit('update:theme', value)
 }
+
+/**
+ * 受控用法（<cd-config-provider theme="dark">）必须把值同步回全局 mode。
+ *
+ * 命令式宿主（toast / loading / confirm）是 service 用 createApp 独立挂载到
+ * body 的，它不在 Provider 的子树里，拿不到 inject，只能读全局主题状态。
+ * 受控时如果不回写，页面是暗色、全局 mode 还是 light，
+ * 弹出来的 toast / loading 就是一块亮色白底 —— 暗色页面里最刺眼的那种 bug。
+ *
+ * 只写 mode 不 emit：值本来就是外部传进来的，再广播一次 update:theme
+ * 会让 v-model:theme 的使用方收到一个自己刚发出的值。
+ */
+watch(
+  () => props.theme,
+  (value) => {
+    if (!value) return
+    if (value !== 'light' && value !== 'dark' && value !== 'auto') return
+    if (value === mode.value) return
+    setMode(value)
+  },
+  { immediate: true }
+)
 
 /** 亮暗互换 */
 function toggleTheme() {

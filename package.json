@@ -33,6 +33,7 @@
     "release:check": "cd src/uni_modules/codedog-ui && npm pack --dry-run",
     "release:publish": "cd src/uni_modules/codedog-ui && npm publish",
     "release:interactive": "node scripts/publish.mjs",
+    "package:dcloud": "node scripts/package-dcloud.mjs",
     "electron:dev": "cross-env CD_ELECTRON_DEV=1 electron electron/main.js",
     "electron:start": "electron electron/main.js",
     "electron:build": "npm run build:h5 && npm run electron:start"

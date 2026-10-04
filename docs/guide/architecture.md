@@ -5,7 +5,7 @@ title: 三层架构
 # 三层架构
 
 ```
-第 1 层 · 设计变量     Design Tokens   342 个 CSS 变量 / 三层令牌
+第 1 层 · 设计变量     Design Tokens   319 个 CSS 变量 / 三层令牌
 第 2 层 · 平台适配层   Adapter         断点 / 终端 / 主题 / 交互态降级
 第 3 层 · 组件层       Components      一份 SFC，内部渲染双形态结构
 ```

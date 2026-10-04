@@ -10,6 +10,8 @@ title: PopConfirm 气泡确认
 
 ## 用法
 
+<CdDemo id="popconfirm-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <view class="row">
   <cd-popconfirm title="确认提交？" message="提交后不可修改，请确认信息无误。" @confirm="log('已提交')">

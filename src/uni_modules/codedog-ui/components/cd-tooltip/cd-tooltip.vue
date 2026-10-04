@@ -12,7 +12,8 @@
     </view>
 
     <!-- 移动端点击空白处收起：一层透明的「盾」，比 document 监听跨端可靠 -->
-    <view v-if="open && shield" class="cd-tooltip__shield" @click="hide" @touchmove.stop.prevent="noop" />
+    <!-- 同 cd-popover：shield 在触发容器内，不加 .stop 会冒泡回根节点的 onTap，收起后立刻又被打开 -->
+    <view v-if="open && shield" class="cd-tooltip__shield" @click.stop="hide" @touchmove.stop.prevent="noop" />
   </view>
 </template>
 

@@ -10,6 +10,8 @@ title: Step 步骤
 
 ## 用法
 
+<CdDemo id="step-0"></CdDemo>
+
 ```vue // 来自演示页 navigation
 <view class="row">
   <cd-button size="small" @click="stepCurrent = Math.max(0, stepCurrent - 1)">上一步</cd-button>
@@ -69,6 +71,14 @@ title: Step 步骤
 | `icon` | — | — |
 | `title` | — | — |
 | `description` | — | — |
+
+## Expose
+
+通过 `ref` 调用：
+
+| 方法 / 属性 | 说明 |
+|---|---|
+| `__cdOrderUid` | — |
 
 ## 设计说明
 

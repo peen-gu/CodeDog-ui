@@ -10,6 +10,8 @@ title: GridItem 宫格项
 
 ## 用法
 
+<CdDemo id="grid-item-0"></CdDemo>
+
 ```vue // 来自演示页 navigation
 <view class="stack">
   <view>

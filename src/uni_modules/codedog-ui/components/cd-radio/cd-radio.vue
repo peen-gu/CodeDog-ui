@@ -77,13 +77,22 @@ const emit = defineEmits(['update:modelValue', 'change'])
 
 const group = inject(CD_RADIO_GROUP_KEY, null)
 
-const { formDisabled, notifyChange, notifyBlur } = useField()
+const { field, formDisabled, notifyChange, notifyBlur } = useField()
 
 const isGrouped = computed(() => !!group)
 
+/** 表单校验失败时单选框自身也要有错误视觉，否则看不出是哪个控件错了 */
+const hasFormError = computed(() => !!(field && field.validateState && field.validateState.value === 'error'))
+
 const isChecked = computed(() => {
   if (isGrouped.value) return group.selected.value === props.value
-  return props.modelValue === props.value || props.modelValue === true
+  /*
+   * 独立用法且没传 value 时，modelValue 的默认值 '' 与 value 的默认值 ''
+   * 相等，于是组件「天生就是选中的」。空 value 不参与相等判定。
+   * modelValue 显式给 true 时（业务拿它当布尔开关用）仍然算选中。
+   */
+  if (props.modelValue === true) return true
+  return props.value !== '' && props.modelValue === props.value
 })
 
 const isDisabled = computed(() => {
@@ -104,6 +113,7 @@ const rootClass = computed(() =>
     `cd-radio--${effectiveVariant.value}`,
     isChecked.value ? 'cd-radio--checked' : '',
     isDisabled.value ? 'cd-radio--disabled' : '',
+    hasFormError.value ? 'cd-radio--error' : '',
     props.customClass,
   ]
     .filter(Boolean)
@@ -276,6 +286,16 @@ export default {
 /* ==================================================================
  * 状态
  * ================================================================== */
+/* 校验失败：圆点描边转红 */
+.cd-radio--error .cd-radio__dot {
+  border-color: var(--cd-color-danger, #ef4444);
+}
+
+/* button 形态没有圆点，用一圈红环表达错误 */
+.cd-radio--error.cd-radio--button {
+  box-shadow: 0 0 0 1px var(--cd-color-danger, #ef4444);
+}
+
 .cd-radio--disabled {
   opacity: 0.5;
 }

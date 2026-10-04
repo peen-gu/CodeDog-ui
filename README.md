@@ -1,6 +1,6 @@
 # CodeDogUI
 
-[![npm](https://img.shields.io/npm/v/codedog-ui)](https://www.npmjs.com/package/codedog-ui) [![npm downloads](https://img.shields.io/npm/dm/codedog-ui)](https://www.npmjs.com/package/codedog-ui) [![license](https://img.shields.io/npm/l/codedog-ui)](./LICENSE) [![components](https://img.shields.io/badge/components-62-blue)](https://doc.ui.codedog.tech)
+[![npm](https://img.shields.io/npm/v/codedog-ui)](https://www.npmjs.com/package/codedog-ui) [![npm downloads](https://img.shields.io/npm/dm/codedog-ui)](https://www.npmjs.com/package/codedog-ui) [![license](https://img.shields.io/npm/l/codedog-ui)](./LICENSE) [![components](https://img.shields.io/badge/components-68-blue)](https://doc.ui.codedog.tech)
 
 面向 uni-app 的跨端 UI 框架。**一套 Vue3 代码，同时覆盖 H5 移动端、H5 PC 浏览器、微信小程序与 Electron 桌面套壳。**
 
@@ -12,7 +12,7 @@
 | 在线文档 | https://doc.ui.codedog.tech |
 | 源码仓库 | https://github.com/peen-gu/CodeDog-ui |
 | 邮箱 / 微信 | codedog.tech@icloud.com / penngu777 |
-| 组件数 | 62（uni_modules + npm 双形态） |
+| 组件数 | 68（uni_modules + npm 双形态） |
 | 许可 | MIT · Copyright (c) 2026 Codedog.tech |
 
 不是「响应式布局」那种两端共用一套视觉的方案，而是让同一个组件在手机与 PC 上呈现**各自的交互形态**：选择器在手机上是底部动作面板、在 PC 上是下拉面板；弹窗在手机上是底部抽屉、在 PC 上是居中模态；表格在手机上自动降级成卡片列表。
@@ -152,7 +152,7 @@ L3 组件令牌   --cd-button-height / --cd-dialog-width     组件内部用
 
 | 组件 | 关键设计 | 跨端约束的来源 |
 |---|---|---|
-| `cd-icon` | 72 个 24×24 描边图标，CSS mask + data URI，颜色跟 `currentColor` | **不复用 wd-icon**：它在小程序端走 `at.alicdn.com` 外链字体，需配域名白名单且弱网闪空 |
+| `cd-icon` | 73 个 24×24 描边图标，CSS mask + data URI，颜色跟 `currentColor` | **不复用 wd-icon**：它在小程序端走 `at.alicdn.com` 外链字体，需配域名白名单且弱网闪空 |
 | `cd-input` | clearable / 密码可见 / 字数统计 / 前后缀插槽 | placeholder 颜色必须走 `placeholder-class`（原生组件解析不了 `var()`）；密码态同时给 `type` 与 `password` |
 | `cd-textarea 形态` | 随 `type="textarea"` 切换 | 微信 textarea 是原生组件，**永远盖在遮罩之上**，弹层里慎用 |
 | `cd-card` | header / extra / footer 插槽、hoverable、密度可调 | 与工具类 `.cd-panel` 职责分离，避免类名撞车导致 padding 叠加 |
@@ -248,6 +248,21 @@ const close = loading('提交中...'); close()
 
 **新增基建**：`use-page-scroll`（滚动归一）、`utils/raf.js`（rAF 降级 16ms setTimeout）、
 `FILLED_ICONS` + 自研 `star-fill` 几何图标、约 30 组 L3 设计令牌。
+
+### 第 8 层 · 选择链路与图集（第六批，5 个）
+
+组件总数 **62 → 67**。
+
+| 组件 | 关键设计 | 跨端约束的来源 |
+|---|---|---|
+| `cd-picker` | 通用多列选择器。`cascade` 显式区分「列数组的数组」与「树」两种数据形态；草稿态与提交态分离（点确定才落到 `modelValue`） | 列用 `scroll-view` 受控定位而非原生 `picker-view` —— 后者在 H5 与小程序上的手感与样式差异过大且几乎不可控 |
+| `cd-cascader` | 级联选择，面板多列并排而不是一级一屏；`fieldNames` 做字段映射 | 点选即提交（没有确定按钮）；`checkStrictly` 控制父级是否可选，`emitPath` 决定回传整条路径还是末级值 |
+| `cd-calendar` | 常驻日历面板（不是弹层），single / multiple / range 三模式；`marks` 打点 + 底部小字，`formatter` 可拦截单个格子的文案与可选性 | 与 `cd-date-picker` 的分工：后者「点一下选完就走」，前者「要一直看着月份做安排」 |
+| `cd-swiper` | 轮播。底层是 uni 原生 `swiper`（手感与惯性由端上保证），上层统一指示点样式并给桌面形态补一组左右翻页箭头 | `list` 既接受 `{ image, text }` 也接受纯图片地址；页面切到后台自动暂停自动播放 |
+| `cd-image-preview` | 图片预览。声明式 `v-model` 开关，命令式 `previewImage({ urls, current })` | H5 动态挂载宿主、小程序降级 `uni.previewImage`；手势滑动翻页、双指与滚轮缩放、循环与角标计数 |
+
+**新增基建**：`utils/slot-order.js`（父容器按真实渲染顺序校正子项序号 —— steps / timeline / breadcrumb
+在列表中间插入一项时不再错位）、`scripts/check-hard-rules.mjs`（9 条跨端硬约束的静态门禁）。
 
 ## 二次封装的关键：主题桥接
 
@@ -366,9 +381,9 @@ const passed = await formRef.value.validate()
 ## 发布形态
 
 - **uni_modules**：把 `src/uni_modules/codedog-ui` 整个目录拷给使用者，或发布到 HBuilderX 插件市场，一键导入
-- **npm**：包名 `codedog-ui`（npm 上尚未占用）。`src/uni_modules/codedog-ui` 的 `package.json` 已带齐 `main` / `module` / `exports` / `types` / `files`、`publishConfig` 与 JS 导出面的类型声明（`index.d.ts`），`npm run release:publish` 即可。完整流程与注意事项见 [PUBLISHING.md](./PUBLISHING.md)
+- **npm**：包名 `codedog-ui`（`codedog` 已被他人占用，故发布名带 `-ui` 后缀；已发布至 npm，当前 0.5.3）。`src/uni_modules/codedog-ui` 的 `package.json` 已带齐 `main` / `module` / `exports` / `types` / `files`、`publishConfig` 与 JS 导出面的类型声明（`index.d.ts`），`npm run release:publish` 即可。完整流程与注意事项见 [PUBLISHING.md](./PUBLISHING.md)
 - **npm 形态已实测**：以包名方式引用（easycom 指向 `codedog-ui/components/...`、`@import 'codedog-ui/styles'`）后 H5 与微信小程序双端构建均通过，且 uni-app 对 `node_modules` 中的包同样执行条件编译
-- **文档站**：VitePress，`npm run docs:dev` 本地预览、`npm run docs:build` 产出静态站（62 个组件页 + 9 篇指南，内容由 `scripts/gen-component-docs.mjs` 从源码与演示页自动抽取）
+- **文档站**：VitePress，`npm run docs:dev` 本地预览、`npm run docs:build` 产出静态站（80 个组件页 + 1 篇组件总览 + 9 篇指南，内容由 `scripts/gen-component-docs.mjs` 从源码与演示页自动抽取）
 
 ```bash
 npm run docs:build          # 生成文档站
@@ -383,7 +398,7 @@ cd src/uni_modules/codedog-ui && npm pack   # 干跑验证包内容
 
 | 项 | 状态 | 需要做什么 |
 |---|---|---|
-| `cd-icon` 的 72 个图标 | 衍生自 Feather(MIT) / Lucide(ISC) | **必须保留署名**。已写入 `icons.js` 头部注释，分发时勿删；本框架未使用任何字体文件 |
+| `cd-icon` 的 73 个图标 | 衍生自 Feather(MIT) / Lucide(ISC) | **必须保留署名**。已写入 `icons.js` 头部注释，分发时勿删；本框架未使用任何字体文件 |
 | `wot-design-uni` | 未再分发（仅 npm 依赖 + CSS 变量桥接） | 无需额外动作；但**打包后的产物内含其代码**，小程序建议在开源许可页列出其 MIT 声明 |
 | uni-app 全家桶 | Apache-2.0，可商用 | 产品名与宣传中**不得使用 "uni-app" 字样**或暗示官方关联 |
 
@@ -448,8 +463,8 @@ src/
     ├── utils/                    raf.js / validate.js / date.js
     ├── service/                  命令式反馈服务（跨端状态 + 挂载/降级策略）
     ├── theme/bridge.js           主题桥接
-    └── components/               第 3 层（62 个，含 cd-toast-host 宿主与 cd-config-provider）
+    └── components/               第 3 层（80 个，含 cd-toast-host 宿主与 cd-config-provider）
 ```
 
-组件构成：51 个可独立使用的业务组件 + 9 个子项组件（须配父容器）+ 2 个基础设施。
-其中 8 个组件是对 `wot-design-uni` 的二次封装，其余为自研。
+组件构成：69 个可独立使用的业务组件 + 9 个子项组件（须配父容器）+ 2 个基础设施。
+其中 5 个组件是对 `wot-design-uni` 的二次封装（`cd-select` / `cd-dialog` / `cd-drawer` / `cd-action-sheet` / `cd-config-provider`），其余为自研。

@@ -10,52 +10,14 @@ title: Icon 图标
 
 ## 用法
 
-```vue // 来自演示页 components
-<template #extra>
-  <text class="muted">{{ iconNames.length }} 个</text>
-</template>
+<CdDemo id="icon-0"></CdDemo>
 
+```vue
 <view class="icon-grid">
   <view v-for="name in iconNames" :key="name" class="icon-cell">
     <cd-icon :name="name" :size="20" />
     <text class="icon-cell__name">{{ name }}</text>
   </view>
-</view>
-```
-
-```vue // 来自演示页 components
-<view class="row">
-  <cd-button type="primary">
-    <template #icon><cd-icon name="plus" :size="16" /></template>
-    新建
-  </cd-button>
-  <cd-button>
-    <template #icon><cd-icon name="download" :size="16" /></template>
-    导出
-  </cd-button>
-  <cd-button type="danger" plain>
-    <template #icon><cd-icon name="trash" :size="16" /></template>
-    删除
-  </cd-button>
-  <cd-button type="text">
-    <template #icon><cd-icon name="refresh" :size="16" /></template>
-    刷新
-  </cd-button>
-</view>
-
-<view class="row row--baseline">
-  <text class="inline-text">
-    <cd-icon name="check-circle" color="var(--cd-color-success, #10b981)" /> 校验通过
-  </text>
-  <text class="inline-text">
-    <cd-icon name="warning" color="var(--cd-color-warning, #f59e0b)" /> 存在风险
-  </text>
-  <text class="inline-text">
-    <cd-icon name="close-circle" color="var(--cd-color-danger, #ef4444)" /> 已失败
-  </text>
-  <text class="inline-text">
-    <cd-icon name="loader" spin /> 加载中
-  </text>
 </view>
 ```
 

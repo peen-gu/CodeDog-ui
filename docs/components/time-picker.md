@@ -10,6 +10,8 @@ title: TimePicker 时间选择
 
 ## 用法
 
+<CdDemo id="time-picker-0"></CdDemo>
+
 ```vue // 来自演示页 feedback
 <view class="grid2">
   <view class="grid2__item">

@@ -10,6 +10,8 @@ title: Badge 徽标
 
 ## 用法
 
+<CdDemo id="badge-0"></CdDemo>
+
 ```vue // 来自演示页 showcase
 <view class="row row--baseline">
   <cd-badge :value="5">
@@ -47,46 +49,12 @@ title: Badge 徽标
 </view>
 ```
 
-```vue // 来自演示页 site
-<template #extra>
-  <cd-badge value="62" />
-</template>
-
-<view class="preview">
-  <view class="preview__row">
-    <cd-button type="primary" size="small">主操作</cd-button>
-    <cd-button size="small" plain>次级</cd-button>
-    <cd-button type="danger" size="small" round>危险</cd-button>
-  </view>
-
-  <view class="preview__row">
-    <cd-tag type="primary" size="small" round>primary</cd-tag>
-    <cd-tag type="success" size="small" round>success</cd-tag>
-    <cd-tag type="warning" size="small" round>warning</cd-tag>
-    <cd-tag type="info" size="small" plain round>info</cd-tag>
-  </view>
-
-  <view class="preview__row preview__row--between">
-    <cd-switch v-model="demoSwitch" />
-    <cd-progress :percentage="72" />
-  </view>
-
-  <view class="preview__row">
-    <cd-input v-model="demoText" placeholder="cd-input 输入中…" />
-  </view>
-</view>
-
-<template #footer>
-  <text class="preview__foot">切换右上角「亮色 / 暗色」，所有元素随令牌即时变化</text>
-</template>
-```
-
 ## Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 |---|---|---|---|---|
-| `value` | String \| Number | `''` | — | 展示内容。数字会自动按 max 裁剪，字符串原样展示 |
-| `max` | Number | `99` | — | 数字上限，超过显示 max+ |
+| `value` | String \| Number | `''` | — | 展示内容。数字与「数字字符串」都会按 max 裁剪，其余字符串原样展示 |
+| `max` | Number | `99` | — | 数字上限，超过显示 max+。传 NaN 等非有限数时不裁剪 |
 | `isDot` | Boolean | `false` | — | 小圆点模式，不展示内容 |
 | `hidden` | Boolean | `false` | — | 强制隐藏（不需要用 v-if 销毁组件时用） |
 | `showZero` | Boolean | `false` | — | 值为 0 时是否展示。默认不展示 —— 0 条未读通常不值得打扰用户 |
@@ -115,6 +83,7 @@ title: Badge 徽标
 - 因为二者的数字裁剪、隐藏逻辑、颜色取用完全一致， 拆开会产生两份需要同步维护的判断逻辑。
 - 用一个 wrapper 类切换定位方式更省事。
 - 一个细节：数字超过 max 时显示 `max+`，这个判断必须放在 computed 里而不是模板里， 因为 value 可能是字符串（如 'new'），`>` 比较前需要先确认它确实是数字。
+- 反过来，数字字符串（接口常返回 '200'）也必须按数字处理 —— 否则同一个数字换个类型，裁剪与 showZero 的行为就不一样了。
 
 ## 关联
 

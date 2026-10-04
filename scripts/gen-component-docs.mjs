@@ -31,11 +31,26 @@ const DOCS = path.join(ROOT, 'docs')
 const OUT_DIR = path.join(DOCS, 'components')
 const DATA_DIR = path.join(DOCS, '.vitepress', 'data')
 const META_FILE = path.join(__dirname, 'component-meta.json')
+/* 实时预览：demo SFC 与注册表（CdDemo.vue 通过 registry 懒加载） */
+const DEMO_SRC_DIR = path.join(DOCS, '.vitepress', 'demo-src')
+const REGISTRY_FILE = path.join(DOCS, '.vitepress', 'theme', 'demo-registry.mjs')
 
 /* ==================== 基础工具 ==================== */
 
 function read(p) {
   return fs.readFileSync(p, 'utf-8')
+}
+
+/**
+ * 写产物，并把行尾统一成 LF。
+ *
+ * 演示页源码里混着 CRLF（实测 src/pages/navigation/index.vue 421 行里有 405 行是 CRLF），
+ * 提取出来的代码块会把 \r 原样带进 md —— 产物变成 CRLF/LF 混排，
+ * 在 Linux 上部署没问题但 git diff 会整片重写、diff 审阅直接失效。
+ * 生成器的输出必须是规范化的，不能把输入的行尾原样透出去。
+ */
+function writeLf(p, s) {
+  fs.writeFileSync(p, s.replace(/\r\n/g, '\n'), 'utf-8')
 }
 
 /** 去掉字符串字面量，让括号计数不被 `'}'` 之类的内容干扰 */
@@ -320,6 +335,47 @@ function parseDemoBlocks(file) {
   return out
 }
 
+/**
+ * 剥掉外层 cd-card 自己的具名插槽块。
+ *
+ * 演示页分区块常写成：
+ *   <cd-card class="section" title="cd-row / cd-col" desc="…">
+ *     <template #extra><text class="muted">gutter 16</text></template>
+ *     <cd-row>…</cd-row>
+ *   </cd-card>
+ *
+ * `<template #extra>` 是**外层卡片**的插槽，不属于演示片段本身。
+ * dedent 过去只剥 `<cd-card>` 标签这一行，这段插槽就被留在片段开头，
+ * 于是 isStandalone() 判定「片段以 <template #xxx> 开头 → 是宿主插槽内容」
+ * 把**整个片段丢弃**。
+ *
+ * 实测后果（2026-10-04 定位）：`cd-row / cd-col` 区块（src/pages/components/index.vue
+ * 第 173 行）正是唯一以 `<template #extra>` 开头的区块，它被丢弃后 row / col
+ * 失去唯一的权威用例，退化成展示 Input / Card 的切片 —— docs/components/col.md 与
+ * row.md 线上文档可见，小程序演示页同源同病。
+ *
+ * 判定「属于外层卡片」的依据：去缩进后落在最小缩进层级（即卡片的直接子节点）
+ * 且以 `<template #` 开头。片段内部更深层级的插槽（如 cd-button 的 #icon）不受影响。
+ */
+function stripWrapperSlots(bodyLines, indent) {
+  const out = []
+  for (let i = 0; i < bodyLines.length; i++) {
+    const line = bodyLines[i]
+    const lead = line.trim() === '' ? -1 : line.match(/^\s*/)[0].length
+    if (lead === indent && /^\s*<template\s+#/.test(line)) {
+      let depth = 0
+      for (; i < bodyLines.length; i++) {
+        depth += (bodyLines[i].match(/<template\b/g) || []).length
+        depth -= (bodyLines[i].match(/<\/template>/g) || []).length
+        if (depth <= 0) break
+      }
+      continue
+    }
+    out.push(line)
+  }
+  return out
+}
+
 /** 去掉整块的最小缩进，并剥掉外层 cd-card 标签本身 */
 function dedent(buf) {
   /* 开标签可能跨多行（属性各占一行），要一直跳过到标签真正闭合那一行 */
@@ -332,7 +388,11 @@ function dedent(buf) {
   const indent = Math.min(
     ...bodyLines.filter((l) => l.trim() !== '').map((l) => l.match(/^\s*/)[0].length)
   )
-  return bodyLines
+  /* 剥完若一个字都不剩，说明这个区块本身就是「某宿主的插槽内容」，
+     此时保留原样，交给 isStandalone() 按老规则拒掉，避免产出空预览 */
+  const stripped = stripWrapperSlots(bodyLines, indent)
+  const final = stripped.some((l) => l.trim() !== '') ? stripped : bodyLines
+  return final
     .map((l) => (l.trim() === '' ? '' : l.slice(indent)))
     .join('\n')
     .replace(/^\s*\n/, '')
@@ -387,6 +447,280 @@ function escapeTags(s) {
   return String(s).replace(/</g, '&lt;')
 }
 
+/**
+ * 取演示页 <script setup> 的内部内容 —— demo SFC 的状态来源。
+ *
+ * 片段模板里大量引用页面状态（hobbies / iconNames / formSnapshot 等 56 处），
+ * 预览要真实可交互，就必须把 script 一起带上。已逐页核对：
+ * 演示页 script 顶层只有 vue import、模块 import 与函数/常量定义，
+ * 无 uni 生命周期钩子，纯浏览器可执行。
+ */
+function pageScriptOf(file) {
+  /* \r?\n：部分演示页是 CRLF 行尾，正则必须兼容 */
+  const m = read(file).match(/<script setup>\r?\n([\s\S]*?)<\/script>/)
+  return m ? m[1].replace(/\r\n/g, '\n').trim() : ''
+}
+
+/**
+ * 片段能否独立渲染：顶层若出现 <template #xxx>，说明它是某个宿主
+ * 组件的插槽内容（如 cd-card 的 #extra），脱离宿主后模板无法编译，
+ * 这类片段只展示源码、不出预览。
+ */
+function isStandalone(code) {
+  /* 只看第一个非空行：插槽型片段开头就是 <template #xxx>；
+     片段中间嵌套的 <template #icon> 属于组件自身用法，不受影响 */
+  const first = code.split('\n').find((l) => l.trim() !== '') || ''
+  if (/^\s*<template\s+#/.test(first)) return false
+  return tagsBalanced(code)
+}
+
+/**
+ * 组件标签是否出现在**非插槽位置**。
+ *
+ * 一个分区块常同时演示多个组件（如 cd-cell / cd-cell-group），切片会挂给
+ * 块里出现过的每个组件。但有些出现只是「顺带」：`<cd-button>` 写在
+ * `<cd-card>` 的 `#footer` 插槽里，于是「CdCard 卡片」区块被挂到 button 名下，
+ * Button 文档页/演示页就会出现一张卡片（2026-10-04 实测截图确认）。
+ *
+ * 判据（结构性、可判定，非打分）：剥掉全部 `<template #xxx>…</template>` 插槽块后，
+ * 组件标签若不复存在，说明它只是别人插槽里的配角 → 不予采用。
+ * 实测只有 cd-button 命中 1 条，且没有任何组件因此失去全部用例
+ * （父组件如 cd-steps / cd-collapse 自己仍在顶层，不受影响）。
+ */
+function tagOutsideSlots(code, name) {
+  let prev
+  let out = code
+  do {
+    prev = out
+    out = out.replace(/<template\s+#[\s\S]*?<\/template>/g, '')
+  } while (out !== prev)
+  return new RegExp(`<cd-${name}[\\s/>]`).test(out)
+}
+
+/** 标签配平检查（剥掉 HTML 注释后统计）：截断片段（如孤儿用例的 40 行上限）会失配 */
+function tagsBalanced(code) {
+  const clean = code.replace(/<!--[\s\S]*?-->/g, '')
+  const open = {}
+  for (const m of clean.matchAll(/<([a-zA-Z][\w-]*)\b[^>]*?(\/?)>/g)) {
+    if (m[2] === '/') continue /* 自闭合 */
+    open[m[1]] = (open[m[1]] || 0) + 1
+  }
+  for (const m of clean.matchAll(/<\/([a-zA-Z][\w-]*)>/g)) {
+    open[m[1]] = (open[m[1]] || 0) - 1
+  }
+  return Object.values(open).every((n) => n === 0)
+}
+
+/**
+ * 把一段演示片段组装成可在 VitePress 里编译的真实 SFC：
+ * 片段模板 + 来源页 script setup。产出到 docs/.vitepress/demo-src/<name>/<i>.vue。
+ */
+function composeDemoSfc(demo, scriptSource) {
+  /* 片段统一归一为 LF：CRLF 混进 SFC 会影响编译与 diff */
+  const code = demo.code.replace(/\r\n/g, '\n')
+  const parts = ['<template>', code, '</template>']
+  if (scriptSource) parts.push('', '<script setup>', scriptSource, '</script>')
+  return parts.join('\n') + '\n'
+}
+
+/**
+ * 手写 demo 覆盖。
+ *
+ * 两种形态：
+ *   1. 数组 —— 手写片段排在自动片段之前，两者都进预览池（默认行为）；
+ *   2. `{ replace: true, demos: [...] }` —— **只用手写片段**，丢弃自动切片。
+ *
+ * 为什么需要 replace：自动切片是从演示页切出来的，有些片段虽然含本组件标签、
+ * 能独立编译，但缺了「让组件显形」的那部分（触发器写在别处、或组件默认为关闭态），
+ * 预览出来是一块空白。逐个给这类组件打补丁不如直接接管整个预览。
+ */
+const DEMO_OVERRIDES = {
+  /* 演示页里 select 的用法片段正好是「禁用态表单」那一段，
+     预览出来是一个点不动的下拉 —— 看文档的人第一眼该看到的是能用的样子 */
+  select: [
+    {
+      code: [
+        '<cd-select v-model="picked" :options="pickOptions" placeholder="请选择" />',
+        '<view class="row">',
+        '  <cd-tag type="info">当前值：{{ picked || "（未选）" }}</cd-tag>',
+        '</view>',
+      ].join('\n'),
+      script: [
+        "import { ref } from 'vue'",
+        '',
+        "const picked = ref('')",
+        'const pickOptions = [',
+        "  { label: '选项一', value: 'a' },",
+        "  { label: '选项二', value: 'b' },",
+        "  { label: '选项三（禁用）', value: 'c', disabled: true },",
+        ']',
+      ].join('\n'),
+    },
+  ],
+  /* 演示页里的第二个 dialog 用法片段是「弹层声明」：整个片段只有
+     <cd-dialog v-model="detailVisible" />，触发点在别处（表格行点击），
+     切片后默认关闭 → 预览区是一块 0 高度的空白。接管掉。 */
+  dialog: {
+    replace: true,
+    demos: [
+      {
+        code: [
+          '<cd-button size="small" @click="visible = true">打开对话框</cd-button>',
+          '<cd-dialog',
+          '  v-model="visible"',
+          '  title="删除确认"',
+          '  content="删除后不可恢复，确定继续吗？"',
+          '  @confirm="visible = false"',
+          '  @cancel="visible = false"',
+          '/>',
+        ].join('\n'),
+        script: ["import { ref } from 'vue'", '', 'const visible = ref(false)'].join('\n'),
+      },
+      {
+        code: [
+          '<cd-button size="small" type="danger" @click="delVisible = true">删除这个项目</cd-button>',
+          '<cd-dialog',
+          '  v-model="delVisible"',
+          '  title="危险操作"',
+          '  content="删除后无法恢复，确认要继续吗？"',
+          '  confirm-text="确认删除"',
+          '  :confirm-loading="submitting"',
+          '  @confirm="runDelete"',
+          '  @cancel="delVisible = false"',
+          '/>',
+          '<cd-tag v-if="done" type="success">已模拟删除完成</cd-tag>',
+        ].join('\n'),
+        script: [
+          "import { ref } from 'vue'",
+          '',
+          'const delVisible = ref(false)',
+          'const submitting = ref(false)',
+          'const done = ref(false)',
+          '',
+          'function runDelete() {',
+          '  submitting.value = true',
+          '  setTimeout(() => {',
+          '    submitting.value = false',
+          '    delVisible.value = false',
+          '    done.value = true',
+          '  }, 1200)',
+          '}',
+        ].join('\n'),
+      },
+    ],
+  },
+  /* 演示页里图标是「cd-card 的 extra 插槽 + 网格」形态，切片后开头是
+     <template #extra>，不满足 standalone 被整段跳过 —— 图标页会没有预览。
+     这里补一段完整的图标总表。 */
+  icon: [
+    {
+      code: [
+        '<view class="icon-grid">',
+        '  <view v-for="name in iconNames" :key="name" class="icon-cell">',
+        '    <cd-icon :name="name" :size="20" />',
+        '    <text class="icon-cell__name">{{ name }}</text>',
+        '  </view>',
+        '</view>',
+      ].join('\n'),
+      script: [
+        "import { ICON_NAMES } from '../../../../src/uni_modules/codedog-ui/components/cd-icon/icons'",
+        '',
+        'const iconNames = ICON_NAMES',
+      ].join('\n'),
+    },
+  ],
+  /* cd-backtop 的可见条件是「页面滚动量 > visibility-height」，而它的滚动量来自
+     usePageScroll：环境里有 window 就自己监听 window.scroll，否则取 scroll-top 属性。
+     文档站预览框不是独立滚动容器，「向下滚本页」等于让读文档的人滚到别的章节，
+     那时预览框早已离开视口，组件出现了也看不见。
+     所以这里改成受控形态：传 scroll-top 属性自行驱动，不依赖真实滚动。 */
+  backtop: {
+    replace: true,
+    demos: [
+      {
+        code: [
+          '<view class="stack">',
+          '  <text class="body-text">预览里不做真实滚动 —— 用下面的开关直接驱动 scroll-top，越过 visibility-height（360）后按钮出现。</text>',
+          '  <view class="row">',
+          '    <cd-button size="small" type="primary" @click="scrollTop = scrollTop > 360 ? 0 : 600">',
+          '      {{ scrollTop > 360 ? "模拟回到顶部" : "模拟滚动到 600px" }}',
+          '    </cd-button>',
+          '    <cd-tag type="info">scrollTop = {{ scrollTop }}</cd-tag>',
+          '  </view>',
+          '  <cd-backtop :scroll-top="scrollTop" :visibility-height="360" />',
+          '</view>',
+        ].join('\n'),
+        script: ["import { ref } from 'vue'", '', 'const scrollTop = ref(0)'].join('\n'),
+      },
+    ],
+  },
+  /* cd-toast-host 本身没有视觉形态（它是命令式反馈服务的挂载点），
+     自动切片出来只有一个空标签，预览区是 0 高度的空白。
+     改成「按钮触发四类反馈」，看文档的人第一眼能看见东西。 */
+  'toast-host': {
+    replace: true,
+    demos: [
+      {
+        code: [
+          '<view class="stack">',
+          '  <text class="body-text">下列反馈全部由 service 触发。H5 端宿主会在首次调用时自动挂载；小程序端需要自己在页面里放一个 cd-toast-host。</text>',
+          '  <view class="row">',
+          '    <cd-button size="small" @click="toast.success(\'保存成功\')">成功提示</cd-button>',
+          '    <cd-button size="small" @click="toast.error(\'保存失败\')">失败提示</cd-button>',
+          '    <cd-button size="small" @click="runLoading">加载 1.2s</cd-button>',
+          '    <cd-button size="small" @click="runConfirm">确认框</cd-button>',
+          '  </view>',
+          '  <view class="row"><cd-tag type="info">confirm 结果：{{ result || "（未触发）" }}</cd-tag></view>',
+          '  <cd-toast-host />',
+          '</view>',
+        ].join('\n'),
+        script: [
+          "import { ref } from 'vue'",
+          "import { toast, confirm, loading, hideLoading } from '../../../../src/uni_modules/codedog-ui'",
+          '',
+          "const result = ref('')",
+          '',
+          'async function runConfirm() {',
+          "  const ok = await confirm({ title: '删除确认', content: '删除后不可恢复，确定继续吗？' })",
+          "  result.value = ok ? '确定' : '取消'",
+          '}',
+          '',
+          'function runLoading() {',
+          "  loading('提交中')",
+          '  setTimeout(() => {',
+          '    hideLoading()',
+          "    toast.success('已完成')",
+          '  }, 1200)',
+          '}',
+        ].join('\n'),
+      },
+    ],
+  },
+  fab: [
+    {
+      code: [
+        '<view class="stack">',
+        '  <text class="body-text">悬浮球固定在视口右下角，按住可拖拽换位。</text>',
+          '  <cd-fab icon="plus" text="新建" draggable @click="count += 1" />',
+          '  <view class="row"><cd-tag type="info">已点击 {{ count }} 次</cd-tag></view>',
+        '</view>',
+      ].join('\n'),
+      script: ["import { ref } from 'vue'", '', 'const count = ref(0)'].join('\n'),
+    },
+  ],
+  drawer: [
+    {
+      code: [
+        '<cd-button size="small" @click="visible = true">打开抽屉</cd-button>',
+        '<cd-drawer v-model="visible" position="right" :size="320" title="侧边抽屉">',
+        '  <text class="body-text">抽屉承载工作区类操作，dialog 承载决策类操作。</text>',
+        '</cd-drawer>',
+      ].join('\n'),
+      script: ["import { ref } from 'vue'", '', 'const visible = ref(false)'].join('\n'),
+    },
+  ],
+}
+
 /** Markdown 表格单元格转义：管道符转义 + 换行压平 */
 function cell(s) {
   return String(s == null ? '—' : s).replace(/\s*\n\s*/g, ' ').replace(/\|/g, '\\|').trim() || '—'
@@ -408,12 +742,18 @@ function renderMd(c, meta, demos) {
     lines.push('')
   }
 
-  /* 用法 */
+  /* 用法：先渲染真实预览，再给可折叠源码 */
   const usable = demos.slice(0, 2)
   if (usable.length) {
     lines.push('## 用法')
     lines.push('')
     usable.forEach((d, i) => {
+      if (d.demoId) {
+        /* 配对标签而非自闭合：markdown-it 对未知自闭合标签会当普通 HTML 吞掉，
+           导致组件不被 Vue 编译、后续代码块排版也跟着坏掉 */
+        lines.push(`<CdDemo id="${d.demoId}"></CdDemo>`)
+        lines.push('')
+      }
       lines.push(`\`\`\`vue${d.page ? ` // 来自演示页 ${d.page}` : ''}`)
       lines.push(d.code)
       lines.push('```')
@@ -696,13 +1036,109 @@ function main() {
     })
   }
 
-  /* 3. 写 Markdown */
+  /* 3. 写 Markdown + 实时预览 demo（SFC 与注册表） */
   fs.mkdirSync(OUT_DIR, { recursive: true })
   fs.mkdirSync(DATA_DIR, { recursive: true })
-  for (const c of components) {
-    const md = renderMd(c, c.meta, c.demos)
-    fs.writeFileSync(path.join(OUT_DIR, `${c.name}.md`), md, 'utf-8')
+
+  /* demo-src 旧产物整目录挪走再重建，避免新旧片段混留 */
+  if (fs.existsSync(DEMO_SRC_DIR)) {
+    const stash = `/tmp/cdui_demo_src_old_${Date.now()}`
+    fs.renameSync(DEMO_SRC_DIR, stash)
   }
+  fs.mkdirSync(DEMO_SRC_DIR, { recursive: true })
+
+  const registryEntries = []
+  /* 演示页 script 按页缓存 —— 同页多段片段共用一份 */
+  const scriptCache = {}
+  const scriptOf = (page) => {
+    if (!(page in scriptCache)) {
+      const f = path.join(PAGES_DIR, page, 'index.vue')
+      scriptCache[page] = fs.existsSync(f) ? pageScriptOf(f) : ''
+    }
+    return scriptCache[page]
+  }
+
+  for (const c of components) {
+    /* 先生成 demo SFC 并编号 —— renderMd 里会引用 demoId。
+       只收可独立渲染的片段；插槽型片段跳过（md 里仅保留源码块） */
+    const compDir = path.join(DEMO_SRC_DIR, c.name)
+    const override = DEMO_OVERRIDES[c.name]
+    /* replace 形态 = 只用写的片段；数组形态 = 手写片段排前面，后面接自动片段 */
+    const isReplaceForm = override && !Array.isArray(override) && override.replace === true
+    const manual = Array.isArray(override) ? override : override ? override.demos : null
+    const pool = manual ? (isReplaceForm ? manual : [...manual, ...c.demos]) : c.demos
+    /* 预览片段的两个硬条件：可独立编译 + 必须含本组件标签
+       （后者挡掉两类坏片段：纯说明文字块 → 空预览；
+         只有点击按钮、实体组件在块外的切片 → 点了没反应） */
+    const selfTag = new RegExp(`<cd-${c.name}[\\s>/]`)
+    const standalone = pool.filter(
+      (d) =>
+        isStandalone(d.code) &&
+        selfTag.test(d.code) &&
+        /* 排除「只是别人插槽里的配角」的切片，见 tagOutsideSlots 注释 */
+        tagOutsideSlots(d.code, c.name),
+    )
+
+    /**
+     * 选取策略：**点名的片段优先**。
+     *
+     * pool 里两类来源（见 parseDemoBlocks）：
+     *   level 0 —— 分区注释/卡片标题明确点名（如 `<!-- cd-row / cd-col -->`）
+     *   level 1 —— 只是代码里出现过（如站点 Hero 里放了一个 cd-progress）
+     *   level 2 —— 未包 cd-card 的孤儿用例兜底
+     *   手写 override 不带 level，视为点名。
+     *
+     * 过去直接 `slice(0, 2)`，兜底片段会和点名片段抢位置：
+     * 实测 cd-progress 的第二个预览是站点 Hero（一排按钮与标签），
+     * cd-icon 的两个预览内容完全一样。改为「有点名的只用点名的」后，
+     * 这类误展示消失；完全依赖兜底片段的组件（如 cd-grid-item 这类子项）
+     * 在点名集合为空时照旧回退，不会出现空预览。
+     *
+     * 兜底片段**最多取 1 条**：它没有人类写的分区说明背书，第二条几乎必然
+     * 是「顺带出现」。实测 cd-button 没有自己的分区，取 2 条时第二条是整张
+     * 必填表单（只因为提交按钮是 cd-button），放在「Button 按钮」页上很突兀。
+     */
+    const named = standalone.filter((d) => (d.level ?? 0) === 0)
+    const candidates = named.length ? named : standalone.slice(0, 1)
+    /* 去重：同一段代码被两个分区抽到（内容一模一样）时只留一份 */
+    const seenCode = new Set()
+    const usable = candidates
+      .filter((d) => {
+        if (seenCode.has(d.code)) return false
+        seenCode.add(d.code)
+        return true
+      })
+      .slice(0, 2)
+    usable.forEach((d, i) => {
+      /* 手写片段自带 script；自动片段沿用来源演示页的 script */
+      const script = d.script !== undefined ? d.script : scriptOf(d.page)
+      fs.mkdirSync(compDir, { recursive: true })
+      writeLf(path.join(compDir, `${i}.vue`), composeDemoSfc(d, script))
+      d.demoId = `${c.name}-${i}`
+      registryEntries.push(`  '${c.name}-${i}': () => import('../demo-src/${c.name}/${i}.vue'),`)
+    })
+
+    /* 必须传 usable 而不是 pool / standalone：renderMd 里展示的代码块与 CdDemo id
+       都来自这份数组的前 2 条，口径不一致就会「代码块是 A、预览是 B」整体错位 */
+    const md = renderMd(c, c.meta, usable)
+    writeLf(path.join(OUT_DIR, `${c.name}.md`), md)
+  }
+
+  /* 注册表：CdDemo.vue 按需懒加载对应 demo 模块（SSR 不触碰） */
+  fs.writeFileSync(
+    REGISTRY_FILE,
+    [
+      '/* 由 scripts/gen-component-docs.mjs 自动生成，勿手改。',
+      ' * 键 = `<组件名>-<序号>`，对应组件页「用法」区的 <CdDemo id="..." />。',
+      ' * 全部为懒加载条目：SSR 阶段不加载任何 demo 模块。 */',
+      '',
+      'export const demos = {',
+      ...registryEntries,
+      '}',
+      '',
+    ].join('\n'),
+    'utf-8'
+  )
 
   /* 4. 写侧边栏数据 + 总览页 */
   const data = {

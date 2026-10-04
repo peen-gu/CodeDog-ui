@@ -10,6 +10,8 @@ title: Rate 评分
 
 ## 用法
 
+<CdDemo id="rate-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <view class="stack">
   <view>

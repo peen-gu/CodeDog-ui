@@ -10,6 +10,8 @@ title: CollapseItem 折叠项
 
 ## 用法
 
+<CdDemo id="collapse-item-0"></CdDemo>
+
 ```vue // 来自演示页 navigation
 <view class="split">
   <view class="split__col">
@@ -55,7 +57,7 @@ title: CollapseItem 折叠项
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
 |---|---|---|---|---|
-| `name` | String \| Number | `''` | — | 面板标识，v-model 里存的就是它 |
+| `name` | String \| Number | `''` | — | 面板标识，v-model 里存的就是它。 不传时自动回退到实例唯一值，因此「不传 name 的多个面板」互不干扰。 |
 | `title` | String | `''` | — | — |
 | `value` | String | `''` | — | 标题右侧的值 |
 | `icon` | String | `''` | — | — |

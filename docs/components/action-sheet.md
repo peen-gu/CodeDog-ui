@@ -10,6 +10,8 @@ title: ActionSheet 动作面板
 
 ## 用法
 
+<CdDemo id="action-sheet-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <view class="row">
   <cd-button size="small" @click="sheetVisible = true">打开动作面板</cd-button>

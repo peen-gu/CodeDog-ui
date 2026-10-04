@@ -175,28 +175,55 @@ provide(CD_FORM_KEY, {
  * 用 reject 会迫使每个调用点写 try/catch，也容易产生 unhandled rejection 噪音。
  * 需要知道具体哪些字段失败时，用 validateField() 或监听 validate 事件。
  */
+/**
+ * 校验串行链。
+ *
+ * 没有它的时候，连点提交会让两轮校验并发跑起来：两轮各自持有一份字段快照，
+ * 后完成的那一轮覆盖先完成的错误态，于是 validate 事件 emit 两次、
+ * 页面滚动两次，调用方还可能拿到「先发起那轮」的结果。
+ * 排队之后同一时刻只有一轮在跑，每轮拿到的都是自己那轮的真实结果。
+ */
+let validateChain = Promise.resolve()
+
+/**
+ * 把一轮校验排到队尾。
+ * 链上只承接「完成」，不让单个任务的失败顺着链往下传污染后续任务。
+ */
+function enqueue(task) {
+  const run = validateChain.then(task, task)
+  validateChain = run.then(
+    () => {},
+    () => {},
+  )
+  return run
+}
+
 async function validate(target) {
-  const list = pickFields(target)
-  const outcomes = await Promise.all(list.map((field) => field.validate()))
-  const invalid = list.filter((field, index) => !outcomes[index])
-  const passed = invalid.length === 0
+  return enqueue(async () => {
+    const list = pickFields(target)
+    const outcomes = await Promise.all(list.map((field) => field.validate()))
+    const invalid = list.filter((field, index) => !outcomes[index])
+    const passed = invalid.length === 0
 
-  emit('validate', { passed, props: invalid.map((field) => field.prop) })
+    emit('validate', { passed, props: invalid.map((field) => field.prop) })
 
-  /* 校验失败时把页面滚到第一个出错项。
-     移动端表单动辄好几屏，不滚的话用户只看到「提交没反应」 */
-  if (!passed && invalid[0] && typeof invalid[0].scrollIntoView === 'function') {
-    invalid[0].scrollIntoView()
-  }
+    /* 校验失败时把页面滚到第一个出错项。
+       移动端表单动辄好几屏，不滚的话用户只看到「提交没反应」 */
+    if (!passed && invalid[0] && typeof invalid[0].scrollIntoView === 'function') {
+      invalid[0].scrollIntoView()
+    }
 
-  return passed
+    return passed
+  })
 }
 
 /** 校验单个 / 若干字段，返回同样的 boolean 语义 */
 async function validateField(target) {
-  const list = pickFields(target)
-  const outcomes = await Promise.all(list.map((field) => field.validate()))
-  return outcomes.every(Boolean)
+  return enqueue(async () => {
+    const list = pickFields(target)
+    const outcomes = await Promise.all(list.map((field) => field.validate()))
+    return outcomes.every(Boolean)
+  })
 }
 
 /** 还原为初始值并清除校验态。传字段名则只还原指定字段 */

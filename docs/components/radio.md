@@ -10,6 +10,8 @@ title: Radio 单选框
 
 ## 用法
 
+<CdDemo id="radio-0"></CdDemo>
+
 ```vue // 来自演示页 showcase
 <cd-radio-group v-model="plan">
   <cd-radio value="free" label="免费版" />
@@ -45,54 +47,6 @@ title: Radio 单选框
   <cd-radio value="mail" label="邮件通知" />
   <cd-radio value="none" label="不接收（禁用）" disabled />
 </cd-radio-group>
-```
-
-```vue // 来自演示页 showcase
-<cd-form ref="formRef" :model="form" :rules="rules" label-position="top">
-  <cd-form-item prop="plan" label="套餐">
-    <cd-radio-group v-model="form.plan" variant="button">
-      <cd-radio value="free" label="免费版" />
-      <cd-radio value="pro" label="专业版" />
-    </cd-radio-group>
-  </cd-form-item>
-
-  <cd-form-item prop="hobbies" label="兴趣（至少选 2 项）">
-    <cd-checkbox-group v-model="form.hobbies">
-      <cd-checkbox value="read" label="阅读" />
-      <cd-checkbox value="code" label="编码" />
-      <cd-checkbox value="run" label="跑步" />
-    </cd-checkbox-group>
-  </cd-form-item>
-
-  <cd-form-item prop="seat" label="席位数量（1~10）" help="超过 5 个席位需要联系销售">
-    <cd-stepper v-model="form.seat" :min="1" :max="10" />
-  </cd-form-item>
-
-  <cd-form-item prop="notify" label="接收通知" help="关闭后将不再收到任何提醒">
-    <cd-switch v-model="form.notify" />
-  </cd-form-item>
-
-  <cd-form-item prop="channel" label="通知渠道">
-    <cd-radio-group v-model="form.channel">
-      <cd-radio value="sms" label="短信" />
-      <cd-radio value="mail" label="邮件" />
-    </cd-radio-group>
-  </cd-form-item>
-
-  <view class="row">
-    <cd-button type="primary" @click="handleSubmit">提交</cd-button>
-    <cd-button @click="handleReset">重置</cd-button>
-    <cd-button type="text" @click="handleClear">清除校验</cd-button>
-  </view>
-</cd-form>
-
-<cd-alert
-  v-if="submitResult"
-  class="submit-result"
-  :type="submitResult.type"
-  :title="submitResult.title"
-  :description="submitResult.desc"
-/>
 ```
 
 ## Props

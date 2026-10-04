@@ -51,9 +51,6 @@ defineOptions({
   name: 'cd-form-item',
 })
 
-/** 每项一个 id：页面级滚动定位要用，必须全页唯一 */
-let uid = 0
-
 const props = defineProps({
   /** 对应 form.model 中的字段名，支持 'user.name' 嵌套写法 */
   prop: {
@@ -111,8 +108,18 @@ const props = defineProps({
 
 const form = inject(CD_FORM_KEY, null)
 
+/**
+ * 每项一个 id：页面级滚动定位要用，必须全页唯一。
+ *
+ * 这里用 Vue 分配的 instance.uid，而不是「模块级 let uid = 0 自增」：
+ * `let uid = 0` 写在 <script setup> 顶层看似是模块作用域，编译后实际落在
+ * setup() 函数体内 —— 每个组件实例执行一次，计数器每次从 0 重来，
+ * 同页面所有表单项的 id 会全部撞成 `cd-form-item-0`，
+ * 于是 validate 失败时的滚动定位永远滚到第一个字段。
+ * instance.uid 由 Vue 在同一渲染树内分配，且 SSR 与客户端一致，不会水合失配。
+ */
 const instance = getCurrentInstance()
-const itemId = `cd-form-item-${uid++}`
+const itemId = `cd-form-item-${instance ? instance.uid : 0}`
 
 /* -------------------- 校验状态 -------------------- */
 
@@ -228,10 +235,25 @@ async function validate(trigger) {
 
   const applicable = mergedRules.value.filter((rule) => matchTrigger(rule, trigger))
 
-  /* 该触发器下没有规则要跑，视为通过，并且清掉旧状态。
-     这一步不能省：否则「先 blur 报错、改对后再 blur」会因为没规则而永远留着红字 */
+  /*
+   * 本次触发器没有命中任何规则 —— 这时候**不能**清掉已有状态。
+   *
+   * 真实反例：规则写成 { required: true, trigger: ['change'] }。
+   * 控件提交时的标准动作是「先 notifyChange 再 notifyBlur」两步：
+   *   ① change 校验命中规则 → 置为 error，红字出现；
+   *   ② 紧接着 blur 校验，该规则没有 'blur' → applicable 为空 →
+   *      如果在这里 clearState()，红字刚出现就被清掉，
+   *      于是「trigger 只有 change 的校验」在界面上永远看不到提示。
+   *
+   * 那「改对之后旧红字怎么消掉」靠什么？靠 applicable 非空的那次：
+   * 用户改对了 → 走 change 校验 → 规则命中 → 跑出来 passed → 下面 clearState()。
+   * 也就是「清状态」只应由「真的跑过规则且通过」或「显式全量校验」触发。
+   *
+   * 所以只有不传 trigger 的显式校验（此时 applicable 已是全部规则，
+   * 为空意味着这个字段压根没配规则）才清状态。
+   */
   if (!applicable.length) {
-    clearState()
+    if (trigger === undefined) clearState()
     return true
   }
 
@@ -244,8 +266,11 @@ async function validate(trigger) {
     prop: props.prop,
   })
 
-  /* 期间又有新的校验发起，说明本结果已过期，直接丢弃 */
-  if (seq !== validateSeq) return true
+  /* 期间又有新的校验发起，说明本结果已过期，直接丢弃。
+     这里不能 `return true`：那等于把「本次没通过」说成「通过了」，
+     cd-form.validate() 会据此放行，非法数据就被提交上去。
+     正确做法是退回「当前已落地」的校验状态 —— 已经红着的字段仍然算失败。 */
+  if (seq !== validateSeq) return validateState.value !== 'error'
 
   if (result.passed) {
     clearState()
@@ -356,12 +381,14 @@ export default {
 
   display: block;
   width: 100%;
-  margin-bottom: var(--cd-form-item-gap, 20px);
+  /* 间距不给在自己身上、也不靠 :last-child 去减：
+     :last-child 在小程序 WXSS 的支持不可靠（本库统一约定不用结构伪类），
+     改成「后一项负责给自己加前间距」——末项天然没有下一项，也就天然没有多余留白。 */
+  margin-bottom: 0;
 }
 
-/* 最后一个字段不再留底部间距，否则表单底部会多出一段空白 */
-.cd-form-item:last-child {
-  margin-bottom: 0;
+.cd-form-item + .cd-form-item {
+  margin-top: var(--cd-form-item-gap, 20px);
 }
 
 /* 标签在左 / 右时，错误提示也要跟着标签一起右移，否则会和标签文字错位 */

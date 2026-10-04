@@ -10,17 +10,13 @@ title: Fab 悬浮按钮
 
 ## 用法
 
-```vue // 来自演示页 widgets
+<CdDemo id="fab-0"></CdDemo>
+
+```vue
 <view class="stack">
-  <text class="body-text">
-    向下滚动超过 360px，右下角会出现回到顶部按钮。悬浮按钮（cd-fab）可以按住拖动，
-    用来解决「它刚好压住了列表最后一行」这种无解的场景。
-  </text>
-
-  <view class="filler" />
-
-  <text class="col-label">下面是为了把页面撑长、方便验证滚动相关组件的占位内容</text>
-  <view class="filler filler--sm" />
+  <text class="body-text">悬浮球固定在视口右下角，按住可拖拽换位。</text>
+  <cd-fab icon="plus" text="新建" draggable @click="count += 1" />
+  <view class="row"><cd-tag type="info">已点击 {{ count }} 次</cd-tag></view>
 </view>
 ```
 

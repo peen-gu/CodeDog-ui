@@ -140,8 +140,15 @@ function schedule() {
 
 watch(pageScrollTop, schedule)
 
-/* 首屏也要量一次：页面可能带着滚动位置直接进来（刷新 / 返回） */
-raf(update)
+/* 首屏也要量一次：页面可能带着滚动位置直接进来（刷新 / 返回）。
+   必须把 id 记下来 —— 否则组件在这一帧之前被卸载时 cancelRaf 拿不到它，
+   这一帧里的 measure 会在已经销毁的实例上跑。
+   回调里同时把 rafId 复位，否则它会一直是非空值，
+   后面的 schedule() 会永远命中 `if (rafId) return` 而不再测量 */
+rafId = raf(() => {
+  rafId = null
+  update()
+})
 
 onUnmounted(() => {
   cancelRaf(rafId)

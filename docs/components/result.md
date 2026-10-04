@@ -10,6 +10,8 @@ title: Result 结果页
 
 ## 用法
 
+<CdDemo id="result-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <view class="split">
   <view class="split__col">

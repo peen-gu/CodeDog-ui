@@ -1,10 +1,18 @@
 # 发布到 npm
 
-::: tip ✅ codedog-ui@0.5.0 已上线
-发布时间 **2026-10-01**（`dist-tags: latest → 0.5.0`），详见 <https://www.npmjs.com/package/codedog-ui>。
-已通过真实安装核验：`npm i codedog-ui` → 62 个组件目录 + LICENSE + README + index.d.ts 齐全。
+::: tip ✅ codedog-ui@0.5.2 已上线（当前 latest）
+发布时间 **2026-10-02**（`dist-tags: latest → 0.5.2`），详见 <https://www.npmjs.com/package/codedog-ui>。
+首发 0.5.0 于 2026-10-01，已通过真实安装核验：`npm i codedog-ui` → 组件目录 + LICENSE + README + index.d.ts 齐全。
 下文是完整操作记录与下次发版流程。
 :::
+
+## 版本时间线
+
+| 版本 | 日期 | 内容 |
+|---|---|---|
+| 0.5.0 | 2026-10-01 | 首版上线，当时 62 个组件 |
+| 0.5.1 | 2026-10-01 | 官网与文档中心改用 CodeDogUI 自绘视觉，补站点打包与部署脚本 |
+| 0.5.2 | 2026-10-02 | 组件 62 → 67（日历 / 选择器 / 级联 / 轮播 / 图片预览），修 6 项致命 + 第二轮全库复查 59 项 |
 
 这个包在发布前控制权归我们（`registry.npmjs.org/codedog-ui` 曾返回 404），包名未被占用，已顺利注册为公开包。
 
@@ -64,7 +72,7 @@ node -e "console.log(require('./src/uni_modules/codedog-ui/package.json').versio
 - [ ] changelog 已补本次改动
 - [ ] 版本号已递增（遵循 semver）
 - [ ] 双端构建通过（`npm run build:h5` + `npm run build:mp-weixin`）
-- [ ] 干跑产物中 62 个组件目录齐全、`LICENSE` 与 `README.md` 在列
+- [ ] 干跑产物中 80 个组件目录齐全、`LICENSE` 与 `README.md` 在列
 
 ## 三、执行发布
 

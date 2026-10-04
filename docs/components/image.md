@@ -10,6 +10,8 @@ title: Image 图片
 
 ## 用法
 
+<CdDemo id="image-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <view class="img-row">
   <view v-for="(item, index) in imageCases" :key="index" class="img-case">

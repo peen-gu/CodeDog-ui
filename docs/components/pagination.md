@@ -10,6 +10,8 @@ title: Pagination 分页
 
 ## 用法
 
+<CdDemo id="pagination-0"></CdDemo>
+
 ```vue // 来自演示页 desktop
 <cd-pagination
   v-model:current="current"
@@ -29,7 +31,7 @@ title: Pagination 分页
 | `showTotal` | Boolean | `true` | — | — |
 | `showSizeChanger` | Boolean | `true` | — | 每页条数切换器，仅桌面端渲染 |
 | `pageSizeOptions` | Array | `() => [10, 20, 50, 100]` | — | — |
-| `maxButtons` | Number | `5` | — | 页码按钮数量（含首尾），中间部分按需收缩并显示省略号 |
+| `maxButtons` | Number | `5` | — | 页码盒子数量（含首尾页码与省略号），中间部分按需收缩。盒子数恒定，翻页时宽度不跳 |
 | `disabled` | Boolean | `false` | — | — |
 | `customClass` | String | `''` | — | — |
 

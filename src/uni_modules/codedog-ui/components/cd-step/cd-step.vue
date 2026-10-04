@@ -46,6 +46,9 @@
  */
 import { computed, inject, onUnmounted, useSlots } from 'vue'
 import { CD_STEPS_KEY } from '../../constants'
+import { useBreakpoint } from '../../composables/use-breakpoint'
+
+const { isMobile } = useBreakpoint()
 
 defineOptions({
   name: 'cd-step',
@@ -90,6 +93,12 @@ onUnmounted(() => {
   if (steps) steps.unregister(uid)
 })
 
+/* 容器要靠这个把「我是哪个 vnode」对上注册表，才能按书写顺序校正序号。
+   不暴露的话，在列表中间插入一项时序号会按挂载顺序算，后面全错。 */
+defineExpose({
+  __cdOrderUid: uid,
+})
+
 const index = computed(() => (steps ? steps.indexOf(uid) : 0))
 const total = computed(() => (steps ? steps.total : 1))
 const isFirst = computed(() => index.value <= 0)
@@ -132,6 +141,8 @@ const rootClass = computed(() =>
     isFirst.value ? 'cd-step--first' : '',
     isLast.value ? 'cd-step--last' : '',
     steps && steps.direction.value === 'vertical' ? 'cd-step--vertical' : 'cd-step--horizontal',
+    /* 手机宽度横向一格只有 ~68px，14px 标题放不下 4 个字会词中断行，窄屏降一档字号 */
+    isMobile.value ? 'cd-step--m' : '',
     props.customClass,
   ]
     .filter(Boolean)
@@ -310,5 +321,18 @@ export default {
   font-size: var(--cd-step-desc-font-size, 12px);
   line-height: var(--cd-line-height-base, 1.5);
   color: var(--cd-text-placeholder, #94a3b8);
+}
+
+/* 手机宽度下横向步骤条一格只有 ~68px：14px 标题放不下 4 个字，
+   会出现「提交申 / 请」这种词中断行（2026-10-03 截图实测）。
+   窄屏态用 useBreakpoint 在 JS 里挂 cd-step--m —— 不用 @media：
+   uni 的构建链会把 scoped style 里的 @media 整块丢掉（本次实测），靠不住。
+   PC 宽屏不受影响；需要覆盖时用 --cd-step-*-font-size-m 令牌。 */
+.cd-step--m .cd-step__title-text {
+  font-size: var(--cd-step-title-font-size-m, 12px);
+}
+
+.cd-step--m .cd-step__desc-text {
+  font-size: var(--cd-step-desc-font-size-m, 10px);
 }
 </style>

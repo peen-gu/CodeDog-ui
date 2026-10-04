@@ -111,6 +111,11 @@ onUnmounted(() => {
   if (timeline) timeline.unregister(uid)
 })
 
+/* 容器靠这个把 vnode 与注册表对上，才能按书写顺序校正序号（中间插入时挂载顺序是错的） */
+defineExpose({
+  __cdOrderUid: uid,
+})
+
 const index = computed(() => (timeline ? timeline.indexOf(uid) : 0))
 const total = computed(() => (timeline ? timeline.total : 1))
 const isFirst = computed(() => index.value <= 0)

@@ -11,6 +11,9 @@
  */
 
 import { ref, computed } from 'vue'
+/* 主题探测走统一的 getSystemInfo()：优先新 API（getAppBaseInfo 才有 theme），
+   避免 mp 端触发 uni.getSystemInfoSync 的弃用告警。见 use-platform.js 内注释。 */
+import { getSystemInfo } from './use-platform'
 
 const STORAGE_KEY = 'cd-theme-mode'
 
@@ -55,7 +58,7 @@ function detectSystem() {
   /* #endif */
   /* #ifdef MP-WEIXIN */
   try {
-    const info = uni.getSystemInfoSync()
+    const info = getSystemInfo()
     systemDark.value = info.theme === 'dark'
     return
   } catch (e) {

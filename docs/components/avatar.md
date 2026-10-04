@@ -10,6 +10,8 @@ title: Avatar 头像
 
 ## 用法
 
+<CdDemo id="avatar-0"></CdDemo>
+
 ```vue // 来自演示页 showcase
 <view class="row row--baseline">
   <cd-avatar icon="user" :size="28" />
@@ -28,43 +30,6 @@ title: Avatar 头像
 <text class="body-text">
   左起第 8 个刻意给了一个不存在的图片地址，可以看到它自动降级成文字头像而不是显示破图。
 </text>
-```
-
-```vue // 来自演示页 showcase
-<view class="row row--baseline">
-  <cd-badge :value="5">
-    <cd-button size="small">
-      <template #icon><cd-icon name="bell" :size="16" /></template>
-      通知
-    </cd-button>
-  </cd-badge>
-
-  <cd-badge :value="128">
-    <cd-avatar text="张三" :size="36" />
-  </cd-badge>
-
-  <cd-badge is-dot outlined>
-    <cd-avatar icon="user" :size="36" />
-  </cd-badge>
-
-  <cd-badge value="NEW" type="success">
-    <cd-button size="small">新功能</cd-button>
-  </cd-badge>
-
-  <cd-badge :value="0">
-    <cd-button size="small">值为 0 不显示</cd-button>
-  </cd-badge>
-
-  <cd-badge :value="0" show-zero>
-    <cd-button size="small">show-zero</cd-button>
-  </cd-badge>
-
-  <cd-badge :value="7" is-dot />
-  <cd-badge :value="7" />
-  <cd-badge :value="7" type="success" />
-  <cd-badge :value="7" type="warning" />
-  <cd-badge :value="7" type="info" />
-</view>
 ```
 
 ## Props

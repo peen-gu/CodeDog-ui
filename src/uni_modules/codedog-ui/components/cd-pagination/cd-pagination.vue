@@ -26,7 +26,7 @@
           <view
             v-else
             class="cd-pagination__item"
-            :class="{ 'cd-pagination__item--active': item.value === current }"
+            :class="{ 'cd-pagination__item--active': item.value === currentPage }"
             @click="go(item.value)"
           >
             <text class="cd-pagination__item-text">{{ item.value }}</text>
@@ -46,7 +46,7 @@
           <text class="cd-pagination__nav-text">上一页</text>
         </view>
 
-        <text class="cd-pagination__indicator">{{ current }} / {{ pageCount }}</text>
+        <text class="cd-pagination__indicator">{{ currentPage }} / {{ pageCount }}</text>
 
         <view class="cd-pagination__nav cd-pagination__nav--text" :class="navClass('next')" @click="go(current + 1)">
           <text class="cd-pagination__nav-text">下一页</text>
@@ -68,7 +68,7 @@
  * 桌面端则是完整的：页码 + 两端省略号 + 每页条数切换 + 总条数。
  * 页码数量恒定（maxButtons 控制），避免翻页时控件宽度跳动。
  */
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useBreakpoint, resolveDesktopShape } from '../../composables/use-breakpoint'
 import CdSelect from '../cd-select/cd-select.vue'
 
@@ -107,7 +107,7 @@ const props = defineProps({
     type: Array,
     default: () => [10, 20, 50, 100],
   },
-  /** 页码按钮数量（含首尾），中间部分按需收缩并显示省略号 */
+  /** 页码盒子数量（含首尾页码与省略号），中间部分按需收缩。盒子数恒定，翻页时宽度不跳 */
   maxButtons: {
     type: Number,
     default: 5,
@@ -134,6 +134,25 @@ const pageCount = computed(() => {
   return Math.max(1, Math.ceil((props.total || 0) / size))
 })
 
+/**
+ * 实际生效的页码 = 钳制后的 props.current。
+ *
+ * total 变小（删数据、换筛选条件）时 current 会越界：第 5 页只剩 2 页。
+ * 布局用 clamp 但高亮与文案用原始值，就会出现「桌面端没有一个页码是高亮的、
+ * 移动端显示 5 / 2」这种明显错乱 —— 所以模板里一律用这个值，不用 props.current。
+ */
+const currentPage = computed(() => clamp(props.current, 1, pageCount.value))
+
+/* 越界时把正确值回报给 v-model，让外部状态与界面一致，
+   否则下一次翻页会从错误的基准上算起 */
+watch(
+  currentPage,
+  (value) => {
+    if (value !== props.current) emit('update:current', value)
+  },
+  { immediate: true }
+)
+
 const totalText = computed(() => `共 ${props.total || 0} 条`)
 
 const sizeOptions = computed(() => {
@@ -153,47 +172,77 @@ const rootClass = computed(() =>
     .join(' ')
 )
 
-/**
- * 生成页码条目。
- * 双向补齐是关键：只按 current 取区间的话，靠近首页或末页时
- * 页码按钮数量会变少，控件宽度随之跳动，视觉上很廉价。
- */
-const pageItems = computed(() => {
-  const count = pageCount.value
-  const max = Math.max(5, props.maxButtons)
-  const currentPage = clamp(props.current, 1, count)
-
-  if (count <= max) {
-    const items = []
-    for (let n = 1; n <= count; n += 1) items.push({ type: 'page', value: n, key: `p${n}` })
-    return items
-  }
-
-  const side = Math.floor((max - 2) / 2)
-  let start = Math.max(2, currentPage - side)
-  let end = Math.min(count - 1, currentPage + side)
-
-  if (currentPage - 1 <= side) end = Math.min(count - 1, max - 2)
-  if (count - currentPage <= side) start = Math.max(2, count - (max - 3))
-
-  const items = [{ type: 'page', value: 1, key: 'p1' }]
-  if (start > 2) items.push({ type: 'ellipsis', key: 'ellipsis-head' })
-  for (let n = start; n <= end; n += 1) items.push({ type: 'page', value: n, key: `p${n}` })
-  if (end < count - 1) items.push({ type: 'ellipsis', key: 'ellipsis-tail' })
-  items.push({ type: 'page', value: count, key: `p${count}` })
-  return items
-})
-
-/* -------------------- 交互 -------------------- */
-
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
 }
 
+/**
+ * 生成页码条目 —— **盒子数恒定**是这里唯一重要的不变量。
+ *
+ * 「盒子」= 页码块 + 省略号块，两者都占位、都影响控件宽度。
+ * 旧写法是「先按 current 取窗口、再各自往两边补齐」，实测
+ * total=100 / pageSize=10 / max=5 时盒子数会随 current 在 5~7 之间跳
+ * （1→5、3→6、4~7→7、9/10→5），翻页时整条分页器宽度来回抖。
+ *
+ * 这里换成 antd 式的**两轮钳制**：
+ *   1. 先按 current 居中取一个固定长度的窗口；
+ *   2. 撞到左边界就把窗口整体右推、撞到右边界就整体左拉；
+ *   3. 推拉之后再钳一次，保证窗口永远落在 [2, count-1] 内。
+ *
+ * 把「中间页码数」与「省略号是否出现」绑成同一个预算：
+ *   中间页码数 P + 左省略号 L + 右省略号 R === max - 2
+ * 于是总盒子数恒为 2 + P + L + R === max（count <= max 时为 count）。
+ */
+function buildPageItems(count, max, current) {
+  const items = []
+
+  /* 页码本来就放得下时全列，此时盒子数 = count（<= max） */
+  if (count <= max) {
+    for (let n = 1; n <= count; n += 1) items.push({ type: 'page', value: n, key: `p${n}` })
+    return items
+  }
+
+  /* 两侧都有省略号时，中间还剩几个页码位 */
+  const middle = max - 4
+
+  let start = current - Math.floor(middle / 2)
+  let end = start + middle - 1
+
+  /* 第一轮：贴左边界时省掉左省略号，中间多拿一个位置给页码 */
+  if (start <= 2) {
+    start = 2
+    end = start + middle
+  }
+
+  /* 第二轮：贴右边界时省掉右省略号，同样多拿一个位置 */
+  if (end >= count - 1) {
+    end = count - 1
+    start = end - middle
+  }
+
+  /* 回拉：前两轮可能把 start 推到 2 以内（count 很小或 max 很大时） */
+  if (start <= 2) {
+    start = 2
+    end = Math.min(count - 1, start + middle)
+  }
+
+  items.push({ type: 'page', value: 1, key: 'p1' })
+  if (start > 2) items.push({ type: 'ellipsis', key: 'ellipsis-head' })
+  for (let n = start; n <= end; n += 1) items.push({ type: 'page', value: n, key: `p${n}` })
+  if (end < count - 1) items.push({ type: 'ellipsis', key: 'ellipsis-tail' })
+  items.push({ type: 'page', value: count, key: `p${count}` })
+
+  return items
+}
+
+const pageItems = computed(() => buildPageItems(pageCount.value, Math.max(5, props.maxButtons), currentPage.value))
+
+/* -------------------- 交互 -------------------- */
+
 function go(target) {
   if (props.disabled) return
   const next = clamp(target, 1, pageCount.value)
-  if (next === props.current) return
+  if (next === currentPage.value) return
   emit('update:current', next)
   emit('change', { current: next, pageSize: props.pageSize })
 }
@@ -215,7 +264,7 @@ const innerPageSize = computed({
 function navClass(direction) {
   const isPrev = direction === 'prev'
   const blocked =
-    props.disabled || (isPrev ? props.current <= 1 : props.current >= pageCount.value)
+    props.disabled || (isPrev ? currentPage.value <= 1 : currentPage.value >= pageCount.value)
   return blocked ? 'cd-pagination__nav--disabled' : ''
 }
 </script>

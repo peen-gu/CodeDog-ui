@@ -7,7 +7,8 @@
       <!-- ---------- 旋转图标 ---------- -->
       <!-- spinner 直接复用 cd-icon 的 loader + spin，不另写一套旋转动画：
            图标本来就是 mask 驱动的矢量，天然清晰且跟随字号 -->
-      <cd-icon v-if="type === 'spinner'" name="loader" :size="iconSize" />
+      <!-- spin 不能漏：漏了就是一个静止的 loader 图标，看起来像卡死而不是在加载 -->
+      <cd-icon v-if="type === 'spinner'" name="loader" :size="iconSize" spin />
 
       <!-- ---------- 三点跳动 ---------- -->
       <view v-else-if="type === 'dots'" class="cd-loading__dots">

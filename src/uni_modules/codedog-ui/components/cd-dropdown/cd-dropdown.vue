@@ -32,7 +32,8 @@
     </view>
 
     <!-- 点击空白处收起 -->
-    <view v-if="open" class="cd-dropdown__shield" @click="requestClose('outside')" @touchmove.stop.prevent="noop" />
+    <!-- 同 cd-popover：shield 在触发容器内，不加 .stop 会把「关闭」冒泡回根节点的 onTriggerTap，面板立刻又被打开 -->
+    <view v-if="open" class="cd-dropdown__shield" @click.stop="requestClose('outside')" @touchmove.stop.prevent="noop" />
   </view>
 </template>
 
@@ -51,6 +52,7 @@
  */
 import { computed, ref, onUnmounted, watch } from 'vue'
 import { useFloating, FLOAT_PLACEMENTS } from '../../composables/use-floating'
+import { useEscLayer } from '../../composables/use-esc-stack'
 import { useDevice } from '../../composables/use-device'
 import CdButton from '../cd-button/cd-button.vue'
 import CdIcon from '../cd-icon/cd-icon.vue'
@@ -198,6 +200,13 @@ function handleSelect(item, index) {
 
 /* -------------------- PC 键盘导航 -------------------- */
 
+/**
+ * Esc 走共享层级栈：下拉菜单常常开在弹窗里，
+ * 一次 Esc 只该关最上面那层，不该把下拉和它下面的弹窗一起关掉。
+ * 方向键 / Enter 仍然由本组件自己的监听处理，所以这里只借用栈做「我在不在顶层」的判定。
+ */
+const esc = useEscLayer(() => {})
+
 function onKeydown(event) {
   if (!open.value) return
   const key = event.key
@@ -206,6 +215,7 @@ function onKeydown(event) {
     .filter(({ item }) => !item.group && !item.disabled)
 
   if (key === 'Escape' || event.keyCode === 27) {
+    if (!esc.isTop()) return
     event.preventDefault()
     requestClose('esc')
     return
@@ -232,6 +242,7 @@ function bindKey() {
   /* #ifdef H5 */
   if (keyBound || typeof document === 'undefined') return
   keyBound = true
+  esc.push()
   document.addEventListener('keydown', onKeydown)
   /* #endif */
 }
@@ -240,6 +251,7 @@ function unbindKey() {
   /* #ifdef H5 */
   if (!keyBound || typeof document === 'undefined') return
   keyBound = false
+  esc.remove()
   document.removeEventListener('keydown', onKeydown)
   /* #endif */
 }

@@ -44,7 +44,8 @@
       <view v-if="arrowSize > 0" class="cd-popconfirm__arrow" :style="arrowStyle" />
     </view>
 
-    <view v-if="open" class="cd-popconfirm__shield" @click="requestClose('outside')" @touchmove.stop.prevent="noop" />
+    <!-- 同 cd-popover：不加 .stop 时，点遮罩关闭后事件冒泡回根节点又被 onTriggerTap 打开，气泡永远关不掉 -->
+    <view v-if="open" class="cd-popconfirm__shield" @click.stop="requestClose('outside')" @touchmove.stop.prevent="noop" />
   </view>
 </template>
 
@@ -64,8 +65,9 @@
  * 危险操作（confirmType="danger"）刻意把确认按钮做成实心红，
  * 取消按钮做成白底描边 —— 让「误点」永远落在视觉上更弱的那一侧。
  */
-import { computed, onUnmounted, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useFloating, FLOAT_PLACEMENTS } from '../../composables/use-floating'
+import { useEscLayer } from '../../composables/use-esc-stack'
 
 defineOptions({
   name: 'cd-popconfirm',
@@ -199,32 +201,16 @@ function noop() {}
 
 /* -------------------- Esc 收起（H5） -------------------- */
 
-function onKeydown(event) {
-  if (event.key !== 'Escape' && event.keyCode !== 27) return
+/* 同 cd-popover：走共享 Esc 层级栈，不再自建 document 监听。
+   popconfirm 尤其需要它 —— 自己监听时，一次 Esc 会同时关掉气泡和它上面的
+   confirm，confirm 被判成「取消」，等于替用户做了一个没做过的决定。 */
+const esc = useEscLayer(() => {
   requestClose('esc')
-}
-
-let escBound = false
-
-function bindEsc() {
-  /* #ifdef H5 */
-  if (escBound || typeof document === 'undefined') return
-  escBound = true
-  document.addEventListener('keydown', onKeydown)
-  /* #endif */
-}
-
-function unbindEsc() {
-  /* #ifdef H5 */
-  if (!escBound || typeof document === 'undefined') return
-  escBound = false
-  document.removeEventListener('keydown', onKeydown)
-  /* #endif */
-}
+})
 
 watch(open, (value) => {
-  if (value) bindEsc()
-  else unbindEsc()
+  if (value) esc.push()
+  else esc.remove()
 })
 
 watch(
@@ -236,8 +222,6 @@ watch(
   },
   { immediate: true }
 )
-
-onUnmounted(unbindEsc)
 </script>
 
 <script>
@@ -269,6 +253,10 @@ export default {
   position: fixed;
   min-width: 180px;
   max-width: 90vw;
+  /* 同 cd-popover：面板限高、内容区自己滚，箭头才不会被 overflow 裁掉 */
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 16px);
   padding: var(--cd-space-4, 16px);
   background-color: var(--cd-bg-elevated, #ffffff);
   border: var(--cd-border-width, 1px) solid var(--cd-border-color-light, #eef2f7);
@@ -283,6 +271,9 @@ export default {
 .cd-popconfirm__body {
   display: flex;
   align-items: flex-start;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .cd-popconfirm__icon {
@@ -335,6 +326,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  flex-shrink: 0;
   margin-top: var(--cd-space-3, 12px);
 }
 

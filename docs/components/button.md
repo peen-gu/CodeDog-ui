@@ -10,6 +10,8 @@ title: Button 按钮
 
 ## 用法
 
+<CdDemo id="button-0"></CdDemo>
+
 ```vue // 来自演示页 components
 <view class="row">
   <cd-button type="primary">
@@ -44,37 +46,6 @@ title: Button 按钮
     <cd-icon name="loader" spin /> 加载中
   </text>
 </view>
-```
-
-```vue // 来自演示页 components
-<cd-row :gutter="[16, 16]">
-  <cd-col :span="{ xs: 24, md: 12, lg: 8 }">
-    <cd-card title="基础卡片" desc="带标题与副标题">
-      <text class="body-text">主体内容区。点击下方按钮可以看到交互反馈。</text>
-      <template #footer>
-        <cd-button size="small" type="primary" block>查看详情</cd-button>
-      </template>
-    </cd-card>
-  </cd-col>
-
-  <cd-col :span="{ xs: 24, md: 12, lg: 8 }">
-    <cd-card title="可点击卡片" desc="有悬停浮起与按压反馈" hoverable shadow="hover" @click="handleCardClick">
-      <text class="body-text">PC 上悬停会微微上浮，手机上按压会轻微收缩。</text>
-    </cd-card>
-  </cd-col>
-
-  <cd-col :span="{ xs: 24, md: 12, lg: 8 }">
-    <cd-card compact>
-      <template #header>
-        <text class="body-text">自定义 header 插槽</text>
-      </template>
-      <template #extra>
-        <cd-icon name="setting" :size="16" />
-      </template>
-      <text class="body-text">紧凑模式，间距更小，适合列表型信息。</text>
-    </cd-card>
-  </cd-col>
-</cd-row>
 ```
 
 ## Props

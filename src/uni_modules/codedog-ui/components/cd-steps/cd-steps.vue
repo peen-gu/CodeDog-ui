@@ -18,8 +18,9 @@
  * 这个坑在 cd-form 的字段注册表那一批已经踩过一次了。
  * 因此另设一个 version 变量，谁读它谁就建立了响应式依赖。
  */
-import { computed, provide, ref } from 'vue'
+import { computed, provide } from 'vue'
 import { CD_STEPS_KEY } from '../../constants'
+import { createOrderRegistry } from '../../utils/slot-order'
 
 defineOptions({
   name: 'cd-steps',
@@ -56,38 +57,21 @@ const props = defineProps({
   },
 })
 
-/** 注册表：只存自增的 uid，顺序即 DOM 顺序 */
-const registry = []
-let uidSeed = 0
-const version = ref(0)
-
-function register() {
-  uidSeed += 1
-  registry.push(uidSeed)
-  version.value += 1
-  return uidSeed
-}
-
-function unregister(uid) {
-  const i = registry.indexOf(uid)
-  if (i > -1) registry.splice(i, 1)
-  version.value += 1
-}
+/**
+ * 注册表：只存自增的 uid，顺序按真实渲染顺序校正。
+ * 为什么必须校正、以及为什么不能只靠 onUpdated，都写在 utils/slot-order 里。
+ */
+const order = createOrderRegistry()
 
 provide(CD_STEPS_KEY, {
   current: computed(() => props.current),
   status: computed(() => props.status),
   direction: computed(() => (props.direction === 'vertical' ? 'vertical' : 'horizontal')),
-  register,
-  unregister,
-  indexOf(uid) {
-    /* 先读一次版本号建立依赖，再查表 —— 顺序不能反 */
-    void version.value
-    return registry.indexOf(uid)
-  },
+  register: order.register,
+  unregister: order.unregister,
+  indexOf: order.indexOf,
   get total() {
-    void version.value
-    return registry.length
+    return order.total
   },
 })
 

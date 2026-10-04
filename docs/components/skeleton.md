@@ -10,6 +10,8 @@ title: Skeleton 骨架屏
 
 ## 用法
 
+<CdDemo id="skeleton-0"></CdDemo>
+
 ```vue // 来自演示页 showcase
 <view class="row row--baseline">
   <cd-button size="small" @click="skeletonLoading = !skeletonLoading">

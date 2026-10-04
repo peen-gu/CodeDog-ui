@@ -10,6 +10,8 @@ title: Empty 空状态
 
 ## 用法
 
+<CdDemo id="empty-0"></CdDemo>
+
 ```vue // 来自演示页 showcase
 <view class="empty-grid">
   <view class="empty-grid__cell">

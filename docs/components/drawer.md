@@ -10,13 +10,13 @@ title: Drawer 抽屉
 
 ## 用法
 
-```vue // 来自演示页 feedback
-<view class="row">
-  <cd-button size="small" @click="drawer = 'auto'">auto（默认）</cd-button>
-  <cd-button size="small" @click="drawer = 'left'">左侧</cd-button>
-  <cd-button size="small" @click="drawer = 'top'">顶部</cd-button>
-  <cd-button size="small" @click="drawer = 'right'">右侧（宽 400）</cd-button>
-</view>
+<CdDemo id="drawer-0"></CdDemo>
+
+```vue
+<cd-button size="small" @click="visible = true">打开抽屉</cd-button>
+<cd-drawer v-model="visible" position="right" :size="320" title="侧边抽屉">
+  <text class="body-text">抽屉承载工作区类操作，dialog 承载决策类操作。</text>
+</cd-drawer>
 ```
 
 ## Props

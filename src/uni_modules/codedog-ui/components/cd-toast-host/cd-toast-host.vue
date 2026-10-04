@@ -50,7 +50,9 @@
 
     <!-- ==================== loading ==================== -->
     <view v-if="loading" class="cd-feedback__loading">
-      <view v-if="loading.mask" class="cd-feedback__loading-mask" />
+      <!-- touchmove 必须.stop.prevent：只加遮罩不加它的话，手指在遮罩上滑动
+           会把滚动穿透给下面的页面，loading 期间背景照样滚 -->
+      <view v-if="loading.mask" class="cd-feedback__loading-mask" @touchmove.stop.prevent="noop" />
       <view class="cd-feedback__loading-body">
         <cd-loading type="spinner" :size="30" />
         <text v-if="loading.message" class="cd-feedback__loading-text">{{ loading.message }}</text>
@@ -74,12 +76,13 @@
  * 全局状态，内容与坐标完全一致，重叠视觉上就是一份。
  * 在小程序里拿不到「哪个页面在最上面」的可靠信号，仲裁是伪需求。
  */
-import { computed } from 'vue'
-import { toastList, modalState, loadingState, hostReady, TOAST_MAX } from '../../service/state'
+import { computed, onUnmounted, watch } from 'vue'
+import { toastList, modalState, loadingState, acquireHost, releaseHost, TOAST_MAX } from '../../service/state'
 import { settleModal } from '../../service/index'
 import { useWotScope } from '../../composables/use-wot-scope'
 import { useBreakpoint, resolveDesktopShape } from '../../composables/use-breakpoint'
 import { SERVICE_Z } from '../../constants'
+import { lockScroll, unlockScroll } from '../cd-image-preview/cd-image-preview.vue'
 import CdIcon from '../cd-icon/cd-icon.vue'
 import CdLoading from '../cd-loading/cd-loading.vue'
 import CdDialog from '../cd-dialog/cd-dialog.vue'
@@ -108,7 +111,13 @@ const { scopeClass, scopeStyle } = useWotScope()
 const { isPC } = useBreakpoint()
 
 /** 小程序端宿主就绪上报；H5 自动挂载流程也会走到这里 */
-hostReady.value = true
+acquireHost()
+
+/* 卸载必须归还计数。
+   不还的话，小程序里从「挂了宿主的页面」跳走之后 hostReady 一直是 true，
+   而实际能渲染的宿主已经没了 —— 服务继续往 host 通道塞数据，
+   toast 不显示、confirm 永久悬挂（没人来 resolve 它）。 */
+onUnmounted(releaseHost)
 
 /** PC 上确认框居中模态、移动端走底部抽屉 —— 与 cd-dialog 的双形态策略一致 */
 const modalMode = computed(() => resolveDesktopShape('auto', isPC) ? 'desktop' : 'mobile')
@@ -122,6 +131,34 @@ function toastsAt(position) {
   const list = toastList.value.filter((t) => t.position === position)
   return list.length > TOAST_MAX ? list.slice(list.length - TOAST_MAX) : list
 }
+
+function noop() {}
+
+/**
+ * loading 期间锁背景滚动（仅 H5）。
+ * 复用 cd-image-preview 导出的计数锁而不是自己再写一份：
+ * 两个计数锁各管各的，等于没有锁 —— 「预览里弹 loading、先关 loading」
+ * 这种嵌套会用后者的 unlock 提前把前者的锁解掉。
+ * 只有真带遮罩的 loading 才锁：无遮罩的 toast 语义上不该阻断操作。
+ */
+let loadingLocked = false
+
+watch(
+  () => !!(loading.value && loading.value.mask),
+  (shouldLock) => {
+    if (shouldLock === loadingLocked) return
+    loadingLocked = shouldLock
+    if (shouldLock) lockScroll()
+    else unlockScroll()
+  },
+  { immediate: true }
+)
+
+onUnmounted(() => {
+  if (!loadingLocked) return
+  loadingLocked = false
+  unlockScroll()
+})
 </script>
 
 <style lang="scss">
@@ -278,7 +315,9 @@ function toastsAt(position) {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--cd-mask, rgba(15, 23, 42, 0.45));
+  /* --cd-mask 在 tokens 里并不存在（只有 --cd-bg-mask），
+     写它等于永远命中兜底值、暗色主题下不会跟着变 */
+  background-color: var(--cd-bg-mask, rgba(15, 23, 42, 0.45));
   z-index: var(--cd-z-loading, 2900);
 }
 

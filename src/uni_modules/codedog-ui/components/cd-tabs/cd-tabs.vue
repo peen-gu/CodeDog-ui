@@ -77,9 +77,15 @@ defineOptions({
   name: 'cd-tabs',
 })
 
-/** 每个实例一个 id 前缀，避免同页面多个 tabs 的 item id 冲突（scroll-into-view 依赖 id 唯一） */
-let uid = 0
-const instanceId = `cd-tabs-${uid++}`
+/**
+ * 每个实例一个 id 前缀，避免同页面多个 tabs 的 item id 冲突（scroll-into-view 依赖 id 唯一）。
+ *
+ * 用 Vue 分配的 instance.uid，不用「let uid = 0 自增」：
+ * 后者写在 <script setup> 顶层看似模块级，编译后实际落在 setup() 体内，
+ * 每个实例执行一次、每次从 0 重来，所有 tabs 的 id 会全撞成 `cd-tabs-0`。
+ */
+const self = getCurrentInstance()
+const instanceId = `cd-tabs-${self ? self.uid : 0}`
 
 const props = defineProps({
   modelValue: {
@@ -149,8 +155,12 @@ function findFirstEnabled() {
 const measuredLeft = ref(0)
 const measured = ref(false)
 
-/** card 形态没有滑动横线，激活态直接由背景色表达 */
-const showIndicator = computed(() => props.type === 'line')
+/**
+ * card 形态没有滑动横线，激活态直接由背景色表达。
+ * tabs 为空时也必须不渲染：等宽分支会用「总数 1」算出 left:50%，
+ * 于是一条 20px 的蓝线孤零零浮在空标签条正中间，看起来像渲染坏了。
+ */
+const showIndicator = computed(() => props.type === 'line' && props.tabs.length > 0)
 
 const indicatorStyle = computed(() => {
   const width = 'var(--cd-tabs-indicator-width, 20px)'
@@ -191,16 +201,34 @@ function measure() {
 
 watch(activeIndex, measure)
 
+/* tabs 常常是接口给的：挂载时还是空数组，onMounted 那次测量什么都量不到，
+   measured 就一直停在 false —— 而 activeIndex 没变的话不会再触发测量，
+   于是横线永久停在 opacity:0。数据到了必须重测。
+   两条 watch 各管一种写法：整体替换（引用变）与原地增删（长度变）。 */
+watch(() => props.tabs, measure)
+watch(() => props.tabs.length, measure)
+
+/** 是否真的挂过 onWindowResize。卸载时只看这个标记，不看 props.scrollable */
+let resizeBound = false
+
 onMounted(() => {
   if (!props.scrollable) return
   measure()
   /* 旋转屏幕 / 拖窗口都会改变标签宽度，必须重测 */
-  uni.onWindowResize(measure)
+  if (typeof uni !== 'undefined' && typeof uni.onWindowResize === 'function') {
+    uni.onWindowResize(measure)
+    resizeBound = true
+  }
 })
 
 onUnmounted(() => {
-  if (!props.scrollable) return
-  uni.offWindowResize(measure)
+  /* 这里刻意不判断 props.scrollable：
+     scrollable 可以在挂载后由 true 改成 false，而当时注册的监听器还在，
+     按 props 判断就会把它永久留在全局 —— 只认「当初有没有挂过」 */
+  if (resizeBound && typeof uni !== 'undefined' && typeof uni.offWindowResize === 'function') {
+    uni.offWindowResize(measure)
+  }
+  resizeBound = false
 })
 
 /* -------------------- 滚动定位 -------------------- */
@@ -323,6 +351,13 @@ export default {
 
 .cd-tabs__item {
   position: relative;
+  /*
+   * 必须显式 border-box：uni 的 view 默认是 content-box，
+   * 而等宽模式给每项的是 `width: 25%` 这类百分比 + 左右 12px padding，
+   * 在 content-box 下实际占宽 = 百分比 + 24px，四项叠起来直接把页面撑宽
+   * （375 视口实测：每项 105px，整条 right=445 > 375，整页能横向滚动）。
+   */
+  box-sizing: border-box;
   display: flex;
   flex-shrink: 0;
   align-items: center;

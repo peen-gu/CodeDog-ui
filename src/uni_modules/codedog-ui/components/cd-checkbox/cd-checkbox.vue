@@ -85,9 +85,12 @@ const emit = defineEmits(['update:modelValue', 'change'])
 
 const group = inject(CD_CHECKBOX_GROUP_KEY, null)
 
-const { formDisabled, notifyChange, notifyBlur } = useField()
+const { field, formDisabled, notifyChange, notifyBlur } = useField()
 
 const isGrouped = computed(() => !!group)
+
+/** 表单校验失败时复选框自身也要有错误视觉，否则看不出是哪个控件错了 */
+const hasFormError = computed(() => !!(field && field.validateState && field.validateState.value === 'error'))
 
 const isChecked = computed(() => {
   if (isGrouped.value) {
@@ -111,6 +114,7 @@ const rootClass = computed(() =>
     isChecked.value ? 'cd-checkbox--checked' : '',
     props.indeterminate && !isChecked.value ? 'cd-checkbox--indeterminate' : '',
     isDisabled.value ? 'cd-checkbox--disabled' : '',
+    hasFormError.value ? 'cd-checkbox--error' : '',
     props.customClass,
   ]
     .filter(Boolean)
@@ -226,6 +230,12 @@ export default {
 /* ==================================================================
  * 状态
  * ================================================================== */
+/* 校验失败：勾选框描边转红。已勾选时底色本身就是主色，靠描边区分不现实，
+   所以只在未勾选状态下生效 —— 未勾选正是「必勾没勾」这个最常见的错误态 */
+.cd-checkbox--error:not(.cd-checkbox--checked):not(.cd-checkbox--indeterminate) .cd-checkbox__box {
+  border-color: var(--cd-color-danger, #ef4444);
+}
+
 .cd-checkbox--disabled {
   opacity: 0.5;
 }

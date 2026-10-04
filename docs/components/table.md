@@ -10,6 +10,8 @@ PC 端多列数据表，移动端自动降级为卡片列表（首列升格为�
 
 ## 用法
 
+<CdDemo id="table-0"></CdDemo>
+
 ```vue // 来自演示页 desktop
 <cd-table
   :columns="columns"

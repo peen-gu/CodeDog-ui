@@ -14,14 +14,41 @@ export function pad(n) {
   return n < 10 ? `0${n}` : String(n)
 }
 
+/**
+ * 'YYYY-MM-DD' 或 'YYYY-MM-DD HH:mm[:ss]'（也接受 T 分隔）。
+ *
+ * 正则必须锚到字符串末尾：只锚开头时，'2024-05-06 13:45' 的前半段就能匹配上，
+ * 于是被当成纯日期解析成当天 00:00，时分秒静默丢掉 ——
+ * 带时分的 date-picker 值会全部塌到零点。
+ * 时间部分整段可选，且末尾带时区字母（如 ...Z）的 ISO 串会匹配失败，
+ * 从而落到下面的 new Date(value) 分支交给引擎处理，这是期望行为。
+ */
+const DATE_TIME_RE = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T\s](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?$/
+
 /** 安全转 Date：'YYYY-MM-DD' 用显式分段解析，避免 iOS 对 'YYYY-MM-DD' 的时区歧义 */
 export function toDate(value) {
   if (!value) return null
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value
   if (typeof value === 'string') {
-    const m = value.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+    const m = value.match(DATE_TIME_RE)
     if (m) {
-      return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+      /*
+       * 构造完必须回读校验。
+       * Date 的构造参数是「会溢出回滚」的：
+       *   '2024-13-45' → 2025-02-13，'2024-02-30' → 2024-02-29
+       * 不校验的话，业务把 min/max 传错一位数字也不会有任何提示，
+       * 日历与日期选择器会静默用一个完全错误的边界。
+       */
+      const y = Number(m[1])
+      const mo = Number(m[2])
+      const d = Number(m[3])
+      const h = Number(m[4] || 0)
+      const mi = Number(m[5] || 0)
+      const s = Number(m[6] || 0)
+      const built = new Date(y, mo - 1, d, h, mi, s)
+      const rolled =
+        built.getFullYear() !== y || built.getMonth() !== mo - 1 || built.getDate() !== d
+      return rolled ? null : built
     }
     const t = new Date(value)
     return Number.isNaN(t.getTime()) ? null : t
@@ -89,7 +116,17 @@ export function compareDay(a, b) {
 }
 
 export function isSameDay(a, b) {
-  return !!a && !!b && compareDay(a, b) === 0
+  /*
+   * 必须先把两边都转成 Date 再比，不能只判 !!a && !!b。
+   *
+   * compareDay 在任一边解析失败时返回 0（表示「无从比较」），
+   * 于是 isSameDay('bad', '2024-01-01') 会得到 true ——
+   * 一个非法日期被判定为「与任意合法日期同一天」，
+   * 日历会据此显示错误的选中态与高亮。
+   */
+  const da = toDate(a)
+  const db = toDate(b)
+  return !!da && !!db && compareDay(a, b) === 0
 }
 
 /** 是否是今天 */
@@ -150,9 +187,15 @@ export function buildMonthGrid(year, month, weekStart = 1) {
   return cells
 }
 
-/** 星期表头。weekStart = 1（周一）为默认，0 表示周日开头 */
+/**
+ * 星期表头。weekStart = 1（周一）为默认，0 表示周日开头。
+ *
+ * 用「按 weekStart 切两段再拼接」的通用写法，而不是 `weekStart === 0 ? base : 平移一位`。
+ * 后者只认 0 与非 0 两种情况：weekStart=2 会返回和 1 完全一样的结果，
+ * 表头与网格错位（第一列写着「一」，实际排的却是周二）。
+ */
 export function weekLabels(weekStart = 1) {
   const base = ['日', '一', '二', '三', '四', '五', '六']
-  if (weekStart === 0) return base
-  return base.slice(1).concat(base[0])
+  const start = ((weekStart % 7) + 7) % 7
+  return base.slice(start).concat(base.slice(0, start))
 }

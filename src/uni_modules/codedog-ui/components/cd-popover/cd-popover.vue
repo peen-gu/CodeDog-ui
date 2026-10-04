@@ -22,7 +22,10 @@
     </view>
 
     <!-- 点击空白处收起：透明的盾，同时阻断对页面其它部分的误触 -->
-    <view v-if="open" class="cd-popover__shield" @click="requestClose('outside')" @touchmove.stop.prevent="noop" />
+    <!-- .stop 必须加：shield 是触发容器的子节点，事件会冒泡回根节点的 @click，
+         于是「关闭 → 立刻又被 onTriggerTap 打开」，表现为点空白处关不掉。
+         touchmove 的 stop.prevent 同理，用来挡住滚动穿透。 -->
+    <view v-if="open" class="cd-popover__shield" @click.stop="requestClose('outside')" @touchmove.stop.prevent="noop" />
   </view>
 </template>
 
@@ -36,8 +39,9 @@
  *   - 面板内点击不会关闭（@click.stop）
  *   - 点击空白 / Esc 收起
  */
-import { computed, onUnmounted, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useFloating, FLOAT_PLACEMENTS } from '../../composables/use-floating'
+import { useEscLayer } from '../../composables/use-esc-stack'
 
 defineOptions({
   name: 'cd-popover',
@@ -133,33 +137,20 @@ const bodyStyle = computed(() => {
 
 /* -------------------- Esc 收起（H5） -------------------- */
 
-function onKeydown(event) {
-  if (event.key !== 'Escape' && event.keyCode !== 27) return
+/**
+ * 走共享的 Esc 层级栈，而不是自己 document.addEventListener：
+ * 气泡是「最容易被叠在别的浮层上面」的一类组件 ——
+ * 一个 popover 开着的同时 service 弹了 confirm，各自监听会一次 Esc
+ * 收到两份事件：popover 关掉、confirm 被判成取消，用户根本没来得及看内容。
+ * 入栈后只有栈顶那一层会收到回调，其余层原地不动。
+ */
+const esc = useEscLayer(() => {
   requestClose('esc')
-}
+})
 
-let escBound = false
-
-function bindEsc() {
-  /* #ifdef H5 */
-  if (escBound || typeof document === 'undefined') return
-  escBound = true
-  document.addEventListener('keydown', onKeydown)
-  /* #endif */
-}
-
-function unbindEsc() {
-  /* #ifdef H5 */
-  if (!escBound || typeof document === 'undefined') return
-  escBound = false
-  document.removeEventListener('keydown', onKeydown)
-  /* #endif */
-}
-
-/* floating.open 变化时同步 Esc 监听 */
 watch(open, (value) => {
-  if (value) bindEsc()
-  else unbindEsc()
+  if (value) esc.push()
+  else esc.remove()
 })
 
 /** 支持外部受控：v-model 置 true / false 都能驱动面板 */
@@ -172,8 +163,6 @@ watch(
   },
   { immediate: true }
 )
-
-onUnmounted(unbindEsc)
 </script>
 
 <style lang="scss">
@@ -195,6 +184,12 @@ onUnmounted(unbindEsc)
   position: fixed;
   min-width: 120px;
   max-width: 90vw;
+  /* 内容再长也不许顶出屏幕：面板限高、正文区自己滚。
+     限高放在面板、滚动放在正文，是为了让露在面板外的箭头不被裁掉 ——
+     直接在面板上写 overflow 的话，rotated 的箭头会整块消失。 */
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 16px);
   background-color: var(--cd-bg-elevated, #ffffff);
   border: var(--cd-border-width, 1px) solid var(--cd-border-color-light, #eef2f7);
   border-radius: var(--cd-radius-lg, 12px);
@@ -203,6 +198,7 @@ onUnmounted(unbindEsc)
 }
 
 .cd-popover__title {
+  flex-shrink: 0;
   padding: var(--cd-space-3, 12px) var(--cd-space-4, 16px) 0;
 }
 
@@ -214,6 +210,10 @@ onUnmounted(unbindEsc)
 }
 
 .cd-popover__body {
+  /* 面板被限高后，正文区必须能收缩并自己滚动，否则溢出部分会被切掉且滚不动 */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   padding: var(--cd-space-3, 12px) var(--cd-space-4, 16px) var(--cd-space-4, 16px);
   font-size: var(--cd-font-size-sm, 12px);
   line-height: var(--cd-line-height-base, 1.5);

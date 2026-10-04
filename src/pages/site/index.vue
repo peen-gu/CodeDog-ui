@@ -57,7 +57,7 @@
         <cd-col :span="isPC ? 11 : 24">
           <cd-card shadow title="组件预览" desc="全部元素取自 CodeDogUI 自身">
             <template #extra>
-              <cd-badge value="62" />
+              <cd-badge value="68" />
             </template>
 
             <view class="preview">
@@ -128,7 +128,7 @@
     <!-- ================= 组件总览 ================= -->
     <view class="section">
       <view class="section__head">
-        <text class="section__title">62 个组件，七层结构</text>
+        <text class="section__title">68 个组件，七类分组</text>
         <text class="section__desc">双形态、通用、表单、反馈、导航——自下而上逐级依赖，改动只从上往下传导。</text>
       </view>
 
@@ -283,7 +283,7 @@ const goDemo = () => {
 
 /* ---------------- 数据 ---------------- */
 const stats = [
-  { value: '62', label: '组件总数' },
+  { value: '68', label: '组件总数' },
   { value: '9', label: '组合组件（provide/inject）' },
   { value: '4', label: '覆盖终端形态' },
   { value: 'MIT', label: '开源许可' },
@@ -295,7 +295,7 @@ const features = [
   { icon: 'sliders', title: '三层设计令牌', desc: '原始值 → 语义层 → 组件层，改一处不引发雪崩，运行期可切亮暗。' },
   { icon: 'shield', title: '零全局污染', desc: '不使用标签选择器、通配符与全局 reset，小程序端同样安全。' },
   { icon: 'grid', title: 'easycom 自动引入', desc: '模板里直接写 <cd-button />，未使用的组件不进入产物。' },
-  { icon: 'star-fill', title: '内置 72 个图标', desc: 'CSS mask + 内联 SVG，零网络请求、零字体文件，颜色跟随文字。' },
+  { icon: 'star-fill', title: '内置 73 个图标', desc: 'CSS mask + 内联 SVG，零网络请求、零字体文件，颜色跟随文字。' },
 ]
 
 const layerTabs = [
@@ -309,7 +309,7 @@ const layerTabs = [
 
 const layers = [
   { name: 'cd-button', group: 'core', desc: '主/次/危险三态，plain、round、block 组合，含 icon 插槽' },
-  { name: 'cd-icon', group: 'core', desc: '72 个内置图标，mask 渲染，颜色跟随 currentColor' },
+  { name: 'cd-icon', group: 'core', desc: '73 个内置图标，mask 渲染，颜色跟随 currentColor' },
   { name: 'cd-row / cd-col', group: 'core', desc: '24 栅格，响应式 span，宽度编译期算成百分比' },
   { name: 'cd-card', group: 'core', desc: 'header / extra / footer 插槽，密度可调' },
   { name: 'cd-form / cd-form-item', group: 'form', desc: 'provide/inject 组合，useField 接入统一校验链' },
@@ -317,9 +317,14 @@ const layers = [
   { name: 'cd-switch', group: 'form', desc: '支持任意一对值，不只布尔' },
   { name: 'cd-checkbox / radio', group: 'form', desc: '独立与组内双用法，校验由组统一触发' },
   { name: 'cd-select / date-picker', group: 'form', desc: '双形态：手机底部面板，PC 下拉面板' },
+  { name: 'cd-picker', group: 'form', desc: '通用多列选择器，草稿态与提交态分离，级联改上游自动截断下游' },
+  { name: 'cd-cascader', group: 'form', desc: '级联选择，面板多列并排一眼看全路径，fieldNames 做字段映射' },
+  { name: 'cd-calendar', group: 'form', desc: '常驻日历面板，single / multiple / range 三模式，marks 打点' },
   { name: 'cd-table', group: 'data', desc: '手机上自动降级为卡片列表' },
   { name: 'cd-progress', group: 'data', desc: '线形与环形，不用 canvas' },
   { name: 'cd-timeline / steps', group: 'data', desc: '组合式结构，父子通过上下文通信' },
+  { name: 'cd-swiper', group: 'data', desc: '轮播，底层用 uni 原生 swiper，桌面形态补左右翻页箭头' },
+  { name: 'cd-image-preview', group: 'data', desc: '图片预览，手势翻页 + 双指/滚轮缩放，支持命令式调用' },
   { name: 'cd-dialog / drawer', group: 'feedback', desc: '复用 wot 浮层能力，主题走桥接层' },
   { name: 'toast / confirm', group: 'feedback', desc: '命令式服务调用，免写 v-model' },
   { name: 'cd-tabs', group: 'nav', desc: 'line / card 双视觉，badge 与横向滚动' },
@@ -384,9 +389,11 @@ const faqs = [
 ]
 
 const milestones = [
-  { timestamp: '2026-10-01', type: 'success', icon: 'check', title: 'v0.5.0 · 发布到 npm', desc: 'codedog-ui 正式上线，62 个组件，MIT 许可' },
+  { timestamp: '2026-10-02', type: 'success', icon: 'check', title: 'v0.5.2 · 组件补到 67 个', desc: '新增日历、选择器、级联、轮播、图片预览；修掉 6 项致命项，第二轮全库复查 59 项全部落地' },
+  { timestamp: '2026-10-01', type: 'primary', icon: 'home', title: 'v0.5.1 · 官网与文档中心改版', desc: '两个站点改用 CodeDogUI 自绘视觉，补上站点打包与部署脚本' },
+  { timestamp: '2026-10-01', type: 'success', icon: 'check', title: 'v0.5.0 · 发布到 npm', desc: 'codedog-ui 正式上线（当时 62 个组件），MIT 许可' },
   { timestamp: '2026-10-01', type: 'primary', icon: 'grid', title: '第五批 25 个组件', desc: '导航、容器与工具类全部补齐' },
-  { timestamp: '2026-10-01', type: 'primary', icon: 'file', title: '配置文档中心上线', desc: '62 个组件页 + 9 篇指南，自动生成 API 表格' },
+  { timestamp: '2026-10-01', type: 'primary', icon: 'file', title: '配置文档中心上线', desc: '上线时 62 个组件页 + 9 篇指南，自动生成 API 表格' },
   { timestamp: '规划中', type: 'info', icon: 'cloud', title: 'Trusted Publishing 自动发版', desc: 'GitHub Actions OIDC，仓库不再保存任何 token' },
 ]
 </script>

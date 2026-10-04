@@ -5,6 +5,9 @@ electron/dist/
 .workbuddy/
 docs/.vitepress/dist/
 docs/.vitepress/.temp/
+docs/.vitepress/cache/
+# 不带斜杠：docs-dist 是符号链接，带斜杠的目录规则匹配不到
+docs-dist
 docs-dist/
 
 # 对外交付的站点压缩包与解压验证目录（不入库）
@@ -20,6 +23,8 @@ docs/.vitepress/_temp_old_*/
 
 *.tgz
 *.log
+# 编辑备份（含随机数后缀），不要混进版本历史
+*.bak-20*
 npm-debug.log*
 yarn-error.log*
 

@@ -127,11 +127,25 @@ const clamped = computed(() => Math.min(100, Math.max(0, Number(props.percentage
 const textContent = computed(() => props.text || `${clamped.value}%`)
 
 /**
- * 条内文字需要足够的高度才放得下。
- * 不满足条件时静默回退到右侧显示 —— 与其把文字裁掉一半，
+ * 条内文字的比例下限。
+ * 5% 时填充条只有整条的 1/20 宽，而外层 .cd-progress__bar 是 overflow:hidden ——
+ * 条内文字会被整段裁掉、一个字都看不见（此时又因为 effectiveTextInside 成立
+ * 而不在右侧渲染，于是文字彻底消失）。低于这个比例就降级到条外显示。
+ */
+const TEXT_INSIDE_MIN_PCT = 30
+
+/**
+ * 条内文字需要「足够的高度」+「足够的宽度」才放得下。
+ * 不满足条件时静默回退到右侧显示 —— 与其把文字裁掉，
  * 不如换个位置放，用户根本不会察觉这里发生过一次降级。
  */
-const effectiveTextInside = computed(() => props.type === 'line' && props.textInside && props.strokeWidth >= 16)
+const effectiveTextInside = computed(
+  () =>
+    props.type === 'line' &&
+    props.textInside &&
+    props.strokeWidth >= 16 &&
+    clamped.value >= TEXT_INSIDE_MIN_PCT
+)
 
 const rootClass = computed(() =>
   [

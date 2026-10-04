@@ -8,51 +8,6 @@ title: ConfigProvider 全局配置
 
 所有页面的根节点。向下广播主题（亮/暗）、尺寸密度与圆角形态，并把 wot-design-uni 的 CSS 变量一并桥接过去。页面里必须包它，否则组件拿不到令牌，暗色模式下会呈现一套未经设计的颜色。
 
-## 用法
-
-```vue // 来自演示页 components
-<cd-config-provider :size="density">
-  <view class="cd-page cd-page--desktop">
-    <view class="cd-container">
-      <!-- ================= 页头 ================= -->
-      <view class="hero">
-        <view class="hero__main">
-          <text class="hero__title">组件库</text>
-          <text class="hero__desc">
-            icon · input · card · row/col · tabs · form —— 全部零外部依赖，两端（H5 / 小程序）行为一致
-          </text>
-        </view>
-        <view class="hero__actions">
-          <cd-button size="small" @click="toggleDensity">
-            {{ density === 'small' ? '默认密度' : '紧凑密度' }}
-          </cd-button>
-        </view>
-      </view>
-
-      <!-- ================= cd-icon ================= -->
-      <cd-card class="section" title="cd-icon" desc="自研矢量图标。零字体、零外链 CDN，颜色跟随父级文字色。">
-        <template #extra>
-          <text class="muted">{{ iconNames.length }} 个</text>
-        </template>
-
-        <view class="icon-grid">
-          <view v-for="name in iconNames" :key="name" class="icon-cell">
-            <cd-icon :name="name" :size="20" />
-            <text class="icon-cell__name">{{ name }}</text>
-          </view>
-        </view>
-      </cd-card>
-
-      <!-- ================= 图标在上下文中的用法 ================= -->
-      <cd-card class="section" title="图标的实际用法" desc="图标默认 1em，自动跟随所在文字的字号；也可以显式给颜色。">
-        <view class="row">
-          <cd-button type="primary">
-            <template #icon><cd-icon name="plus" :size="16" /></template>
-            新建
-          </cd-button>
-          <cd-button>
-```
-
 ## Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |

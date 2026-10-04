@@ -10,6 +10,8 @@ title: SearchBar 搜索框
 
 ## 用法
 
+<CdDemo id="search-bar-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <view class="stack">
   <cd-search-bar v-model="keyword" placeholder="搜索组件 / 文档" @search="log(`搜索：${keyword}`)" />

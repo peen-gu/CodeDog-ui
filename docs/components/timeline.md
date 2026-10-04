@@ -10,6 +10,8 @@ title: Timeline 时间线
 
 ## 用法
 
+<CdDemo id="timeline-0"></CdDemo>
+
 ```vue // 来自演示页 navigation
 <view class="row">
   <cd-button size="small" @click="timelineReverse = !timelineReverse">

@@ -10,6 +10,8 @@ title: Loading 加载
 
 ## 用法
 
+<CdDemo id="loading-0"></CdDemo>
+
 ```vue // 来自演示页 showcase
 <view class="row row--baseline">
   <cd-loading :size="20" />

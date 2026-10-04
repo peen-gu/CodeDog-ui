@@ -20,6 +20,8 @@ export const isH5: boolean
 export const isMP: boolean
 export const isWeixin: boolean
 export const isApp: boolean
+/** 是否 Electron 桌面套壳（Electron 下 isH5 同样为 true，靠这个区分浏览器与桌面端） */
+export const isElectron: boolean
 export const isNvue: boolean
 
 export type DeviceType = 'mobile' | 'desktop' | 'tablet'
@@ -224,6 +226,25 @@ export declare function settleModal(result: boolean): void
 /** 手动关闭某一条 toast */
 export declare function dismissToast(id: number): void
 
+export interface PreviewImageOptions {
+  /** 图片地址数组；每项可以是字符串，也可以是带 url 字段的对象 */
+  urls: Array<string | { url: string }>
+  /** 打开后停在第几张。传数字为下标，传字符串为图片地址 */
+  current?: number | string
+  loop?: boolean
+  showIndex?: boolean
+  closeOnClickMask?: boolean
+  zoomable?: boolean
+  maxZoom?: number
+}
+
+/**
+ * 命令式图片预览。
+ * H5 端动态挂载 cd-image-preview 宿主（用到才加载）；
+ * 小程序端降级到 uni.previewImage。
+ */
+export declare function previewImage(options: PreviewImageOptions | string): void
+
 /* ==================== 主题桥接（wot-design-uni） ==================== */
 
 export type WotThemeVars = Record<string, string>
@@ -322,6 +343,18 @@ export declare const PATTERNS: {
   ip: RegExp
 }
 
+/**
+ * 密码强度校验器：要求同时含字母与数字。
+ *
+ * 之所以单独成一个函数而不是塞进 PATTERNS.password：
+ * 「同时含字母和数字」用一条正则写出来就是零宽先行断言（lookahead），
+ * 而小程序的 JS 引擎对 lookahead 的支持不一致 —— 已列入硬约束禁用。
+ * PATTERNS.password 因此只校验「长度与允许的字符」，
+ * 需要强度要求时把本函数作为 validator 传入：
+ *   rules: [{ validator: passwordMixed, message: '需 6-16 位且同时含字母与数字' }]
+ */
+export declare function passwordMixed(value: string): boolean
+
 /* ==================== 日期工具（纯函数） ==================== */
 
 export type DateLike = Date | string | number
@@ -363,6 +396,40 @@ export declare function buildMonthGrid(
 export declare function weekLabels(weekStart?: 0 | 1): string[]
 
 /* ==================== 常量与注入键 ==================== */
+
+/**
+ * 平台信息一次性取全。
+ * 与直接读那些散装常量（isH5 / deviceType / osName…）等价，
+ * 只是省得在业务里 import 一串。
+ */
+export declare function usePlatform(): {
+  platform: UniPlatform
+  isH5: boolean
+  isMP: boolean
+  isWeixin: boolean
+  isApp: boolean
+  isNvue: boolean
+  deviceType: DeviceType
+  osName: string
+  isTouchDevice: boolean
+  systemInfo: UniApp.GetSystemInfoResult
+}
+
+/** 浮层可用的方位取值 */
+export declare const FLOAT_PLACEMENTS: FloatingPlacement[]
+
+/**
+ * Esc 层级栈。多个浮层同时打开时，Esc 只派发给最上面那一层。
+ * 返回的 push / remove 由调用方在「打开 / 关闭」时调用，卸载时自动出栈。
+ */
+export declare function useEscLayer(
+  handler: (event: KeyboardEvent) => void
+): {
+  push: () => void
+  remove: () => void
+  /** 自己是不是当前最上面那一层 */
+  isTop: () => boolean
+}
 
 /** 组件类名前缀 */
 export declare const NS: 'cd'

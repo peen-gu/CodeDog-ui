@@ -52,15 +52,15 @@
 /*
  * 兜底：CodeDogUI 的模板写的是 uni-app 的 view / text，
  * 浏览器里它们是未知元素、默认 inline，会让布局塌掉。
- * 这一条只作用于文档站引入的组件（宿主兜底），不进组件库本身。
+ * 注意必须用 :where() 把特异性压到 0 —— 否则 (0,1,1) 会压过
+ * demo-support.css 里 `.row { display:flex }` 这类 (0,1,0) 的布局规则，
+ * 预览会退化成纵向堆叠。
  */
-.cd-host view,
-view {
+:where(view) {
   display: block;
 }
 
-.cd-host text,
-text {
+:where(text) {
   display: inline;
 }
 
@@ -118,4 +118,13 @@ text {
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+}
+
+/* 首页 feature 卡片的内联 SVG 图标（Lucide 线稿风），颜色跟随品牌色 */
+.VPFeature .icon {
+  margin-bottom: 4px;
+}
+
+.VPFeature .icon svg {
+  color: var(--vp-c-brand-1);
 }

@@ -472,7 +472,13 @@ function navigate(url) {
   align-items: center;
 }
 
-.row > * {
+/* .row 不用通配符 >*：WXSS 不支持。小程序端 <view>/<text> 编译成原标签，H5 端编译成 uni-view / uni-text，两端标签都列 */
+.row > view,
+.row > uni-view,
+.row > text,
+.row > uni-text,
+.row > button,
+.row > uni-button {
   margin: 0 var(--cd-space-2, 8px) var(--cd-space-2, 8px) 0;
 }
 
@@ -514,7 +520,13 @@ function navigate(url) {
   flex-direction: column;
 }
 
-.stack > * {
+/* .stack 不用通配符 >*：WXSS 不支持。小程序端 <view>/<text> 编译成原标签，H5 端编译成 uni-view / uni-text，两端标签都列 */
+.stack > view,
+.stack > uni-view,
+.stack > text,
+.stack > uni-text,
+.stack > button,
+.stack > uni-button {
   margin-bottom: var(--cd-space-2, 8px);
 }
 
@@ -551,7 +563,10 @@ function navigate(url) {
   font-size: 10px;
   color: var(--cd-text-placeholder, #94a3b8);
   text-align: center;
-  word-break: break-all;
+  /* 不用 word-break: break-all —— 那会把 corner-down-left 断成「corner-down-l eft」这种词中碎行。
+     overflow-wrap 优先在连字符/词边界断，长名断出来是「corner-down- / left」，可读 */
+  word-break: normal;
+  overflow-wrap: break-word;
   line-height: 1.3;
 }
 

@@ -1,5 +1,10 @@
 <template>
-  <view class="cd-card" :class="rootClass" :style="customStyle">
+  <!--
+    根节点必须真的绑上 click：组件声明了 click 事件，但绑定漏了的话
+    emit('click') 永远没人调用，业务写了 @click 却收不到。
+    内部若有自己的可点元素（按钮、链接），由业务侧自行 @click.stop。
+  -->
+  <view class="cd-card" :class="rootClass" :style="customStyle" @click="handleClick">
     <!-- ---------- 头部 ---------- -->
     <view v-if="hasHeader" class="cd-card__header">
       <view class="cd-card__header-main">

@@ -10,6 +10,8 @@ title: NoticeBar 通知栏
 
 ## 用法
 
+<CdDemo id="notice-bar-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <view class="stack">
   <cd-notice-bar text="这是一条静态通知，超长内容会自动省略号截断，不会把布局撑破。" />

@@ -302,7 +302,13 @@ function navigate(url) {
   margin-top: var(--cd-space-3, 12px);
 }
 
-.row > * {
+/* .row 不用通配符 >*：WXSS 不支持。小程序端 <view>/<text> 编译成原标签，H5 端编译成 uni-view / uni-text，两端标签都列 */
+.row > view,
+.row > uni-view,
+.row > text,
+.row > uni-text,
+.row > button,
+.row > uni-button {
   margin: 0 var(--cd-space-2, 8px) var(--cd-space-2, 8px) 0;
 }
 

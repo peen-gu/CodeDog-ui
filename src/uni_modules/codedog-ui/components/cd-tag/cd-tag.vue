@@ -7,7 +7,9 @@
     <text v-if="label" class="cd-tag__text">{{ label }}</text>
     <slot />
 
-    <view v-if="showClose" class="cd-tag__close" @click="handleClose">
+    <!-- .stop 不能省：叉号在标签内部，冒泡上去会同时触发 close 和 click，
+         业务侧「点叉号」会收到两个事件，删除动作被执行两次 -->
+    <view v-if="showClose" class="cd-tag__close" @click.stop="handleClose">
       <cd-icon name="close" size="0.85em" />
     </view>
   </view>

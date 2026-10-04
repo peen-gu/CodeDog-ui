@@ -158,6 +158,14 @@ const props = defineProps({
     type: String,
     default: 'picture-card',
   },
+  /**
+   * 选完文件是否立即上传。false 时为「先选后传」，
+   * 业务在提交表单时自己调用接口。
+   */
+  autoUpload: {
+    type: Boolean,
+    default: true,
+  },
   disabled: {
     type: Boolean,
     default: false,
@@ -189,23 +197,41 @@ const isDisabled = computed(() => props.disabled || formDisabled.value)
 
 /* -------------------- 文件记录归一化 -------------------- */
 
-let keySeed = 0
-
+/**
+ * key 一律由 url 推导，**绝不用自增种子**。
+ *
+ * 早先这里在 normalize 里做 keySeed++，而 normalize 是被 computed 调用的 ——
+ * 于是「读一次 files」就顺手改了组件状态：字符串数组回填时，任何一次
+ * patchAt 都会让所有卡片的 :key 整体变一遍，列表 DOM 全量重建、图片重新
+ * 加载，小程序端表现为持续闪烁。computed 必须是纯函数。
+ *
+ * 用 url 做 key 还顺带满足「同一个文件的 key 永远不变」：
+ * 上传中途删掉前面的文件，后面文件的 key 不受影响。
+ */
 function normalize(raw) {
   if (typeof raw === 'string') {
-    return { key: `cdn-${keySeed++}`, url: raw, name: raw.split('/').pop() || '', status: 'success', percent: 100 }
+    return { key: `cdu-${raw}`, url: raw, name: raw.split('/').pop() || '', status: 'success', percent: 100 }
   }
   const record = { ...(raw || {}) }
-  if (!record.key) {
-    keySeed += 1
-    record.key = `cdn-${keySeed}`
-  }
+  if (!record.key) record.key = `cdu-${record.url || ''}`
   record.status = record.status || 'success'
   record.percent = Number.isFinite(record.percent) ? record.percent : 100
   return record
 }
 
-const files = computed(() => (props.modelValue || []).map(normalize))
+const files = computed(() => {
+  const list = (props.modelValue || []).map(normalize)
+  /*
+   * 兜底重复 url（同一个文件被选了两次）：key 撞车会让 Vue 报重复 key
+   * 并可能错配 DOM，所以这里按出现顺序补一个序号后缀。
+   * 计数只在这份局部 map 里，不碰组件状态，computed 依然是纯函数。
+   */
+  const seen = {}
+  return list.map((item) => {
+    seen[item.key] = (seen[item.key] || 0) + 1
+    return seen[item.key] > 1 ? { ...item, key: `${item.key}@${seen[item.key]}` } : item
+  })
+})
 
 const canAdd = computed(() => {
   if (isDisabled.value) return false
@@ -215,6 +241,9 @@ const canAdd = computed(() => {
 
 const rootClass = computed(() =>
   [
+    /* listType 必须落到类名上：CSS 里的 .cd-upload--list 全靠它命中，
+       漏了的话 list-type="list" 时触发区仍是 84×84 的虚线方块 */
+    `cd-upload--${props.listType}`,
     isDisabled.value ? 'cd-upload--disabled' : '',
     hasError.value ? 'cd-upload--error' : '',
     props.customClass,
@@ -311,8 +340,8 @@ function handlePicked(paths, tempFiles) {
   const next = [...files.value, ...accepted]
   emitValue(next)
 
-  if (props.autoUpload !== false) {
-    accepted.forEach((item, i) => upload(item, next.indexOf(item)))
+  if (props.autoUpload) {
+    accepted.forEach((item) => upload(item))
   }
 }
 
@@ -324,27 +353,34 @@ function emitValue(list) {
   notifyChange(list)
 }
 
-function patchAt(index, patch) {
-  const list = files.value.map((item, i) => (i === index ? { ...item, ...patch } : item))
+/**
+ * 按 key 定位，不按 index。
+ * 进度回调是异步的：上传途中用户删掉了前面的某个文件，
+ * 按下标写就会把进度写到另一个文件上 —— key 是唯一稳定的锚点。
+ */
+function patchAt(key, patch) {
+  const list = files.value.map((item) => (item.key === key ? { ...item, ...patch } : item))
   emitValue(list)
   return list
 }
 
-function upload(item, index) {
+function upload(item) {
+  const key = item.key
+
   if (props.customRequest) {
     props.customRequest({
       file: item,
       onProgress: (percent) => {
-        patchAt(index, { percent: Math.round(percent), status: 'uploading' })
+        patchAt(key, { percent: Math.round(percent), status: 'uploading' })
         emit('progress', { file: item, percent })
       },
       onSuccess: (res) => {
-        patchAt(index, { status: 'success', percent: 100 })
+        patchAt(key, { status: 'success', percent: 100 })
         emit('success', { file: item, res })
         notifyChange(files.value)
       },
       onError: (err) => {
-        patchAt(index, { status: 'error', percent: 0 })
+        patchAt(key, { status: 'error', percent: 0 })
         emit('fail', { file: item, error: err })
       },
     })
@@ -354,7 +390,7 @@ function upload(item, index) {
   if (!props.action) {
     /* 没有 action 也没有 customRequest：把条目标记为成功即可。
        「先选后传」由业务在 submit 时自己处理，这里不假装上传过 */
-    patchAt(index, { status: 'success', percent: 100 })
+    patchAt(key, { status: 'success', percent: 100 })
     return
   }
 
@@ -366,23 +402,23 @@ function upload(item, index) {
     header: props.header,
     success: (res) => {
       if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-        patchAt(index, { status: 'success', percent: 100, response: res.data })
+        patchAt(key, { status: 'success', percent: 100, response: res.data })
         emit('success', { file: item, res })
       } else {
-        patchAt(index, { status: 'error', percent: 0, response: res.data })
+        patchAt(key, { status: 'error', percent: 0, response: res.data })
         emit('fail', { file: item, res })
       }
       notifyChange(files.value)
     },
     fail: (err) => {
-      patchAt(index, { status: 'error', percent: 0 })
+      patchAt(key, { status: 'error', percent: 0 })
       emit('fail', { file: item, error: err })
     },
   })
 
   if (task && task.onProgressUpdate) {
     task.onProgressUpdate((res) => {
-      patchAt(index, { percent: res.progress, status: 'uploading' })
+      patchAt(key, { percent: res.progress, status: 'uploading' })
       emit('progress', { file: item, percent: res.progress })
     })
   }
@@ -391,8 +427,8 @@ function upload(item, index) {
 function retry(index) {
   const item = files.value[index]
   if (!item || item.status !== 'error') return
-  patchAt(index, { status: 'uploading', percent: 0 })
-  upload({ ...item }, index)
+  patchAt(item.key, { status: 'uploading', percent: 0 })
+  upload({ ...item })
 }
 
 /* -------------------- 移除与预览 -------------------- */
@@ -418,6 +454,12 @@ function preview(index) {
 
 <style lang="scss">
 @import '../../styles/scss-tokens.scss';
+
+/**
+ * 颜色命名约定：本组件私有的颜色令牌统一 --cd-upload-* 前缀，
+ * 一律写成 var(--x, 兜底原色) —— 业务不传变量时视觉与此前完全一致。
+ * 共用语义色（--cd-color-danger 等）走库级令牌，不另起名字。
+ */
 
 .cd-upload {
   @include cd-reset;
@@ -540,16 +582,16 @@ function preview(index) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(15, 23, 42, 0.55);
+  background-color: var(--cd-upload-mask-bg, rgba(15, 23, 42, 0.55));
 }
 
 .cd-upload__mask--error {
-  background-color: rgba(220, 38, 38, 0.72);
+  background-color: var(--cd-upload-mask-error-bg, rgba(239, 68, 68, 0.72));
 }
 
 .cd-upload__mask-text {
   font-size: var(--cd-font-size-sm, 12px);
-  color: #ffffff;
+  color: var(--cd-upload-mask-color, #ffffff);
 }
 
 .cd-upload__remove {
@@ -561,7 +603,7 @@ function preview(index) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(15, 23, 42, 0.6);
+  background-color: var(--cd-upload-remove-bg, rgba(15, 23, 42, 0.6));
   border-bottom-left-radius: var(--cd-radius-md, 8px);
   cursor: pointer;
 }
@@ -574,7 +616,7 @@ function preview(index) {
   height: 1.5px;
   margin-top: -0.75px;
   margin-left: -4px;
-  background-color: #ffffff;
+  background-color: var(--cd-upload-remove-bar, #ffffff);
   border-radius: 2px;
 }
 
@@ -632,7 +674,7 @@ function preview(index) {
 }
 
 .cd-upload__row-state--error {
-  color: var(--cd-color-danger, #dc2626);
+  color: var(--cd-color-danger, #ef4444);
   cursor: pointer;
 }
 

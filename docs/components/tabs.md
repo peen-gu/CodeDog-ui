@@ -10,6 +10,8 @@ line / card 两种视觉，支持 badge 与横向滚动。等宽模式的指示�
 
 ## 用法
 
+<CdDemo id="tabs-0"></CdDemo>
+
 ```vue // 来自演示页 components
 <cd-tabs v-model="tabLine" :tabs="tabsLine">
   <template #default="{ active }">

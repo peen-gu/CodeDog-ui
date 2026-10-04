@@ -4,7 +4,7 @@ title: 组件总览
 
 # 组件总览
 
-当前共 **62** 个组件，下表由源码自动生成（重跑gen-doc 刷新）。
+当前共 **80** 个组件，下表由源码自动生成（重跑gen-doc 刷新）。
 
 ## 基础设施
 
@@ -20,6 +20,8 @@ title: 组件总览
 | [Button 按钮](/components/button) | 自研而非二次封装：按钮没有遮罩、滚动锁、层级这些难点，自研能 100% 掌控设计语言。支持 5 … | 9 | 1 | 2 |
 | [Icon 图标](/components/icon) | 内置 72 个 24×24 描边图标，CSS mask + data URI 实现，颜色跟随 c… | 6 | 1 | 0 |
 | [Divider 分割线](/components/divider) | 水平/垂直双向、支持中间标题与虚线。用 border 画线，因此切换 dashed 只是换一个 … | 6 | 0 | 1 |
+| [Typing 打字机](/components/typing) | 逐字输出的流式文本，给 AI 回复与引导文案用。调度用 setTimeout 链而非 setIn… | 10 | 4 | 0 |
+| [Watermark 水印](/components/watermark) | 纯 text 节点平铺，不用 canvas 生成背景图。画布放大倍数由旋转角算出来，而不是硬写 … | 13 | 0 | 1 |
 
 ## 布局与容器
 
@@ -39,6 +41,7 @@ title: 组件总览
 |---|---|---|---|---|
 | [Form 表单](/components/form) | 表单容器，向下广播 rules、label 布局与整表禁用。validate() 返回 bool… | 11 | 2 | 1 |
 | [FormItem 表单项](/components/form-item) | 单个字段的上下文提供者：向下给控件传 value/disabled，向上回报 blur/chan… | 11 | 0 | 1 |
+| [FormRender Schema 表单引擎](/components/form-render) | 给一份字段描述数组（schema）和一个对象，自动渲染整张表单：内建 12 种控件、显隐与禁用联… | 14 | 3 | 3 |
 | [Input 输入框](/components/input) | 支持清除按钮、密码可见切换、字数统计与前后缀插槽；type="textarea" 时切换为多行形… | 20 | 7 | 2 |
 | [SearchBar 搜索框](/components/search-bar) | 无边框药丸形搜索容器，右侧可挂动作位（取消/搜索）。已接入 useField 校验链。 | 15 | 7 | 2 |
 | [Select 选择器](/components/select) | 移动端呈现底部动作面板、PC 呈现下拉面板。复用 wd-action-sheet 内核并做主题桥… | 10 | 5 | 0 |
@@ -50,9 +53,15 @@ title: 组件总览
 | [Slider 滑块](/components/slider) | 支持单选与范围双滑块。按下时缓存轨道矩形避免每次取反算时读取；量化顺序是「先量化再钳制」；双滑块… | 10 | 3 | 0 |
 | [Rate 评分](/components/rate) | 支持半星，实现方式是双层叠加 + 像素级裁切：上层已选中层按 value*(size+gap) … | 14 | 2 | 1 |
 | [Stepper 步进器](/components/stepper) | 按住连加、边界钳制并抛出 overlimit。同时绑 touchstart 与 mousedow… | 13 | 5 | 0 |
-| [Upload 上传](/components/upload) | 受控优先——列表真值在 modelValue，可用 customRequest 完全接管上传接口… | 14 | 8 | 1 |
+| [Upload 上传](/components/upload) | 受控优先——列表真值在 modelValue，可用 customRequest 完全接管上传接口… | 15 | 8 | 1 |
 | [DatePicker 日期选择](/components/date-picker) | 移动端走系统原生滚轮、PC 端自研日历面板——自研滚轮要处理 scroll-top 回环与惯性判… | 10 | 3 | 0 |
 | [TimePicker 时间选择](/components/time-picker) | 移动端原生、PC 双列（时/分）。刻意不做秒。 | 9 | 3 | 0 |
+| [Calendar 日历](/components/calendar) | 常驻日历面板（不是弹层），single / multiple / range 三种模式。与 da… | 16 | 5 | 3 |
+| [Picker 多列选择器](/components/picker) | 选自定义数据的通用弹层：columns 传「列数组的数组」是独立多列，加 cascade 后传树… | 15 | 5 | 0 |
+| [Cascader 级联选择](/components/cascader) | 省市区、品类树这类「选一条从根到叶路径」的控件。与 picker 的分工：picker 是弹层、… | 15 | 4 | 0 |
+| [ColorPicker 颜色选择器](/components/color-picker) | HSV 面板 + 色相条 + 透明度，纯 view 实现不用 canvas。输入与面板双向驱动，… | 6 | 2 | 1 |
+| [Transfer 穿梭框](/components/transfer) | 左右两栏 + 搜索过滤 + 全选。禁用项不可移，direction 可调（窄屏自动竖排）。 | 13 | 2 | 0 |
+| [Signature 手写签名](/components/signature) | 笔画拼成 SVG 再以内联 data URI 交给背景图渲染（与 cd-icon 同一套路），不… | 12 | 6 | 0 |
 
 ## 数据展示
 
@@ -69,11 +78,16 @@ title: 组件总览
 | [Timeline 时间线](/components/timeline) | 按时间顺序展示事件流。reverse 通过 flex-direction: column-rev… | 3 | 0 | 1 |
 | [TimelineItem 时间线项](/components/timeline-item) | 单个时间节点，支持实心/空心/大号圆点与自定义 dot 插槽。首尾的引线会被替换为透明占位。 | 9 | 0 | 3 |
 | [Image 图片](/components/image) | 统一封装 loading / loaded / error 三态，并内置 uni 的 image… | 15 | 3 | 2 |
+| [ImagePreview 图片预览](/components/image-preview) | 全屏图片预览。声明式用 v-model 控制开关，命令式直接 previewImage({ ur… | 0 | 0 | 0 |
+| [Swiper 轮播](/components/swiper) | 底层是 uni 原生 swiper（手感与惯性由端上保证），上层补一层统一的设计语言：指示点样式… | 15 | 3 | 2 |
 | [CountDown 倒计时](/components/count-down) | 锚定结束时间戳而非递减计数：每次都重算 endAt - Date.now()，定时器只负责「多久… | 6 | 2 | 1 |
 | [CountTo 数字滚动](/components/count-to) | 数字从起始值缓动到目标值。内部只存裸数字，千分位在格式化阶段用 split/join 添加——避… | 11 | 3 | 1 |
 | [Empty 空状态](/components/empty) | 固化了 5 种高频空状态预设（无数据/无搜索结果/加载失败/无网络/无权限），避免每次业务方各写… | 7 | 0 | 3 |
 | [Skeleton 骨架屏](/components/skeleton) | 加载占位，最后一行默认收窄 60% 让轮廓更像真实文本。暗色下必须显式重定义块色——亮色比背景深… | 11 | 0 | 1 |
 | [Result 结果页](/components/result) | 操作结果反馈页，内置成功/失败预设，提供 icon、title、desc、extra、actio… | 7 | 0 | 5 |
+| [Tree 树形控件](/components/tree) | 勾选走「向下全量 + 向上回算」两趟，父子联动带半选态；checkStrictly 打开时父子各… | 15 | 5 | 2 |
+| [Descriptions 描述列表](/components/descriptions) | 一份 items 渲染整张详情表，支持列数、跨列与横竖两种排布。比手写一堆 cell 少 80%… | 10 | 0 | 1 |
+| [Qrcode 二维码](/components/qrcode) | 编码核心自研零依赖（版本 1~10 / L M Q H / 字节模式），与 npm qrcode… | 12 | 2 | 2 |
 
 ## 导航
 
@@ -88,6 +102,9 @@ title: 组件总览
 | [Dropdown 下拉菜单](/components/dropdown) | 命令型动作菜单，与 cd-select 的表单语义刻意分离。PC 端支持 hover/click… | 6 | 2 | 1 |
 | [Fab 悬浮按钮](/components/fab) | 可拖拽的悬浮操作按钮。H5 通过 document 监听鼠标实现拖拽，小程序用 touch 事件… | 13 | 3 | 1 |
 | [BackTop 回到顶部](/components/backtop) | 滚动超过 visibility-height 后出现的回顶按钮，与 cd-affix 共用 us… | 12 | 1 | 1 |
+| [Navbar 导航栏](/components/navbar) | 顶部导航栏。状态栏留白由 statusBar 开关 × 实测高度决定，拿不到就退回 0；标题绝对… | 14 | 3 | 1 |
+| [Tabbar 底部标签栏](/components/tabbar) | 支持徽标与小红点，fixed 时自动等高占位，safeArea 走小程序安全区。选中值可以是 v… | 13 | 2 | 1 |
+| [IndexBar 字母索引栏](/components/index-bar) | 只做「手指落在第几个字母」，结果 emit 出去由业务用 scroll-into-view 自己… | 8 | 1 | 0 |
 
 ## 反馈与浮层
 
@@ -102,3 +119,4 @@ title: 组件总览
 | [PopConfirm 气泡确认](/components/popconfirm) | 轻量二次确认气泡，复用 useFloating 定位内核。宽度要用独立的 computed 拼到… | 13 | 5 | 3 |
 | [Popover 气泡卡片](/components/popover) | 可承载任意内容的气泡。面板内点击不自动关闭，支持 Esc 与 v-model 外部受控。 | 7 | 3 | 2 |
 | [Tooltip 文字提示](/components/tooltip) | 纯文字气泡。PC 端 hover 触发且进出都带延迟（防鼠标轨迹穿越时闪烁），移动端长按或点击触… | 7 | 1 | 2 |
+| [Guide 用户指引](/components/guide) | 分步遮罩引导。遮罩用 box-shadow 挖洞而不是四块挡板拼，圆角与位置动画都只需改一个节点… | 14 | 4 | 2 |

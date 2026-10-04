@@ -5,7 +5,7 @@
       v-if="!desktopShape"
       mode="time"
       :value="innerValue || ''"
-      :disabled="disabled"
+      :disabled="isDisabled"
       @change="onNativeChange"
       @cancel="notifyBlur"
     >
@@ -316,6 +316,12 @@ const hasError = computed(() => props.error || !!(field && field.validateState &
 <style lang="scss">
 @import '../../styles/scss-tokens.scss';
 
+/**
+ * 颜色命名约定：本组件私有的颜色令牌统一 --cd-time-picker-* 前缀，
+ * 一律写成 var(--x, 兜底原色) —— 业务不传变量时视觉与此前完全一致。
+ * 共用语义色（--cd-color-danger 等）走库级令牌，不另起名字。
+ */
+
 .cd-time-picker {
   @include cd-reset;
   display: inline-flex;
@@ -351,7 +357,7 @@ const hasError = computed(() => props.error || !!(field && field.validateState &
 }
 
 .cd-time-picker--error .cd-time-picker__trigger {
-  border-color: var(--cd-color-danger, #dc2626);
+  border-color: var(--cd-color-danger, #ef4444);
 }
 
 .cd-time-picker__value {
@@ -396,7 +402,7 @@ const hasError = computed(() => props.error || !!(field && field.validateState &
   height: 1.5px;
   margin-top: -0.75px;
   margin-left: -4px;
-  background-color: #ffffff;
+  background-color: var(--cd-time-picker-clear-bar, #ffffff);
   border-radius: 2px;
 }
 

@@ -1,0 +1,782 @@
+/*
+ * demo-shell.scss —— demo 支撑样式的小程序端副本
+ * -------------------------------------------------------------------------------
+ * ⚠️ 本文件由 scripts/gen-mp-preview-pages.mjs 生成，手改会被覆盖。
+ *
+ * demo SFC 抽自主工程演示页，片段里引用了页面的辅助 class（.row / .field /
+ * .body-text 等）。本文件移植 docs/.vitepress/theme/demo-support.css 中被实际
+ * 用到的那部分，命名作用域收在 .cdp-host 下，避免和页面壳样式互相污染。
+ *
+ * mp 端两条硬约束（违反会直接编译报错 / 运行时塌陷）：
+ *   1. WXSS 不支持通配符选择器 `*`（报 error at token "*"）
+ *      → .row / .stack 的子元素间距改为显式枚举标签，见下方 CHILD 段。
+ *      枚举表由脚本扫描 demo 源码里真实出现的自定义标签生成，新增组件自动覆盖。
+ *   2. WXSS 不支持结构伪类（:last-child / :nth-child）
+ *      → 全文不出现伪类。
+ */
+$cdp-text-primary: var(--cd-text-primary, #0f172a);
+$cdp-text-regular: var(--cd-text-regular, #334155);
+$cdp-text-secondary: var(--cd-text-secondary, #64748b);
+$cdp-text-placeholder: var(--cd-text-placeholder, #94a3b8);
+$cdp-sunken: var(--cd-bg-sunken, #f1f5f9);
+
+/* ---------------- 横向排布 ---------------- */
+.cdp-host .row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* CHILD —— 不能用 `> *`，逐标签枚举（脚本生成，勿手改） */
+.cdp-host .row > button,
+.cdp-host .row > cd-action-sheet,
+.cdp-host .row > cd-affix,
+.cdp-host .row > cd-alert,
+.cdp-host .row > cd-avatar,
+.cdp-host .row > cd-backtop,
+.cdp-host .row > cd-badge,
+.cdp-host .row > cd-breadcrumb,
+.cdp-host .row > cd-breadcrumb-item,
+.cdp-host .row > cd-button,
+.cdp-host .row > cd-calendar,
+.cdp-host .row > cd-card,
+.cdp-host .row > cd-cascader,
+.cdp-host .row > cd-cell,
+.cdp-host .row > cd-cell-group,
+.cdp-host .row > cd-checkbox,
+.cdp-host .row > cd-checkbox-group,
+.cdp-host .row > cd-col,
+.cdp-host .row > cd-collapse,
+.cdp-host .row > cd-collapse-item,
+.cdp-host .row > cd-color-picker,
+.cdp-host .row > cd-count-down,
+.cdp-host .row > cd-count-to,
+.cdp-host .row > cd-date-picker,
+.cdp-host .row > cd-descriptions,
+.cdp-host .row > cd-dialog,
+.cdp-host .row > cd-divider,
+.cdp-host .row > cd-drawer,
+.cdp-host .row > cd-dropdown,
+.cdp-host .row > cd-empty,
+.cdp-host .row > cd-fab,
+.cdp-host .row > cd-form,
+.cdp-host .row > cd-form-item,
+.cdp-host .row > cd-form-render,
+.cdp-host .row > cd-grid,
+.cdp-host .row > cd-grid-item,
+.cdp-host .row > cd-guide,
+.cdp-host .row > cd-icon,
+.cdp-host .row > cd-image,
+.cdp-host .row > cd-image-preview,
+.cdp-host .row > cd-index-bar,
+.cdp-host .row > cd-input,
+.cdp-host .row > cd-loading,
+.cdp-host .row > cd-navbar,
+.cdp-host .row > cd-notice-bar,
+.cdp-host .row > cd-pagination,
+.cdp-host .row > cd-picker,
+.cdp-host .row > cd-popconfirm,
+.cdp-host .row > cd-popover,
+.cdp-host .row > cd-progress,
+.cdp-host .row > cd-qrcode,
+.cdp-host .row > cd-radio,
+.cdp-host .row > cd-radio-group,
+.cdp-host .row > cd-rate,
+.cdp-host .row > cd-result,
+.cdp-host .row > cd-row,
+.cdp-host .row > cd-search-bar,
+.cdp-host .row > cd-select,
+.cdp-host .row > cd-signature,
+.cdp-host .row > cd-skeleton,
+.cdp-host .row > cd-slider,
+.cdp-host .row > cd-step,
+.cdp-host .row > cd-stepper,
+.cdp-host .row > cd-steps,
+.cdp-host .row > cd-swiper,
+.cdp-host .row > cd-switch,
+.cdp-host .row > cd-tabbar,
+.cdp-host .row > cd-table,
+.cdp-host .row > cd-tabs,
+.cdp-host .row > cd-tag,
+.cdp-host .row > cd-time-picker,
+.cdp-host .row > cd-timeline,
+.cdp-host .row > cd-timeline-item,
+.cdp-host .row > cd-toast-host,
+.cdp-host .row > cd-tooltip,
+.cdp-host .row > cd-transfer,
+.cdp-host .row > cd-tree,
+.cdp-host .row > cd-typing,
+.cdp-host .row > cd-upload,
+.cdp-host .row > cd-watermark,
+.cdp-host .row > checkbox,
+.cdp-host .row > icon,
+.cdp-host .row > image,
+.cdp-host .row > input,
+.cdp-host .row > navigator,
+.cdp-host .row > progress,
+.cdp-host .row > radio,
+.cdp-host .row > scroll-view,
+.cdp-host .row > slider,
+.cdp-host .row > swiper,
+.cdp-host .row > swiper-item,
+.cdp-host .row > switch,
+.cdp-host .row > text,
+.cdp-host .row > textarea,
+.cdp-host .row > uni-button,
+.cdp-host .row > uni-checkbox,
+.cdp-host .row > uni-icon,
+.cdp-host .row > uni-image,
+.cdp-host .row > uni-input,
+.cdp-host .row > uni-navigator,
+.cdp-host .row > uni-progress,
+.cdp-host .row > uni-radio,
+.cdp-host .row > uni-scroll-view,
+.cdp-host .row > uni-slider,
+.cdp-host .row > uni-swiper,
+.cdp-host .row > uni-swiper-item,
+.cdp-host .row > uni-switch,
+.cdp-host .row > uni-text,
+.cdp-host .row > uni-textarea,
+.cdp-host .row > uni-view,
+.cdp-host .row > view {
+  margin: 0 8px 8px 0;
+}
+
+.cdp-host .row--baseline {
+  align-items: baseline;
+}
+
+.cdp-host .row--gap {
+  margin-top: 12px;
+}
+
+/* ---------------- 纵向堆叠 ---------------- */
+.cdp-host .stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.cdp-host .stack > button,
+.cdp-host .stack > cd-action-sheet,
+.cdp-host .stack > cd-affix,
+.cdp-host .stack > cd-alert,
+.cdp-host .stack > cd-avatar,
+.cdp-host .stack > cd-backtop,
+.cdp-host .stack > cd-badge,
+.cdp-host .stack > cd-breadcrumb,
+.cdp-host .stack > cd-breadcrumb-item,
+.cdp-host .stack > cd-button,
+.cdp-host .stack > cd-calendar,
+.cdp-host .stack > cd-card,
+.cdp-host .stack > cd-cascader,
+.cdp-host .stack > cd-cell,
+.cdp-host .stack > cd-cell-group,
+.cdp-host .stack > cd-checkbox,
+.cdp-host .stack > cd-checkbox-group,
+.cdp-host .stack > cd-col,
+.cdp-host .stack > cd-collapse,
+.cdp-host .stack > cd-collapse-item,
+.cdp-host .stack > cd-color-picker,
+.cdp-host .stack > cd-count-down,
+.cdp-host .stack > cd-count-to,
+.cdp-host .stack > cd-date-picker,
+.cdp-host .stack > cd-descriptions,
+.cdp-host .stack > cd-dialog,
+.cdp-host .stack > cd-divider,
+.cdp-host .stack > cd-drawer,
+.cdp-host .stack > cd-dropdown,
+.cdp-host .stack > cd-empty,
+.cdp-host .stack > cd-fab,
+.cdp-host .stack > cd-form,
+.cdp-host .stack > cd-form-item,
+.cdp-host .stack > cd-form-render,
+.cdp-host .stack > cd-grid,
+.cdp-host .stack > cd-grid-item,
+.cdp-host .stack > cd-guide,
+.cdp-host .stack > cd-icon,
+.cdp-host .stack > cd-image,
+.cdp-host .stack > cd-image-preview,
+.cdp-host .stack > cd-index-bar,
+.cdp-host .stack > cd-input,
+.cdp-host .stack > cd-loading,
+.cdp-host .stack > cd-navbar,
+.cdp-host .stack > cd-notice-bar,
+.cdp-host .stack > cd-pagination,
+.cdp-host .stack > cd-picker,
+.cdp-host .stack > cd-popconfirm,
+.cdp-host .stack > cd-popover,
+.cdp-host .stack > cd-progress,
+.cdp-host .stack > cd-qrcode,
+.cdp-host .stack > cd-radio,
+.cdp-host .stack > cd-radio-group,
+.cdp-host .stack > cd-rate,
+.cdp-host .stack > cd-result,
+.cdp-host .stack > cd-row,
+.cdp-host .stack > cd-search-bar,
+.cdp-host .stack > cd-select,
+.cdp-host .stack > cd-signature,
+.cdp-host .stack > cd-skeleton,
+.cdp-host .stack > cd-slider,
+.cdp-host .stack > cd-step,
+.cdp-host .stack > cd-stepper,
+.cdp-host .stack > cd-steps,
+.cdp-host .stack > cd-swiper,
+.cdp-host .stack > cd-switch,
+.cdp-host .stack > cd-tabbar,
+.cdp-host .stack > cd-table,
+.cdp-host .stack > cd-tabs,
+.cdp-host .stack > cd-tag,
+.cdp-host .stack > cd-time-picker,
+.cdp-host .stack > cd-timeline,
+.cdp-host .stack > cd-timeline-item,
+.cdp-host .stack > cd-toast-host,
+.cdp-host .stack > cd-tooltip,
+.cdp-host .stack > cd-transfer,
+.cdp-host .stack > cd-tree,
+.cdp-host .stack > cd-typing,
+.cdp-host .stack > cd-upload,
+.cdp-host .stack > cd-watermark,
+.cdp-host .stack > checkbox,
+.cdp-host .stack > icon,
+.cdp-host .stack > image,
+.cdp-host .stack > input,
+.cdp-host .stack > navigator,
+.cdp-host .stack > progress,
+.cdp-host .stack > radio,
+.cdp-host .stack > scroll-view,
+.cdp-host .stack > slider,
+.cdp-host .stack > swiper,
+.cdp-host .stack > swiper-item,
+.cdp-host .stack > switch,
+.cdp-host .stack > text,
+.cdp-host .stack > textarea,
+.cdp-host .stack > uni-button,
+.cdp-host .stack > uni-checkbox,
+.cdp-host .stack > uni-icon,
+.cdp-host .stack > uni-image,
+.cdp-host .stack > uni-input,
+.cdp-host .stack > uni-navigator,
+.cdp-host .stack > uni-progress,
+.cdp-host .stack > uni-radio,
+.cdp-host .stack > uni-scroll-view,
+.cdp-host .stack > uni-slider,
+.cdp-host .stack > uni-swiper,
+.cdp-host .stack > uni-swiper-item,
+.cdp-host .stack > uni-switch,
+.cdp-host .stack > uni-text,
+.cdp-host .stack > uni-textarea,
+.cdp-host .stack > uni-view,
+.cdp-host .stack > view {
+  margin-bottom: 12px;
+}
+
+/* ---------------- 文本 ---------------- */
+.cdp-host .body-text {
+  display: block;
+  font-size: 12px;
+  color: $cdp-text-secondary;
+  line-height: 1.7;
+}
+
+.cdp-host .muted {
+  font-size: 12px;
+  color: $cdp-text-placeholder;
+}
+
+.cdp-host .hint {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  color: $cdp-text-placeholder;
+  line-height: 1.6;
+}
+
+.cdp-host .inline-text {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  color: $cdp-text-regular;
+}
+
+/* ---------------- 字段 ---------------- */
+.cdp-host .field {
+  display: block;
+}
+
+.cdp-host .field__label,
+.cdp-host .field-label,
+.cdp-host .col-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: $cdp-text-secondary;
+}
+
+.cdp-host .col-label {
+  font-size: 11px;
+  color: $cdp-text-placeholder;
+}
+
+.cdp-host .field__suffix {
+  font-size: 12px;
+  color: $cdp-text-placeholder;
+}
+
+/* ---------------- 分栏 ---------------- */
+.cdp-host .split {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cdp-host .split__col {
+  box-sizing: border-box;
+  flex: 1 1 300px;
+  min-width: 0;
+  margin-right: 16px;
+  margin-bottom: 12px;
+}
+
+.cdp-host .grid2 {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cdp-host .grid2__item {
+  flex: 1 1 260px;
+  min-width: 0;
+  margin-right: 16px;
+  margin-bottom: 12px;
+}
+
+/* ---------------- 结果 / 日志 ---------------- */
+.cdp-host .result {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  padding: 12px 16px;
+  background-color: $cdp-sunken;
+  border-radius: 8px;
+}
+
+.cdp-host .result__label {
+  margin-right: 12px;
+  font-size: 11px;
+  color: $cdp-text-placeholder;
+}
+
+.cdp-host .result__value {
+  font-size: 12px;
+  color: $cdp-text-primary;
+}
+
+.cdp-host .submit-result {
+  margin-top: 16px;
+}
+
+.cdp-host .log {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: $cdp-sunken;
+  border-radius: 4px;
+}
+
+.cdp-host .log__text {
+  font-size: 12px;
+  color: $cdp-text-secondary;
+}
+
+/* ---------------- 时间线 ---------------- */
+.cdp-host .tl-title {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $cdp-text-primary;
+}
+
+.cdp-host .tl-text {
+  display: block;
+  font-size: 12px;
+  color: $cdp-text-secondary;
+  line-height: 1.6;
+}
+
+/* ---------------- 统计块 ---------------- */
+.cdp-host .stats {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.cdp-host .stat {
+  box-sizing: border-box;
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 16px;
+  margin-right: 12px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background-color: var(--cd-bg-container, #ffffff);
+}
+
+.cdp-host .stat__label {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: $cdp-text-placeholder;
+}
+
+/* ---------------- 栅格演示 ----------------
+   ⚠️ 这几个类由 :class / class 输出，早期用正则只扫 class="..." 会漏掉，
+   漏掉的后果是「栅格演示只剩文字、色块与圆角全没了」（本轮实测截图发现）。 */
+.cdp-host .grid-box {
+  display: flex;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px;
+  background-color: $cdp-sunken;
+  border-radius: 8px;
+}
+
+.cdp-host .grid-box--brand {
+  background-color: var(--cd-color-primary-soft, #eff5ff);
+}
+
+.cdp-host .grid-box--soft {
+  background-color: var(--cd-color-success-soft, #ecfdf5);
+}
+
+.cdp-host .grid-box__text {
+  font-family: var(--cd-font-family-mono, monospace);
+  font-size: 11px;
+  color: $cdp-text-regular;
+  text-align: center;
+}
+
+.cdp-host .grid-gap-top {
+  margin-top: 16px;
+}
+
+/* ---------------- 表单结果块 ---------------- */
+.cdp-host .form-actions {
+  margin-top: 16px;
+}
+
+.cdp-host .result-block {
+  margin-top: 16px;
+}
+
+.cdp-host .result-block__label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: $cdp-text-secondary;
+}
+
+/* 表单模型快照。演示页与文档站都没有给它定义过样式，
+   这里补成等宽小字块，JSON 快照才读得清 */
+.cdp-host .cd-code {
+  display: block;
+  padding: 8px 12px;
+  font-family: var(--cd-font-family-mono, monospace);
+  font-size: 11px;
+  line-height: 1.6;
+  color: $cdp-text-regular;
+  background-color: $cdp-sunken;
+  border-radius: 4px;
+  word-break: break-all;
+}
+
+/* ---------------- 扩展组件演示（0.5.4）----------------
+   这些类是 src/pages/extended 演示页里的局部样式。小程序端没有页面级样式表，
+   必须在这里同步一份，否则预览页里这些块会「没样式」——
+   覆盖率自检（auditShellCoverage 报的 20 个缺失类）就是为这个存在的。 */
+
+/* 打字机聊天气泡 */
+.cdp-host .chat {
+  display: flex;
+  flex-direction: column;
+}
+
+.cdp-host .chat__row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.cdp-host .chat__bubble {
+  max-width: 100%;
+  margin-left: 8px;
+  padding: 10px 14px;
+  background-color: $cdp-sunken;
+  border-radius: 12px;
+}
+
+/* 导航栏 / 标签栏 预览框：给固定定位的组件一个「假页面」边界，
+   否则 fixed=false 时会直接趴在预览区左上角看不出效果 */
+.cdp-host .navbar-preview {
+  margin-bottom: 12px;
+  overflow: hidden;
+  border: 1px solid $cdp-sunken;
+  border-radius: 8px;
+}
+
+.cdp-host .tabbar-preview {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid $cdp-sunken;
+  border-radius: 8px;
+}
+
+/* 树：限高滚动，否则几十个节点会把整个预览页撑长 */
+.cdp-host .tree-box {
+  max-height: 280px;
+  margin-top: 12px;
+  overflow: auto;
+}
+
+/* 取色器色块 */
+.cdp-host .swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  margin-left: 16px;
+  border-radius: 8px;
+}
+
+.cdp-host .swatch__text {
+  font-size: 11px;
+  color: #ffffff;
+}
+
+/* 二维码 */
+.cdp-host .qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cdp-host .qr-box__text {
+  margin-top: 8px;
+  font-size: 12px;
+  color: $cdp-text-secondary;
+}
+
+.cdp-host .qr-input {
+  width: 200px;
+  margin-left: 16px;
+}
+
+/* 水印 / 索引栏：两者都靠「父级有定位 + 有高度」才有意义 */
+.cdp-host .watermark-box {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  border: 1px solid $cdp-sunken;
+  border-radius: 8px;
+}
+
+.cdp-host .watermark-box__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.cdp-host .watermark-box__text {
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: $cdp-text-regular;
+}
+
+.cdp-host .indexbar-box {
+  position: relative;
+  height: 260px;
+  overflow: hidden;
+  border: 1px solid $cdp-sunken;
+  border-radius: 8px;
+}
+
+.cdp-host .indexbar-box__scroll {
+  height: 100%;
+  /* 给右侧索引栏留出位置，否则字母会压在列表文字上 */
+  padding-right: 28px;
+}
+
+.cdp-host .indexbar-box__letter {
+  display: block;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cd-color-primary, #2563eb);
+  background-color: $cdp-sunken;
+}
+
+.cdp-host .indexbar-box__city {
+  display: block;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: $cdp-text-regular;
+  border-bottom: 1px solid $cdp-sunken;
+}
+
+/* ---------------- 图标网格 ----------------
+   不用 @media 改列宽：小程序视口固定窄屏，直接钉 25%（4 列）。
+   文档站那份靠媒体查询在宽屏切成 8 列，小程序不需要。 */
+.cdp-host .icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cdp-host .icon-cell {
+  display: flex;
+  box-sizing: border-box;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 25%;
+  padding: 8px 2px;
+}
+
+.cdp-host .icon-cell__name {
+  margin-top: 6px;
+  font-size: 10px;
+  color: $cdp-text-placeholder;
+  text-align: center;
+  /* 不用 break-all：长图标名会断成「corner-down-l eft」词中碎行；
+     overflow-wrap 优先在连字符处断，断出来是「corner-down- / left」 */
+  word-break: normal;
+  overflow-wrap: break-word;
+  line-height: 1.3;
+}
+
+/* ---------------- 图片 / 缩略图 ---------------- */
+.cdp-host .img-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cdp-host .img-case {
+  box-sizing: border-box;
+  width: 132px;
+  margin-right: 12px;
+  margin-bottom: 12px;
+}
+
+.cdp-host .img-case__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  color: $cdp-text-secondary;
+}
+
+.cdp-host .img-case__state {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: $cdp-text-placeholder;
+}
+
+.cdp-host .thumb {
+  box-sizing: border-box;
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.cdp-host .thumb__img {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------- 骨架屏 ---------------- */
+.cdp-host .custom-skeleton {
+  background-color: var(--cd-skeleton-bg, #f1f5f9);
+  border-radius: 4px;
+}
+
+.cdp-host .custom-skeleton--square {
+  width: 80px;
+  height: 80px;
+  margin-right: 12px;
+}
+
+.cdp-host .custom-skeleton--short {
+  width: 160px;
+  height: 20px;
+}
+
+.cdp-host .loaded-block {
+  padding: 12px 0;
+}
+
+/* ---------------- 空状态网格 ---------------- */
+.cdp-host .empty-grid {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.cdp-host .empty-grid__cell {
+  box-sizing: border-box;
+  width: 50%;
+  margin-bottom: 8px;
+  border: 1px solid var(--cd-border-color-light, #f1f5f9);
+  border-radius: 8px;
+}
+
+/* ---------------- 杂项 ---------------- */
+.cdp-host .tab-pane {
+  display: block;
+}
+
+.cdp-host .tabs-gap {
+  margin-top: 20px;
+}
+
+.cdp-host .sheet-header {
+  display: block;
+  padding-bottom: 8px;
+  font-size: 12px;
+  color: $cdp-text-secondary;
+  text-align: center;
+}
+
+.cdp-host .popover-demo {
+  max-width: 240px;
+}
+
+.cdp-host .popover-demo__text {
+  display: block;
+  font-size: 12px;
+  color: $cdp-text-regular;
+  line-height: 1.6;
+}
+
+.cdp-host .popover-demo__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.cdp-host .affix-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background-color: var(--cd-bg-elevated, #ffffff);
+}
+
+.cdp-host .affix-bar__text {
+  font-size: 12px;
+  color: $cdp-text-regular;
+}

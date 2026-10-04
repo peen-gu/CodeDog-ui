@@ -67,6 +67,12 @@
       "style": {
         "navigationBarTitleText": "交互与展示"
       }
+    },
+    {
+      "path": "pages/extended/index",
+      "style": {
+        "navigationBarTitleText": "扩展组件"
+      }
     }
   ],
 

@@ -21,7 +21,22 @@ import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 
 const argv = process.argv.slice(2)
-const flag = (n) => { const i = argv.indexOf(`--${n}`); return i > -1 ? argv[i + 1] : null }
+
+/**
+ * 取 --xxx=value 或 --xxx value 两种写法。
+ *
+ * 早期只认空格分隔，但本文件头部的用法示例写的是 `--token-file=~/.npm-token`。
+ * 按示例传参时 `indexOf('--token-file')` 命中不到（argv 里是连成一体的一个元素），
+ * token 静默读成 null → 不注入凭据 → npm 报 ENEEDAUTH，
+ * 而报错信息完全不提「没读到 token」，排查时极易误判成 token 无效或没勾 Bypass 2FA。
+ * 两种写法都支持，并顺手让文档与实现对齐。
+ */
+const flag = (n) => {
+  const eq = argv.find((a) => a.startsWith(`--${n}=`))
+  if (eq) return eq.slice(`--${n}=`.length)
+  const i = argv.indexOf(`--${n}`)
+  return i > -1 ? argv[i + 1] : null
+}
 const dry = argv.includes('--dry-run')
 const yes = argv.includes('--yes')
 
@@ -92,7 +107,26 @@ if (res && res.ok) {
 let token = readTokenFromFlags()
 if (!token) token = await askTokenInteractively()
 
-if (token && !/^(npm_|nvf_|[a-f0-9]{32,})$/i.test(token)) {
+/*
+ * 非交互环境（CI / 被别的脚本调用）拿不到 token 就直说，不要静默继续。
+ * 空凭据发出去只会得到 ENEEDAUTH，而这条报错完全看不出「是没读到 token」，
+ * 上一次就是这样绕了半天才定位到。TTY 下允许留空 —— 那是「用账号 2FA 动态码」的合法选择。
+ */
+if (!token && (!process.stdin.isTTY || !process.stdout.isTTY)) {
+  bad('没有拿到 token，且当前不是交互终端（无法提示输入动态码）')
+  info('用法：node scripts/publish.mjs --token-file=<path>  或  --token=<value>')
+  info('也可以在本机终端直接跑 `npm run release:interactive`，由终端隐藏输入。')
+  process.exit(1)
+}
+
+/*
+ * npm_ / nvf_ 是**前缀**，后面还跟着 30+ 位主体。
+ * 旧正则写成 `^(npm_|nvf_|[a-f0-9]{32,})$`，等于要求整串就是 `npm_` 三个字符 ——
+ * 于是所有合法的 granular token（实测长度 40）都被判成「不像 token」。
+ * 之前 --token-file 读不到、token 为 null 时校验被跳过，这个 bug 才一直没暴露。
+ */
+const TOKEN_RE = /^(?:npm_|nvf_)[A-Za-z0-9_-]{20,}$|^[a-f0-9]{32,}$/
+if (token && !TOKEN_RE.test(token)) {
   bad(`这串不像 npm token（长度 ${token.length}）`)
   info('常见原因：复制时被截断 / 已在网页端删除 / 创建时填了 Allowed IP Ranges。')
   if (process.stdin.isTTY && !yes) {

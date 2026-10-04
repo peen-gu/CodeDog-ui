@@ -52,9 +52,10 @@
  * 复用 wd-popup 的遮罩 / 动画 / 滚动锁 / root-portal，
  * 主题作用域由 useWotScope 补齐 —— 与 cd-dialog 同一套约定。
  */
-import { computed, watch, onUnmounted, useSlots } from 'vue'
+import { computed, watch, useSlots } from 'vue'
 import { useBreakpoint, resolveDesktopShape } from '../../composables/use-breakpoint'
 import { useWotScope } from '../../composables/use-wot-scope'
+import { useEscLayer } from '../../composables/use-esc-stack'
 
 defineOptions({
   name: 'cd-drawer',
@@ -183,43 +184,32 @@ async function requestClose(action) {
 
 /* -------------------- 桌面端键盘：Esc 关闭 -------------------- */
 
-function onKeydown(event) {
+/* 同 cd-dialog：走共享 Esc 层级栈，多层浮层同时打开时 Esc 只关最上面那层 */
+const esc = useEscLayer((event) => {
   if (event.key !== 'Escape' && event.keyCode !== 27) return
   if (!props.maskClosable) return
   requestClose('mask')
-}
+})
 
-let escBound = false
-
-function bindEsc() {
-  /* #ifdef H5 */
-  if (escBound || typeof document === 'undefined') return
-  escBound = true
-  document.addEventListener('keydown', onKeydown)
-  /* #endif */
-}
-
-function unbindEsc() {
-  /* #ifdef H5 */
-  if (!escBound || typeof document === 'undefined') return
-  escBound = false
-  document.removeEventListener('keydown', onKeydown)
-  /* #endif */
-}
-
-function handleAfterEnter() {
-  if (desktopShape.value) bindEsc()
-  emit('open')
-}
-
+/**
+ * 同 cd-dialog：入栈放在「modelValue 变 true」的那一刻，
+ * 不能等 after-enter —— 入场动画的 260ms 里后开的浮层会抢到栈顶。
+ */
 watch(
   () => props.modelValue,
   (value) => {
-    if (!value) unbindEsc()
-  }
+    if (value) {
+      if (desktopShape.value) esc.push()
+      return
+    }
+    esc.remove()
+  },
+  { immediate: true }
 )
 
-onUnmounted(unbindEsc)
+function handleAfterEnter() {
+  emit('open')
+}
 </script>
 
 <style lang="scss">

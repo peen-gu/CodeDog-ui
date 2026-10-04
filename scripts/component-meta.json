@@ -10,7 +10,7 @@
     {
       "id": "general",
       "title": "通用",
-      "items": ["button", "icon", "divider"]
+      "items": ["button", "icon", "divider", "typing", "watermark"]
     },
     {
       "id": "layout",
@@ -23,6 +23,7 @@
       "items": [
         "form",
         "form-item",
+        "form-render",
         "input",
         "search-bar",
         "select",
@@ -36,7 +37,13 @@
         "stepper",
         "upload",
         "date-picker",
-        "time-picker"
+        "time-picker",
+        "calendar",
+        "picker",
+        "cascader",
+        "color-picker",
+        "transfer",
+        "signature"
       ]
     },
     {
@@ -54,11 +61,16 @@
         "timeline",
         "timeline-item",
         "image",
+        "image-preview",
+        "swiper",
         "count-down",
         "count-to",
         "empty",
         "skeleton",
-        "result"
+        "result",
+        "tree",
+        "descriptions",
+        "qrcode"
       ]
     },
     {
@@ -73,7 +85,10 @@
         "breadcrumb-item",
         "dropdown",
         "fab",
-        "backtop"
+        "backtop",
+        "navbar",
+        "tabbar",
+        "index-bar"
       ]
     },
     {
@@ -88,7 +103,8 @@
         "action-sheet",
         "popconfirm",
         "popover",
-        "tooltip"
+        "tooltip",
+        "guide"
       ]
     }
   ],
@@ -407,6 +423,97 @@
       "title": "Tooltip 文字提示",
       "desc": "纯文字气泡。PC 端 hover 触发且进出都带延迟（防鼠标轨迹穿越时闪烁），移动端长按或点击触发。",
       "related": ["popover"]
+    },
+    "form-render": {
+      "title": "FormRender Schema 表单引擎",
+      "desc": "给一份字段描述数组（schema）和一个对象，自动渲染整张表单：内建 12 种控件、显隐与禁用联动、栅格布局、默认值注入，校验直接复用 cd-form 那套规则。适合中后台里大量「结构相似、字段不同」的表单页。",
+      "related": ["form", "form-item"]
+    },
+    "calendar": {
+      "title": "Calendar 日历",
+      "desc": "常驻日历面板（不是弹层），single / multiple / range 三种模式。与 date-picker 的分工：date-picker 是「点一下选完就走」的录入控件，calendar 是「要一直看着月份做安排」的展示面板。marks 支持打点与底部小字，formatter 可拦截单个格子的文案与可选性。",
+      "related": ["date-picker"]
+    },
+    "picker": {
+      "title": "Picker 多列选择器",
+      "desc": "选自定义数据的通用弹层：columns 传「列数组的数组」是独立多列，加 cascade 后传树即为级联。用 scroll-view 受控定位而不是原生 picker-view——后者在 H5 与小程序上的手感与样式差异太大且几乎不可控。草稿与提交分离：点确定才落到 modelValue。",
+      "related": ["cascader", "select"]
+    },
+    "cascader": {
+      "title": "Cascader 级联选择",
+      "desc": "省市区、品类树这类「选一条从根到叶路径」的控件。与 picker 的分工：picker 是弹层、要点确定；cascader 是表单字段、点选即提交。面板多列并排而不是一级一屏，一眼能看到完整路径。check-strictly 控制父级是否可选，emit-path 决定回传整条路径还是末级值。",
+      "related": ["picker", "select"]
+    },
+    "image-preview": {
+      "title": "ImagePreview 图片预览",
+      "desc": "全屏图片预览。声明式用 v-model 控制开关，命令式直接 previewImage({ urls, current })——后者在 H5 动态挂载宿主、小程序降级 uni.previewImage。支持手势滑动翻页、双指与滚轮缩放、循环、角标计数。刻意不依赖 wd 的预览组件：那套只覆盖小程序原生通道，H5 上的缩放与手势行为要靠自己实现。",
+      "related": ["image"]
+    },
+    "swiper": {
+      "title": "Swiper 轮播",
+      "desc": "底层是 uni 原生 swiper（手感与惯性由端上保证），上层补一层统一的设计语言：指示点样式、桌面形态的左右翻页箭头、list 既接受 { image, text } 也接受纯图片地址。autoplay 由组件内部按 visible 状态自行启停，避免页面切走后定时器还在跑。",
+      "related": ["image", "grid"]
+    },
+    "typing": {
+      "title": "Typing 打字机",
+      "desc": "逐字输出的流式文本，给 AI 回复与引导文案用。调度用 setTimeout 链而非 setInterval（切后台回来不会一次性补一大段），推进用索引而非字符串拼接（中途换文案不会新旧串味）。",
+      "related": ["avatar", "tag"]
+    },
+    "guide": {
+      "title": "Guide 用户指引",
+      "desc": "分步遮罩引导。遮罩用 box-shadow 挖洞而不是四块挡板拼，圆角与位置动画都只需改一个节点；placement 支持 auto，目标下方空间不足自动翻到上方。",
+      "related": ["button", "dialog"]
+    },
+    "navbar": {
+      "title": "Navbar 导航栏",
+      "desc": "顶部导航栏。状态栏留白由 statusBar 开关 × 实测高度决定，拿不到就退回 0；标题绝对居中，左右内容不等长也不偏心。",
+      "related": ["icon", "tabbar"]
+    },
+    "tabbar": {
+      "title": "Tabbar 底部标签栏",
+      "desc": "支持徽标与小红点，fixed 时自动等高占位，safeArea 走小程序安全区。选中值可以是 value 也可以是下标。",
+      "related": ["navbar", "badge"]
+    },
+    "index-bar": {
+      "title": "IndexBar 字母索引栏",
+      "desc": "只做「手指落在第几个字母」，结果 emit 出去由业务用 scroll-into-view 自己跳 —— 锚点滚动要遍历业务列表的 offsetTop，组件既量不准也管不动。整条 pointer-events:none，只有字母本身可点。",
+      "related": ["cell", "cell-group"]
+    },
+    "tree": {
+      "title": "Tree 树形控件",
+      "desc": "勾选走「向下全量 + 向上回算」两趟，父子联动带半选态；checkStrictly 打开时父子各算各的。扁平渲染而非嵌套递归，节点再多也不会爆栈。",
+      "related": ["checkbox", "checkbox-group"]
+    },
+    "descriptions": {
+      "title": "Descriptions 描述列表",
+      "desc": "一份 items 渲染整张详情表，支持列数、跨列与横竖两种排布。比手写一堆 cell 少 80% 的模板代码。",
+      "related": ["cell", "card"]
+    },
+    "qrcode": {
+      "title": "Qrcode 二维码",
+      "desc": "编码核心自研零依赖（版本 1~10 / L M Q H / 字节模式），与 npm qrcode 包逐位比对通过。渲染是纯 view 节点且坐标全部取整，不会出现 1px 白缝。",
+      "related": ["input", "icon"]
+    },
+    "color-picker": {
+      "title": "ColorPicker 颜色选择器",
+      "desc": "HSV 面板 + 色相条 + 透明度，纯 view 实现不用 canvas。输入与面板双向驱动，粘贴任意合法色值都能解析。",
+      "related": ["input", "slider"]
+    },
+    "transfer": {
+      "title": "Transfer 穿梭框",
+      "desc": "左右两栏 + 搜索过滤 + 全选。禁用项不可移，direction 可调（窄屏自动竖排）。",
+      "related": ["checkbox", "search-bar"]
+    },
+    "signature": {
+      "title": "Signature 手写签名",
+      "desc": "笔画拼成 SVG 再以内联 data URI 交给背景图渲染（与 cd-icon 同一套路），不用 canvas 因此四端一致。已完成笔画与正在画的一笔分成两组节点，移动时只重建后者。",
+      "related": ["button", "divider"]
+    },
+    "watermark": {
+      "title": "Watermark 水印",
+      "desc": "纯 text 节点平铺，不用 canvas 生成背景图。画布放大倍数由旋转角算出来，而不是硬写 1.5 —— 宽屏上能少铺近一半节点。整层 pointer-events:none，绝不会挡住底下的操作。",
+      "related": ["card"]
     }
+
   }
 }

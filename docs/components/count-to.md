@@ -10,6 +10,8 @@ title: CountTo 数字滚动
 
 ## 用法
 
+<CdDemo id="count-to-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <view class="stats">
   <view class="stat">

@@ -218,7 +218,14 @@ export default {
 .cd-action-sheet {
   @include cd-reset;
 
-  display: block;
+  /* 面板限高 + 列表自己滚动。
+     外层是 overflow:hidden（为了裁掉顶部圆角外的内容），
+     动作项一多就会把超出部分直接吃掉 —— 底部若干项永远点不到。
+     所以这里做成纵向弹性容器：头 / 间隙 / 取消固定不缩，
+     列表拿走剩余空间并自己滚，与 cd-dialog__body / cd-drawer__body 同一套。 */
+  display: flex;
+  flex-direction: column;
+  max-height: 86vh;
   background-color: var(--cd-bg-container, #ffffff);
   border-radius: var(--cd-action-radius, 16px) var(--cd-action-radius, 16px) 0 0;
   overflow: hidden;
@@ -228,6 +235,7 @@ export default {
  * 头部
  * ================================================================== */
 .cd-action-sheet__header {
+  flex-shrink: 0;
   padding: var(--cd-space-5, 20px) var(--cd-space-4, 16px) var(--cd-space-3, 12px);
   text-align: center;
 }
@@ -252,6 +260,11 @@ export default {
  * ================================================================== */
 .cd-action-sheet__list {
   display: block;
+  /* min-height:0 是弹性容器里「允许收缩到内容以下」的开关，
+     没有它 flex:1 的子项会被内容顶开，max-height 形同虚设 */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .cd-action-sheet__item {
@@ -329,6 +342,7 @@ export default {
  * 点在间隙上什么都不发生，比误判成取消更安全。
  */
 .cd-action-sheet__gap {
+  flex-shrink: 0;
   height: var(--cd-space-2, 8px);
   background-color: var(--cd-bg-sunken, #f1f5f9);
 }
@@ -337,6 +351,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   min-height: var(--cd-action-item-height, 50px);
   padding: var(--cd-space-2, 8px) var(--cd-space-4, 16px);
   background-color: var(--cd-bg-container, #ffffff);

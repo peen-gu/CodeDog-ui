@@ -10,6 +10,8 @@ title: BreadcrumbItem 面包屑项
 
 ## 用法
 
+<CdDemo id="breadcrumb-item-0"></CdDemo>
+
 ```vue // 来自演示页 navigation
 <cd-breadcrumb>
   <cd-breadcrumb-item to="/pages/index/index">首页</cd-breadcrumb-item>
@@ -49,6 +51,14 @@ title: BreadcrumbItem 面包屑项
 |---|---|---|
 | `default` | — | 默认插槽 |
 | `separator` | — | — |
+
+## Expose
+
+通过 `ref` 调用：
+
+| 方法 / 属性 | 说明 |
+|---|---|
+| `__cdOrderUid` | — |
 
 ## 设计说明
 

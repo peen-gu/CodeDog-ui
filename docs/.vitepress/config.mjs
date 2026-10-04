@@ -2,8 +2,10 @@ import { defineConfig } from 'vitepress'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { uniConditionalCompile } from './ifdef-plugin.mjs'
 
 const dir = path.dirname(fileURLToPath(import.meta.url))
+const SRC = path.resolve(dir, '../../src')
 
 /* 组件清单由 scripts/gen-component-docs.mjs 生成，这里只负责渲染成侧边栏 */
 const data = JSON.parse(fs.readFileSync(path.join(dir, 'data/components.json'), 'utf-8'))
@@ -39,6 +41,7 @@ export default defineConfig({
 
   /* 部署在 https://doc.ui.codedog.tech，canonical 与 OG 都以它为基准 */
   head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#4c8dff' }],
     ['meta', { name: 'author', content: 'Penn.Gu' }],
     ['link', { rel: 'canonical', href: 'https://doc.ui.codedog.tech/' }],
@@ -127,8 +130,27 @@ export default defineConfig({
     },
   },
 
+  /* demo 源码里的 uni-app 基础标签 view / text：编译为自定义元素，
+     浏览器按未知元素渲染，custom.css 里 :where(view) 兜底块级/行内。
+     必须在编译期声明 —— Vue 对小写无连字符的未知标签默认按原生元素输出，
+     全局注册组件不会被查询。 */
+  vue: {
+    template: {
+      compilerOptions: {
+        isCustomElement: (tag) => tag === 'view' || tag === 'text',
+      },
+    },
+  },
+
   /* 组件数随版本变化，把这个 page 的静态构建期错误放宽 */
   vite: {
     server: { port: 5210 },
+    resolve: {
+      alias: {
+        /* demo 源码带过来的是演示页的 import：@/uni_modules/... */
+        '@': SRC,
+      },
+    },
+    plugins: [uniConditionalCompile()],
   },
 })

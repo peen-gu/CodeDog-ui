@@ -10,6 +10,8 @@ title: Card 卡片
 
 ## 用法
 
+<CdDemo id="card-0"></CdDemo>
+
 ```vue // 来自演示页 components
 <cd-row :gutter="[16, 16]">
   <cd-col :span="{ xs: 24, md: 12, lg: 8 }">

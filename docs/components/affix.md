@@ -10,6 +10,8 @@ title: Affix 图钉
 
 ## 用法
 
+<CdDemo id="affix-0"></CdDemo>
+
 ```vue // 来自演示页 widgets
 <cd-affix :offset-top="12">
   <view class="affix-bar">

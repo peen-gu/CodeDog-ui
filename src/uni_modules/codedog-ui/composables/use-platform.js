@@ -15,11 +15,37 @@ let cachedSystemInfo = null
 
 /**
  * 安全读取系统信息。
- * uni.getSystemInfoSync 在新版本里已被拆分为 getWindowInfo / getDeviceInfo，
- * 但为了兼容旧基础库与 H5，这里保留它并做异常兜底 —— 探测失败不能阻断渲染。
+ *
+ * 2026-10-03 更新：优先走拆分后的新 API（getWindowInfo / getDeviceInfo / getAppBaseInfo，
+ * 微信基础库 2.20.1+ / uni 3.4.7+ 提供），三个各自独立 try 后合并 ——
+ * 全部可用时不再触碰 uni.getSystemInfoSync，小程序控制台就不会刷
+ * 「wx.getSystemInfoSync is deprecated」告警。
+ * 三个新 API 一个都拿不到（旧基础库 / 旧 uni）才回退 getSystemInfoSync，兼容性不变。
+ * 探测失败不能阻断渲染，所以每一级都有异常兜底。
  */
 export function getSystemInfo() {
   if (cachedSystemInfo) return cachedSystemInfo
+  const merged = {}
+  const pick = (name) => {
+    try {
+      if (typeof uni !== 'undefined' && typeof uni[name] === 'function') {
+        const part = uni[name]()
+        if (part && typeof part === 'object') Object.assign(merged, part)
+      }
+    } catch (e) {
+      /* 单个 API 失败不影响其余，最后看 merged 是否非空 */
+    }
+  }
+  pick('getWindowInfo')
+  pick('getDeviceInfo')
+  pick('getAppBaseInfo')
+
+  if (Object.keys(merged).length > 0) {
+    cachedSystemInfo = merged
+    return cachedSystemInfo
+  }
+
+  /* 旧基础库兜底 */
   try {
     if (typeof uni !== 'undefined' && typeof uni.getSystemInfoSync === 'function') {
       cachedSystemInfo = uni.getSystemInfoSync() || {}
@@ -63,6 +89,23 @@ export const isWeixin = UNI_PLATFORM === 'mp-weixin'
 /** 是否 App（含鸿蒙） */
 export const isApp = UNI_PLATFORM === 'app' || UNI_PLATFORM === 'app-harmony'
 
+/**
+ * 是否 Electron 桌面套壳。
+ *
+ * Electron 下 uni 的 platform 就是 'web' —— 于是 isH5 为 true、isApp 为 false，
+ * 光看这两个值业务层完全无法区分「浏览器」与「桌面客户端」，
+ * 做不了窗口拖拽区、系统标题栏适配这类桌面专属行为。
+ *
+ * 判定依据是 preload 注入的 window.cdDesktop（electron/preload.js 已暴露），
+ * 兜底再认一次 UA —— 后者在个别打包配置下可能被改写，所以只作备份。
+ */
+export const isElectron = (() => {
+  if (typeof window === 'undefined') return false
+  if (window.cdDesktop && window.cdDesktop.isElectron) return true
+  const ua = typeof navigator !== 'undefined' && navigator.userAgent ? navigator.userAgent : ''
+  return ua.indexOf('Electron') > -1
+})()
+
 /** 是否 nvue 渲染（样式能力受限，很多 CSS 不可用） */
 export const isNvue = !!getSystemInfo().nvue
 
@@ -97,6 +140,7 @@ export function usePlatform() {
     isMP,
     isWeixin,
     isApp,
+    isElectron,
     isNvue,
     deviceType,
     osName,

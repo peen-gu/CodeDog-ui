@@ -13,6 +13,7 @@
         :value="modelValue"
         :placeholder="placeholder"
         :disabled="isDisabled"
+        :readonly="readonly"
         :maxlength="maxlength"
         :focus="focus"
         :confirm-type="confirmType"
@@ -138,11 +139,14 @@ const emit = defineEmits([
   'blur',
 ])
 
-const { formDisabled, notifyChange, notifyBlur } = useField()
+const { field, formDisabled, notifyChange, notifyBlur } = useField()
 
 const focused = ref(false)
 
 const isDisabled = computed(() => props.disabled || formDisabled.value)
+
+/** 表单校验失败时搜索框自身也要有错误视觉，否则看不出是哪个控件错了 */
+const hasFormError = computed(() => !!(field && field.validateState && field.validateState.value === 'error'))
 
 const showClear = computed(
   () => props.clearable && !isDisabled.value && !props.readonly && !!props.modelValue
@@ -157,6 +161,7 @@ const rootClass = computed(() =>
     props.shape === 'square' ? 'cd-search-bar--square' : 'cd-search-bar--round',
     props.showAction ? 'cd-search-bar--with-action' : '',
     isDisabled.value ? 'cd-search-bar--disabled' : '',
+    hasFormError.value ? 'cd-search-bar--error' : '',
     props.customClass,
   ]
     .filter(Boolean)
@@ -188,7 +193,8 @@ function handleFocus(event) {
 
 function handleBlur(event) {
   focused.value = false
-  emit('blur', event)
+  /* 与 cd-input 保持同族 API：blur 抛「值」而不是事件对象 */
+  emit('blur', event && event.detail ? event.detail.value : '')
   notifyBlur()
 }
 
@@ -261,6 +267,11 @@ export default {
 
 .cd-search-bar--disabled .cd-search-bar__field {
   background-color: var(--cd-bg-disabled, #f1f5f9);
+}
+
+/* 校验失败：输入框边框平时是 transparent，正好用来承载错误描边 */
+.cd-search-bar--error .cd-search-bar__field {
+  border-color: var(--cd-color-danger, #ef4444);
 }
 
 .cd-search-bar__icon {

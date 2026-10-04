@@ -110,17 +110,25 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'input', 'change'])
 
-const { formDisabled, notifyChange, notifyBlur } = useField()
+const { field, formDisabled, notifyChange, notifyBlur } = useField()
 
 const instance = getCurrentInstance()
 
 const isDisabled = computed(() => props.disabled || formDisabled.value)
 
+/** 表单校验失败时滑块自身也要有错误视觉，否则看不出是哪个控件错了 */
+const hasFormError = computed(() => !!(field && field.validateState && field.validateState.value === 'error'))
+
 /* ----------------------------------------------------------------
  * 数值与百分比
  * ---------------------------------------------------------------- */
 
-const span = computed(() => (props.max > props.min ? props.max - props.min : 1))
+/**
+ * 用绝对值而不是「max - min」：
+ * 配置写反了（min=100, max=0）时后者会得到 -100，
+ * 除法一翻就是 -10000%，滑块直接被甩出容器外。
+ */
+const span = computed(() => Math.abs(props.max - props.min) || 1)
 
 function clamp(value) {
   if (value < props.min) return props.min
@@ -137,18 +145,31 @@ function quantize(value) {
 }
 
 function toPct(value) {
+  /* min >= max 是配置错误，此时不做插值，一律兜底 0%（滑块停在起点） */
+  if (props.min >= props.max) return 0
   return ((clamp(value) - props.min) / span.value) * 100
+}
+
+/**
+ * 入值一律先过 Number.isFinite。
+ * modelValue 是个 NaN（业务算了 0/0、或接口还没回来时传了 undefined）
+ * 会一路传到模板里的 left:NaN%，浏览器直接忽略这条声明，滑块静默消失 ——
+ * 这种「控件不见了」比「值不对」难排查得多。
+ */
+function safeNumber(value, fallback) {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : fallback
 }
 
 /** 归一化后的当前值：始终是数组，模板里只处理一种形态 */
 const values = computed(() => {
   if (props.range) {
     const arr = Array.isArray(props.modelValue) ? props.modelValue : [props.min, props.min]
-    const low = Number(arr[0] ?? props.min)
-    const high = Number(arr[1] ?? props.min)
+    const low = safeNumber(arr[0], props.min)
+    const high = safeNumber(arr[1], props.min)
     return [Math.min(low, high), Math.max(low, high)]
   }
-  return [Number(props.modelValue ?? props.min)]
+  return [safeNumber(props.modelValue, props.min)]
 })
 
 const thumbList = computed(() =>
@@ -220,9 +241,17 @@ async function onTouchStart(event) {
   const touch = event.touches && event.touches[0]
   if (!touch) return
   pendingClientX = touch.clientX
-  draggingIndex.value = 0
   trackRect = await measureTrack()
-  if (pendingClientX !== null) handleClientX(pendingClientX)
+  if (pendingClientX === null) return
+  const next = valueFromClientX(pendingClientX)
+  if (next === null) return
+  /*
+   * 双滑块要动哪一个，由按下的位置决定。
+   * 早先无条件写 0，于是拖第 2 个滑块时：光晕套在第 1 个上、
+   * 数值气泡也只显示在第 1 个上，而被拖的那个反而没有任何反馈。
+   */
+  draggingIndex.value = pickIndex(next)
+  handleClientX(pendingClientX, draggingIndex.value)
 }
 
 function onTouchMove(event) {
@@ -253,10 +282,14 @@ function onMouseDown(event) {
   if (typeof document === 'undefined') return
   event.preventDefault && event.preventDefault()
   pendingClientX = event.clientX
-  draggingIndex.value = 0
   measureTrack().then((rect) => {
     trackRect = rect
-    if (pendingClientX !== null) handleClientX(pendingClientX)
+    if (pendingClientX === null) return
+    const next = valueFromClientX(pendingClientX)
+    if (next === null) return
+    /* 与 onTouchStart 同因：双滑块的索引必须由按下位置决定 */
+    draggingIndex.value = pickIndex(next)
+    handleClientX(pendingClientX, draggingIndex.value)
   })
   document.addEventListener('mousemove', onMouseMove)
   document.addEventListener('mouseup', onMouseUp)
@@ -291,6 +324,7 @@ const rootClass = computed(() =>
   [
     isDisabled.value ? 'cd-slider--disabled' : '',
     props.range ? 'cd-slider--range' : 'cd-slider--single',
+    hasFormError.value ? 'cd-slider--error' : '',
     props.customClass,
   ]
     .filter(Boolean)
@@ -310,6 +344,12 @@ export default {
 
 <style lang="scss">
 @import '../../styles/scss-tokens.scss';
+
+/**
+ * 颜色命名约定：本组件私有的颜色令牌统一 --cd-slider-* 前缀，
+ * 一律写成 var(--x, 兜底原色) —— 业务不传变量时视觉与此前完全一致。
+ * 共用语义色（--cd-color-danger 等）走库级令牌，不另起名字。
+ */
 
 .cd-slider {
   @include cd-reset;
@@ -401,6 +441,15 @@ export default {
   border-color: var(--cd-text-disabled, #cbd5e1);
 }
 
+/**
+ * 校验失败：把滑块描边转红。
+ * 只改 thumb 的 border-color —— 轨道和已填充段保持原色，
+ * 否则「值填了多少」这个信息会被红色一起盖掉。
+ */
+.cd-slider--error .cd-slider__thumb {
+  border-color: var(--cd-color-danger, #ef4444);
+}
+
 /* ==================================================================
  * 数值气泡
  * ================================================================== */
@@ -418,6 +467,6 @@ export default {
 .cd-slider__tooltip-text {
   font-size: var(--cd-font-size-xs, 11px);
   line-height: 1.4;
-  color: #ffffff;
+  color: var(--cd-slider-tooltip-color, #ffffff);
 }
 </style>

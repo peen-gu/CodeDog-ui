@@ -216,7 +216,12 @@ function handleTriggerClick() {
       emit('open')
       bindKeyboard()
     } else {
-      emit('close')
+      /*
+       * 关闭必须走 close()：早先这里只置 desktopOpen + emit('close')，
+       * 漏掉 unbindKeyboard()，键盘监听会一直挂在 document 上 ——
+       * 此后页面任意位置按 Enter 都会静默改掉表单值。
+       */
+      close()
     }
   } else {
     mobileOpen.value = true
@@ -264,6 +269,8 @@ function close() {
 function handleClear() {
   emit('update:modelValue', '')
   emit('clear')
+  /* 清空也是一次「值变了」：不回报的话表单里已经显示出来的错误文案不会消失 */
+  notifyChange('')
 }
 
 function findFirstEnabled() {

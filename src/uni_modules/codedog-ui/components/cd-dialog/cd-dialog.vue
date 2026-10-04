@@ -63,9 +63,10 @@
  * 为什么遮罩不自己写：它要在小程序端处理 touchmove 穿透、在 H5 端处理
  * 滚动锁与 iOS 橡皮筋、还要管多层弹窗的层级，这些坑不值得重踩一遍。
  */
-import { computed, watch, onUnmounted } from 'vue'
+import { computed, watch } from 'vue'
 import { useBreakpoint, resolveDesktopShape } from '../../composables/use-breakpoint'
 import { useWotScope } from '../../composables/use-wot-scope'
+import { useEscLayer } from '../../composables/use-esc-stack'
 import CdButton from '../cd-button/cd-button.vue'
 
 defineOptions({
@@ -241,44 +242,37 @@ async function handleConfirm() {
 
 /* -------------------- 桌面端键盘：Esc 关闭 -------------------- */
 
-function onKeydown(event) {
+/* 走共享的 Esc 层级栈：同时开着多层浮层时，Esc 只关最上面那一层。
+   自己监听 document.keydown 的话，一次 Esc 会把所有层一起关掉。 */
+const esc = useEscLayer((event) => {
   if (event.key !== 'Escape' && event.keyCode !== 27) return
   if (!props.maskClosable) return
   requestClose('mask')
-}
+})
 
-let escBound = false
-
-function bindEsc() {
-  /* #ifdef H5 */
-  // 键盘交互只可能出现在 H5；小程序端跳过，避免无谓的 DOM 依赖
-  if (escBound || typeof document === 'undefined') return
-  escBound = true
-  document.addEventListener('keydown', onKeydown)
-  /* #endif */
-}
-
-function unbindEsc() {
-  /* #ifdef H5 */
-  if (!escBound || typeof document === 'undefined') return
-  escBound = false
-  document.removeEventListener('keydown', onKeydown)
-  /* #endif */
-}
-
-function handleAfterEnter() {
-  if (desktopShape.value) bindEsc()
-  emit('open')
-}
-
+/**
+ * 入栈必须发生在「modelValue 变 true」的那一刻，而不是动画结束的 after-enter。
+ * 之前放在 handleAfterEnter 里：抽屉 240ms / 弹窗 260ms 的入场动画期间，
+ * 任何后开的浮层都会先入栈、站到它上面，
+ * 于是按 Esc 关掉的是那个后开的层而不是最上面的这一个 —— 栈序反了。
+ * 栈的语义是「打开的先后顺序」，打开瞬间入栈才对得上。
+ */
 watch(
   () => props.modelValue,
   (value) => {
-    if (!value) unbindEsc()
-  }
+    if (value) {
+      /* 键盘交互只可能出现在 H5；栈内部已按平台跳过 */
+      if (desktopShape.value) esc.push()
+      return
+    }
+    esc.remove()
+  },
+  { immediate: true }
 )
 
-onUnmounted(unbindEsc)
+function handleAfterEnter() {
+  emit('open')
+}
 </script>
 
 <style lang="scss">

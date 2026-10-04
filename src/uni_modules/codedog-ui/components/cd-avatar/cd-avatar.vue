@@ -34,7 +34,7 @@
  * 西文名取前两字母（"Michael" → "Mi"）。统一用 slice(0,2) 会把中文名切成"欧阳"，
  * 读起来别扭。
  */
-import { computed, ref, useSlots } from 'vue'
+import { computed, ref, useSlots, watch } from 'vue'
 
 defineOptions({
   name: 'cd-avatar',
@@ -97,7 +97,25 @@ const slots = useSlots()
 
 const hasError = ref(false)
 
-const hasSlot = computed(() => !!(slots.default && slots.default().length))
+/**
+ * 换了地址就要重新给一次机会。
+ * 不 watch 的话，一次加载失败之后 hasError 永远为真：
+ * 业务把 src 换成一张好图，组件仍然显示降级内容（文字或默认图标），
+ * 只能靠手动调 reset() 才恢复 —— 而这个坑几乎不会有人想得到。
+ */
+watch(
+  () => props.src,
+  () => {
+    hasError.value = false
+  },
+)
+
+/**
+ * 只判存在性，不调用 slots.default()。
+ * 与 cd-divider 同源：mp 端调用会抛 TypeError: i.default is not a function。
+ * 详见 cd-divider.vue 中 hasContent 处的四条依据。
+ */
+const hasSlot = computed(() => !!slots.default)
 
 const showImage = computed(() => !!props.src && !hasError.value)
 

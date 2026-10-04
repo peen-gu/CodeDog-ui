@@ -17,6 +17,7 @@
       :placeholder="placeholder"
       placeholder-class="cd-input__placeholder"
       :disabled="isDisabled"
+      :readonly="readonly"
       :maxlength="maxlength"
       :auto-height="autoHeight"
       :focus="focus"
@@ -37,6 +38,7 @@
       :placeholder="placeholder"
       placeholder-class="cd-input__placeholder"
       :disabled="isDisabled"
+      :readonly="readonly"
       :maxlength="maxlength"
       :focus="focus"
       :confirm-type="confirmType"
@@ -117,6 +119,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  /**
+   * 只读：可看不可改。
+   * 必须同时透传给原生 input / textarea —— 只加一个「看起来只读」的类名，
+   * 用户照样能往里打字。
+   */
   readonly: {
     type: Boolean,
     default: false,

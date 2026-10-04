@@ -55,6 +55,22 @@ const props = defineProps({
 })
 
 /**
+ * 钳制到 0~24。
+ * SCSS 只生成到 24，所以 span=25 会产出 .cd-col--25 —— 这个类根本不存在，
+ * 于是列静默退化成 .cd-col 的 width:100%（满宽）。
+ * 「写错一个数字得到满宽」比报错难发现得多，所以这里直接钳住并告警。
+ */
+function clampGrid(value) {
+  const num = Number(value)
+  if (!Number.isFinite(num)) return value
+  const clamped = Math.min(Math.max(Math.trunc(num), 0), 24)
+  if (clamped !== num && process.env.NODE_ENV !== 'production') {
+    console.warn(`[cd-col] span / offset 必须是 0~24，收到 ${value}，已按 ${clamped} 处理`)
+  }
+  return clamped
+}
+
+/**
  * @param {number|string|object} value 传入的 span / offset
  * @param {string} kind '' 表示列宽，'offset-' 表示偏移
  * @returns {string[]} 类名数组
@@ -64,17 +80,17 @@ function toClasses(value, kind = '') {
 
   /* 数字 / 字符串：单一值 */
   if (typeof value !== 'object') {
-    return [`cd-col--${kind}${value}`]
+    return [`cd-col--${kind}${clampGrid(value)}`]
   }
 
   const classes = []
   /* xs 不带媒体查询，等价于基准值 */
   if (value.xs !== undefined) {
-    classes.push(`cd-col--${kind}${value.xs}`)
+    classes.push(`cd-col--${kind}${clampGrid(value.xs)}`)
   }
   BREAKPOINT_KEYS.forEach((bp) => {
     if (value[bp] !== undefined) {
-      classes.push(`cd-col--${bp}-${kind}${value[bp]}`)
+      classes.push(`cd-col--${bp}-${kind}${clampGrid(value[bp])}`)
     }
   })
   /* 只写了断点、没写基准值时，基准补 24（满宽），
@@ -93,11 +109,28 @@ const rootClass = computed(() =>
 </script>
 
 <script>
+/**
+ * virtualHost —— 小程序端必须开启，否则栅格在真机上会整体塌陷。
+ * ---------------------------------------------------------------
+ * 现象（2026-10-03 微信开发者工具实测，iPhone 14 Pro Max 430px）：
+ *   12 个 grid-box 实测宽度 16.0px / 20.1px，而它们在 H5 375 视口下完全正常。
+ *   16.0px 恰好等于 .grid-box 自己的左右 padding（8+8），即内容宽被算成了 0。
+ *
+ * 原因：小程序会给自定义组件套一层「宿主节点」<cd-col>，它才是真正的 flex item；
+ *      而 width:33.33% 写在组件**内部**的根节点 .cd-col 上。
+ *      宿主没有宽度 → 内部根节点的百分比去算一个「由内容决定」的宽度 →
+ *      循环依赖 → 按规范解析成 0 → 列塌成 padding 那么宽。
+ *      H5 没有宿主这一层，所以 H5 全对、小程序全错，且两端产物静态检查都「全对」。
+ *
+ * 开启 virtualHost 后宿主节点消失，内部根节点直接成为 cd-row 的 flex item，
+ * 百分比得以对「有确定宽度的 flex 容器」求值，两端行为对齐。
+ */
 export default {
   name: 'cd-col',
   options: {
     addGlobalClass: true,
     styleIsolation: 'shared',
+    virtualHost: true,
   },
 }
 </script>

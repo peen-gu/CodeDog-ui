@@ -267,12 +267,13 @@ function rowClass(index) {
   display: flex;
   align-items: center;
   min-height: var(--cd-table-row-height, 48px);
-  border-bottom: var(--cd-border-width, 1px) solid var(--cd-border-color-light, #f1f5f9);
   transition: background-color var(--cd-duration-fast, 150ms) var(--cd-ease-in-out, ease);
 }
 
-.cd-table__row:last-child {
-  border-bottom: none;
+/* 分隔线由「后一行」画在上边，而不是每行画下边再用 :last-child 抹掉末行：
+   :last-child 在小程序 WXSS 支持不可靠。这样最后一行天然没有多余的下边线。 */
+.cd-table__row + .cd-table__row {
+  border-top: var(--cd-border-width, 1px) solid var(--cd-border-color-light, #f1f5f9);
 }
 
 .cd-table--stripe .cd-table__row--stripe {
@@ -297,8 +298,14 @@ function rowClass(index) {
   line-height: var(--cd-line-height-base, 1.5);
 }
 
-/* 长文本截断。默认开启，因为它避免了「一列撑破整行」这个最常见的翻车 */
+/* 长文本截断。默认开启，因为它避免了「一列撑破整行」这个最常见的翻车。
+   display:block 与 min-width:0 是必需的，不是装饰：
+   uni 的 <text> 在 H5 编译成 <uni-text> 自定义元素，它没有 display 声明、
+   默认按 inline 排版，而 overflow / text-overflow 对 inline 元素无效 ——
+   少了这两行，「默认开启的省略号」实际一个字都截不掉（同 cd-notice-bar） */
 .cd-table__td-text--ellipsis {
+  display: block;
+  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

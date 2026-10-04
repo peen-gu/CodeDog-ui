@@ -41,7 +41,7 @@
  *   3. 鼠标拖拽复用同一套逻辑（H5 上 mousedown → document 的 move/up），
  *      与 cd-slider 采用同一套指针约定。
  */
-import { computed, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import { useDevice } from '../../composables/use-device'
 
 defineOptions({
@@ -118,6 +118,15 @@ const { isPC } = useDevice()
 /** 拖拽产生的额外位移 */
 const dragX = ref(0)
 const dragY = ref(0)
+
+/* 下面两样东西都必须在卸载时清掉：拖拽过程中组件被卸载（比如所在页面被切走）时，
+   document 上的 mousemove / mouseup 会永久残留 —— 每拖一次就多一对，
+   而且回调里还握着已销毁实例的引用。 */
+
+/** endDrag 里那个「下一轮复位 moved」的 setTimeout id */
+let resetMovedTimer = null
+/** document 上的鼠标监听是否已挂上（卸载时据此摘除） */
+let mouseBound = false
 
 /** 拖动是否已经超过阈值（用于吞掉随后的 click） */
 let moved = false
@@ -207,11 +216,27 @@ function endDrag() {
   startPoint = null
   if (moved) emit('drag-end', { x: dragX.value, y: dragY.value })
   /* 复位标记放到下一个事件循环：click 是在 touchend 之后同步派发的，
-     立刻复位会让「吞掉 click」失效 */
-  setTimeout(() => {
+     立刻复位会让「吞掉 click」失效。
+     id 记下来是为了在卸载时清掉 —— 否则它会在组件销毁后摸一个已经没意义的状态 */
+  clearResetTimer()
+  resetMovedTimer = setTimeout(() => {
+    resetMovedTimer = null
     moved = false
   }, 0)
 }
+
+function clearResetTimer() {
+  if (resetMovedTimer === null) return
+  clearTimeout(resetMovedTimer)
+  resetMovedTimer = null
+}
+
+/* -------------------- 卸载兜底 -------------------- */
+
+onUnmounted(() => {
+  clearResetTimer()
+  detachMouse()
+})
 
 function onTouchStart(event) {
   beginDrag(event)
@@ -231,8 +256,11 @@ function onMouseDown(event) {
   /* #ifdef H5 */
   if (!props.draggable || typeof document === 'undefined') return
   beginDrag(event)
+  /* 重复绑定同一对监听是无效的（同名同函数浏览器会去重），
+     但 mouseBound 让「有没有挂过」这件事可读，卸载时才能确定地摘掉 */
   document.addEventListener('mousemove', onMouseMove)
   document.addEventListener('mouseup', onMouseUp)
+  mouseBound = true
   /* #endif */
 }
 
@@ -244,10 +272,18 @@ function onMouseMove(event) {
 
 function onMouseUp() {
   /* #ifdef H5 */
-  if (typeof document === 'undefined') return
+  detachMouse()
+  endDrag()
+  /* #endif */
+}
+
+/** 摘掉 document 上的鼠标监听。onMouseUp 与 onUnmounted 共用，保证不漏 */
+function detachMouse() {
+  /* #ifdef H5 */
+  if (!mouseBound || typeof document === 'undefined') return
+  mouseBound = false
   document.removeEventListener('mousemove', onMouseMove)
   document.removeEventListener('mouseup', onMouseUp)
-  endDrag()
   /* #endif */
 }
 

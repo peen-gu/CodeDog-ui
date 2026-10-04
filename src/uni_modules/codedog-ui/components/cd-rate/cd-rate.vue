@@ -138,9 +138,12 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'change'])
 
-const { formDisabled, notifyChange, notifyBlur } = useField()
+const { field, formDisabled, notifyChange, notifyBlur } = useField()
 
 const isReadonly = computed(() => props.readonly || props.disabled || formDisabled.value)
+
+/** 表单校验失败时评分自身也要有错误视觉，否则看不出是哪个控件错了 */
+const hasFormError = computed(() => !!(field && field.validateState && field.validateState.value === 'error'))
 
 const value = computed(() => {
   const v = Number(props.modelValue) || 0
@@ -175,6 +178,7 @@ const rootClass = computed(() =>
     props.allowHalf ? 'cd-rate--half' : 'cd-rate--whole',
     isReadonly.value ? 'cd-rate--readonly' : 'cd-rate--interactive',
     props.disabled || formDisabled.value ? 'cd-rate--disabled' : '',
+    hasFormError.value ? 'cd-rate--error' : '',
     props.customClass,
   ]
     .filter(Boolean)
@@ -304,6 +308,11 @@ export default {
 
 .cd-rate--interactive .cd-rate__zone {
   cursor: pointer;
+}
+
+/* 校验失败：把「未点亮」那一排描边星转红，提示这一项还没打分 */
+.cd-rate--error .cd-rate__icon--void {
+  color: var(--cd-color-danger, #ef4444);
 }
 
 .cd-rate--disabled .cd-rate__icon--active {

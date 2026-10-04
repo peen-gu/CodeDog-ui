@@ -23,6 +23,7 @@
         :disabled="isDisabled"
         :style="inputStyle"
         @input="handleInput"
+        @focus="handleFocus"
         @blur="handleBlur"
       />
       <text v-else class="cd-stepper__text">{{ displayValue }}</text>
@@ -141,9 +142,12 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'change', 'overlimit', 'focus', 'blur'])
 
-const { formDisabled, notifyChange, notifyBlur } = useField()
+const { field, formDisabled, notifyChange, notifyBlur } = useField()
 
 const isDisabled = computed(() => props.disabled || formDisabled.value)
+
+/** 表单校验失败时，步进器自身也要有错误视觉，否则看不出是哪个控件错了 */
+const hasFormError = computed(() => !!(field && field.validateState && field.validateState.value === 'error'))
 
 /** 手动输入的中间态。null 表示「没有正在编辑」，此时展示 props.modelValue */
 const draft = ref(null)
@@ -184,6 +188,7 @@ const rootClass = computed(() =>
     isDisabled.value ? 'cd-stepper--disabled' : '',
     minusDisabled.value ? 'cd-stepper--minus-disabled' : '',
     plusDisabled.value ? 'cd-stepper--plus-disabled' : '',
+    hasFormError.value ? 'cd-stepper--error' : '',
     props.customClass,
   ]
     .filter(Boolean)
@@ -304,20 +309,42 @@ function handleInput(event) {
   draft.value = event.detail.value
 }
 
-function handleBlur(event) {
+/**
+ * 选择「补 emit」而不是「删声明」：
+ * declare 了一个永远不会触发的事件，比不声明更糟 —— 业务照着 API 表
+ * 监听 @focus 却永远收不到，排查成本极高。焦点转移本身对步进器也有意义
+ * （长按连加时业务常常要在 focus 期间屏蔽页面滚动）。
+ */
+function handleFocus(event) {
+  emit('focus', event)
+}
+
+/**
+ * 顺序很重要：**先提交、再回报 blur**。
+ *
+ * 早先是 notifyBlur() 在前、commit() 在后，于是 blur 校验读到的永远是
+ * 「提交前」的旧值 —— 用户输入了一个越界值（比如 max=10 时输 99），
+ * 校验按旧值 0 通过，而 model 里留下的是被 clamp 后的 10，
+ * 用户既没看到提示，也不知道自己的输入被吃掉了。
+ *
+ * commit 可能 await beforeChange，所以 blur 回报必须等它落地后再发，
+ * 否则异步钩子会让顺序退回原来的样子。
+ */
+async function handleBlur(event) {
   const raw = draft.value
   draft.value = null
 
   emit('blur', event)
-  notifyBlur()
 
-  if (raw === '' || raw === null || raw === undefined) return
-
-  const parsed = Number(raw)
-  /* 输了个非数字（比如只敲了一个小数点）就当没改过，回退到当前值 */
-  if (isNaN(parsed)) return
-
-  commit(parsed, 'input')
+  try {
+    if (raw !== '' && raw !== null && raw !== undefined) {
+      const parsed = Number(raw)
+      /* 输了个非数字（比如只敲了一个小数点）就当没改过，回退到当前值 */
+      if (!Number.isNaN(parsed)) await commit(parsed, 'input')
+    }
+  } finally {
+    notifyBlur()
+  }
 }
 
 /* 外部改了 modelValue 时清掉草稿，否则输入框会一直显示用户上次没提交的内容 */
@@ -440,6 +467,11 @@ export default {
 .cd-stepper--disabled {
   opacity: 0.6;
   background-color: var(--cd-bg-disabled, #f1f5f9);
+}
+
+/* 校验失败：外壳描边转红（外壳本来就带边框，改边框色不改尺寸） */
+.cd-stepper--error {
+  border-color: var(--cd-color-danger, #ef4444);
 }
 
 /* 到达边界的那个按钮要明显「点不动」，否则用户会反复戳 */

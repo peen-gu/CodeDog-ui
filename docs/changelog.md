@@ -2,6 +2,212 @@
 title: 更新日志
 ---
 
+## 0.5.3（2026-10-04）
+
+第七批：补上「Schema 驱动」这一层，并把几类会**让小程序直接编译中断**的写法固化进门禁；
+同时修掉一个**会让 npm 使用者 H5 页面整页打不开**的构建缺陷；并按全库 80 个组件的
+touch 绑定清单，把 4 个「桌面浏览器下完全不可用」的交互组件补齐。
+组件总数 67 → 80。
+
+### 新增组件（13 个）
+
+- **cd-form-render** Schema 表单引擎。给一份字段描述数组和一个对象，自动渲染整张表单：
+  内建 12 种控件（input / select / switch / checkbox / radio / date / time / slider /
+  rate / stepper / upload / text），支持 `visible` / `disabled` 联动（布尔或 `(model) => boolean`）、
+  栅格分列、默认值注入；校验直接复用 `cd-form` 那套规则体系，
+  扩展自定义控件走 `widget` 作用域插槽。
+  刻意**不用** `<component :is>` —— mp-weixin 编译器在编译期就拒绝动态组件
+  （`X_DYNAMIC_COMPONENT_NOT_SUPPORTED`），改为「v-for 遍历 schema + 每条字段内 v-if 枚举控件」，
+  四端统一，不在 H5 端单独走动态组件以免两端行为分叉
+
+**通用（2 个）**
+
+- **cd-typing** 打字机。逐字输出的流式文本，给 AI 回复与引导文案用。调度用 `setTimeout` 链而非 `setInterval`（切后台回来不会一次性补一大段），推进用索引而非字符串拼接（中途换文案不会新旧串味）
+- **cd-watermark** 水印。纯 `text` 节点平铺，不用 canvas 生成背景图。画布放大倍数由旋转角算出来而不是硬写 1.5 —— 宽屏上能少铺近一半节点。整层 `pointer-events:none`，绝不会挡住底下的操作
+
+**表单与录入（3 个）**
+
+- **cd-color-picker** 颜色选择器。HSV 面板 + 色相条 + 透明度，纯 view 实现不用 canvas。输入与面板双向驱动，粘贴任意合法色值都能解析
+- **cd-signature** 手写签名。笔画拼成 SVG 再以内联 data URI 交给背景图渲染（与 `cd-icon` 同一套路），不用 canvas 因此四端一致。已完成笔画与正在画的一笔分成两组节点，移动时只重建后者
+- **cd-transfer** 穿梭框。左右两栏 + 搜索过滤 + 全选。禁用项不可移，`direction` 可调（窄屏自动竖排）
+
+**数据展示（3 个）**
+
+- **cd-qrcode** 二维码。编码核心自研零依赖（版本 1~10 / L M Q H / 字节模式），与 npm `qrcode` 包逐位比对通过。渲染是纯 view 节点且坐标全部取整，不会出现 1px 白缝
+- **cd-tree** 树形控件。勾选走「向下全量 + 向上回算」两趟，父子联动带半选态；`checkStrictly` 打开时父子各算各的。扁平渲染而非嵌套递归，节点再多也不会爆栈
+- **cd-descriptions** 描述列表。一份 `items` 渲染整张详情表，支持列数、跨列与横竖两种排布。比手写一堆 `cell` 少 80% 的模板代码
+
+**导航（3 个）**
+
+- **cd-navbar** 导航栏。状态栏留白由 `statusBar` 开关 × 实测高度决定，拿不到就退回 0；标题绝对居中，左右内容不等长也不偏心
+- **cd-tabbar** 底部标签栏。支持徽标与小红点，`fixed` 时自动等高占位，`safeArea` 走小程序安全区。选中值可以是 `value` 也可以是下标
+- **cd-index-bar** 字母索引栏。只做「手指落在第几个字母」，结果 emit 出去由业务用 `scroll-into-view` 自己跳 —— 锚点滚动要遍历业务列表的 `offsetTop`，组件既量不准也管不动。整条 `pointer-events:none`，只有字母本身可点
+
+**反馈与浮层（1 个）**
+
+- **cd-guide** 用户指引。分步遮罩引导。遮罩用 `box-shadow` 挖洞而不是四块挡板拼，圆角与位置动画都只需改一个节点；`placement` 支持 `auto`，目标下方空间不足自动翻到上方
+
+### 修复
+
+| 项 | 问题 | 改法 |
+|---|---|---|
+| `service/index.js`（**高危**） | 命令式反馈服务对宿主组件用相对路径动态 `import('../components/…')`。包被 npm 装进业务工程后（模块位于 `node_modules/`），构建产出的模块地址是 `..-node_modules-codedog-ui-components-cd-toast-host-cd-toast-host.js` —— **既不是合法相对路径也不是合法裸包名**，浏览器报 `Failed to resolve module specifier`；该 chunk 还会被写进所在页面的依赖预载表，导致**整页加载失败**（uni H5 表现为「连接服务器超时，点击屏幕重试」）。源码仓库内开发时模块在 `src/uni_modules/` 下、路径合法，因此长期未被发现 | 宿主组件改为**静态导入**。代价是宿主随包入口进入业务产物；二者体量有限且反馈服务的宿主几乎人人用得到，取「一定能跑」。`playground/mp-preview` 已撤掉原先的 `manualChunks` 绕行方案，改由它充当 npm 消费者视角的回归判据 |
+| `cd-col`（**高危**） | 小程序端栅格整体塌陷：12 个栅格实测宽度只有 16~20px，文字挤成竖排。根因是小程序会给自定义组件套一层宿主节点，`width: 33.33%` 写在内部根节点上、宿主却没有宽度，百分比解析成 0；H5 没有这层宿主所以看起来全对 | 该组件 `options` 加 `virtualHost: true`。只对这一处加 —— `virtualHost` 会丢弃父级写在组件标签上的 `class`/`style`，全库加会让 `<cd-card class="section">` 这类常见写法失效 |
+| `cd-divider` / `cd-avatar` / `cd-badge` | 小程序端运行时报 `TypeError: i.default is not a function`。三处用 `slots.default() && slots.default().length` 判空，而小程序端 `slots.default` 存在但不是函数（H5 端是函数，故不报错） | 改为只判存在性 `!!slots.default`（与 wot-design-uni 全库 80 处写法一致）；外加全库扫描确认再无真实调用 |
+| `cd-step` | 窄屏下标题与描述字号过大，文字挤到第二行 | 新增 `--m` 断点类，字号走 `--cd-step-title-font-size-m` / `--cd-step-desc-font-size-m` 令牌。不用 `@media` —— 实测 uni 构建链会丢掉组件样式块里的媒体查询 |
+| `scripts/check-hard-rules.mjs` | 只扫组件目录，演示页里写了 WXSS 不支持的写法查不出来（曾导致微信小程序编译中断报 `error at token *`） | 扩展 `DEMO_DIRS`，演示页同样过跨端 CSS 硬约束 |
+| `scripts/check-hard-rules.mjs` | 没有拦截动态组件 / `v-is` / `v-on="对象"` | 新增 3 条规则。三条都是 mp-weixin **编译期直接报错**，不是运行时降级：`<component is=""/> is not supported`、`v-is not supported`、`v-on="" is not supported` |
+| `scripts/check-hard-rules.mjs` | 模板块没剥 HTML 注释，注释里的示例代码会被判违规 | 新增 `stripHtmlComments()`，只剥普通注释，保留 `<!-- #ifdef -->` 条件编译块内部继续检查 |
+| `scripts/gen-component-docs.mjs` | 演示页源码混着 CRLF（navigation 页 421 行里 405 行是 CRLF），行尾被原样带进产物，文档出现 CRLF/LF 混排、diff 整片重写 | 新增 `writeLf()`，产物统一归一化成 LF |
+| `scripts/gen-component-docs.mjs` | 分区块外层 `cd-card` 自带的 `<template #extra>` 没被剥掉，残留在片段开头，`isStandalone()` 据此误判「这是宿主插槽内容」而**整段丢弃**。后果：`cd-row / cd-col` 区块（唯一以 `#extra` 开头）被丢，row / col 失去唯一的权威用例，退化成展示 Input / Card 的切片 —— **线上文档 `docs/components/col.md`、`row.md` 可见** | `dedent()` 新增 `stripWrapperSlots()`，剥掉处于最小缩进层级（即卡片直接子节点）的 `<template #xxx>` 块；剥完为空则保留原样，仍交给 `isStandalone()` 按老规则拒掉，不产生空预览 |
+| `scripts/gen-component-docs.mjs` | 演示片段选取只做 `slice(0, 2)`，兜底片段与点名片段抢位置：cd-progress 的第二个预览是站点 Hero（一排按钮与标签），cd-icon 两个预览内容完全相同，cd-button 第二个预览挂着整张必填表单（只因提交按钮是 cd-button） | 选取策略改为：**点名片段优先**（分区注释 / 卡片标题明确点名的才算），点名集合为空才回退兜底且**最多 1 条**；外加「组件只出现在别人插槽里」的片段一律不采用（`tagOutsideSlots()`）；相同代码去重
+| `cd-signature` / `cd-color-picker` | 桌面浏览器**完全没法用**：组件只绑了 `touchstart/touchmove/touchend`，而桌面端没有 touch 事件 —— 签名板上画不出任何笔画，取色面板与色相条拖了没反应。DOM 结构与小程序端一致，「看」起来完全正常，只有真操作才暴露 | 补 `mousedown/mousemove/mouseup/mouseleave` 一套；触点读取改成「有 `touches` 用 `touches[0]`，否则用事件自身」（两者 `clientX/clientY` 字段名一致）。另加**按下标志位**：`move` 处理必须处于按下态才响应，否则鼠标只是从组件上划过就会被当成拖动 |
+| `cd-index-bar` | 同上根因：桌面端只能单击单个字母，**沿索引栏拖动失效**（拖动才是索引栏最主要的操作方式） | 同上一套鼠标事件；`pointY()` 归一化触点；每次按下重新量一次列表顶边（页面滚动过也能算准，且不等异步回调，用缓存值避免形体差一格）。`onMove` 加按下守卫 —— 索引栏是通栏布局，鼠标日常会划过它，不守卫会带着业务列表乱跳 |
+| `cd-image-preview` | 桌面端只能「打开 + 点空白关闭」，**拖动翻页 / 缩放 / 平移**三项全无 | `pointsOf()` 归一化触点（鼠标事件自身视作一个单指触点），一套手势同时服务触摸与鼠标；新增**滚轮缩放**（向上放大、向下缩小，按光标位置做焦点补偿，让光标下那一小片始终停在原处）。**注意**：滚轮**不能**写在模板的 `@wheel` 上 —— `uni-view` 不透传该事件，产物里 handler 在但事件永远不上来；改为 `window` 原生监听（`passive:false` 挡住背景滚动），`close()` 成对解绑 |
+| `cd-guide` | H5 端高亮框整体偏移 44~50px（小程序端正常）。根因是 `boundingClientRect()` 在 H5 返回页面内容区坐标、少一条原生导航头高；先前 `.in(instance)` 的写法也不是主因 | 给根节点加本次实例唯一 class，量目标时先量自身根节点再取差值，**两端同坐标系求差即自动抵消**头部偏移；根节点还没上屏时按 40ms 重试 4 次。另修：气泡最小宽 240px 并夹取左边界（右侧目标时气泡过窄会把上一步/下一步按钮挤到换行）、箭头对准目标中心（原来写死 `left:50%`，目标不在中间时箭头指偏） |
+| `cd-transfer` / 索引栏演示页 | `cd-transfer` 标题可换行，窄屏（面板约 130px）时两栏布局破版；演示页索引字母压住列表文字 | 标题 `white-space:nowrap` + 省略号；演示页列表容器补 `padding-right:28px` |
+| `cd-tabs`（**页面级破版**） | 等宽模式下每项实占宽超出容器，四个标签就把 375 视口的页面撑到能横向滚动（实测每项右边界 445 / 441 > 375）。根因是 uni 的 `view` 默认 `content-box`，而等宽模式给的是 `width:25%` + 左右 12px padding —— content-box 下实占 = 25% + 24px | `.cd-tabs__item` 显式声明 `box-sizing: border-box`。**同类隐患已全库扫描**：百分比宽度 + 水平内边距的选择器共 11 处，其余 10 处或因父级是 flex 会被压缩、或实测不越界，本次未一并改动以免扩散影响面 |
+| `.workbuddy/tmp/shot-all-h5.mjs` | 原先的破版审计只抽 14 页（12 个重点页 + 首页两页），**另外 68 个组件页从未进过发布门禁** —— `cd-tabs` 就是这样漏到今天的 | 新增全量审计脚本：主包 + 7 个子包共 **82 页**逐一重载测量，出现异常才落截图，正常页不产出文件；演示里故意指向不存在域名的 404 用例（`this-host-does-not-exist.invalid`）不计入报错。当前结论：**82 页，溢出 0 / 报错 0 / 白屏 0** |
+| `.workbuddy/tmp/shot-preview-h5.mjs` | 全页截图脚本长期稳定报「溢出=4」（watermark 页 22），被当成排版问题查过好几轮 | 两条都是**假阳性**，且都补了注释说明成因：① uni-app H5 会在 `body` 末尾注入 4 个 `visibility:hidden`、飘在视口上方的 400×400 空壳节点 → 用 `checkVisibility()` 跳过不可见节点；② `.cd-watermark` 自身 `overflow:hidden`，里面的重复格子天然画到容器外 → 向上遍历祖先，被裁剪的子节点跳过。遍历**到 body 为止**：uni-app 给 `body` 挂的 `overflow-x:hidden` 会传播到视口，把它当裁剪祖先会把所有真破版判成安全（已加反向自检：注入 640px 元素仍报溢出=1，注入被 `overflow:hidden` 包住的 640px 子元素报 0） |
+
+### 其他
+
+- **对外数字口径复核**（每个都写明计数器定义，保证日后能复现）：
+
+  | 数字 | 值 | 怎么数出来的 |
+  |---|---|---|
+  | 组件 | **80** | `components/` 下 `cd-` 目录数（前一版对外文案仍写着 67 / 68 / 62 三种） |
+  | 设计令牌 | **320** | 沿用 0.5.2 的定义：`styles/tokens.scss` 中 `--cd-*` 的**唯一定义名**（此前 319） |
+  | 图标 | **73** | `cd-icon/icons.js` 的 `ICON_NAMES.length`（实跑导入取值，不用正则） |
+  | 复用 `wot-design-uni` 的组件 | **5** | 模板里出现 `<wd-*` 的组件目录：`cd-select` / `cd-dialog` / `cd-drawer` / `cd-action-sheet` / `cd-config-provider`。对外文案此前写「8 个」，按任何口径都数不出来，本次一并订正 |
+
+  本次新增的组件里有 12 个在 changelog 里从未登记过（只有肉眼可见的事实），一并补齐。
+
+### 架构结论（实测，非查资料）
+
+在 `playground/mp-preview` 建探针页构建 mp-weixin，读产物 wxml / js 反查编译器行为：
+
+| 能力 | mp-weixin | 证据 |
+|---|---|---|
+| `<component :is>` | 编译期报错 | `X_DYNAMIC_COMPONENT_NOT_SUPPORTED` |
+| `v-is` | 编译期报错 | `X_V_IS_NOT_SUPPORTED` |
+| `v-on="{ click: fn }"` | 编译期报错 | `X_V_ON_NO_ARGUMENT` |
+| `v-bind="propsObj"` | 可用 | 产物 `u-p="{{a}}"`，JS `e.p({...t})` |
+| `v-for` + `v-bind="item.props"` | 可用 | 产物 JS `e.p({...l.props})` |
+| 枚举 `v-if` / `v-else-if` | 可用 | 产物 `wx:if` / `wx:elif` / `wx:else` |
+| 作用域插槽（含解构） | 可用 | 产物 `u-s="{{['suffix']}}"`，JS `e.w(...)` |
+
+同一份含 `<component :is>` 的代码 `build:h5` 通过 —— 该限制是 mp 编译器专属，不是全平台限制。
+
+## 0.5.2（2026-10-02）
+
+第六批：补上「选择链路」与「图集」两块，并把一轮全库审查里查出的问题一并修掉。
+组件总数 62 → 67。
+
+### 新增组件（5 个）
+
+- **cd-calendar** 日历面板。常驻形态（不是弹层），single / multiple / range 三种模式；
+  `marks` 支持打点与底部小字，`formatter` 可拦截单个格子的文案与可选性。
+  与 `cd-date-picker` 的分工：后者是「点一下选完就走」的录入控件，
+  前者是「要一直看着月份做安排」的展示面板
+- **cd-picker** 通用多列选择器。`cascade` 显式区分「列数组的数组」与「树」两种数据形态；
+  选中态与提交态分离（点确定才落到 `modelValue`）；级联时改动上游会截断下游，
+  不会留下「江苏 / 西湖区」这种不存在的组合。列用 `scroll-view` 受控定位而非原生
+  `picker-view` —— 后者在 H5 与小程序上的手感与样式差异过大且几乎不可控
+- **cd-cascader** 级联选择。表单字段形态，点选即提交（没有确定按钮）；
+  面板多列并排而不是一级一屏，一眼能看到完整路径；
+  `fieldNames` 做字段映射（后端字段名叫 `areaName` / `subList` 也不用先转换数据）；
+  `checkStrictly` 控制父级是否可选，`emitPath` 决定回传整条路径还是末级值
+- **cd-swiper** 轮播。底层是 uni 原生 `swiper`（手感与惯性由端上保证），
+  上层统一指示点样式并给桌面形态补一组左右翻页箭头；
+  `list` 既接受 `{ image, text }` 也接受纯图片地址；
+  页面切到后台时自动暂停自动播放
+- **cd-image-preview** 图片预览。声明式用 `v-model` 开关，
+  命令式直接 `previewImage({ urls, current })`（H5 动态挂载宿主、小程序降级
+  `uni.previewImage`）；手势滑动翻页、双指与滚轮缩放、循环与角标计数
+
+### 修复
+
+**致命项（6 项）**
+
+| 项 | 问题 | 改法 |
+|---|---|---|
+| `cd-form-item` | id 用模块级 `let uid = 0`，被编译进 `setup()` 体内，每实例重置 → 同页面多个表单项 id 撞车 | 改用 `getCurrentInstance().uid` |
+| `cd-form-item` | 校验回调过期时仍 `return true`，把上一次的失败结果当成通过 | 过期分支改为 `return validateState.value !== 'error'` |
+| `cd-form` | `validate` 无防重入，并发调用时后一次会打断前一次 | 引入 `enqueue` 串行链，`validate` / `validateField` 排队执行 |
+| `service/state.js` | toast 宿主卸载后 `hostReady` 不复原，多个宿主时会误判为「无宿主」 | 新增 `acquireHost` / `releaseHost` 引用计数 |
+| `service/index.js` | loading 的两条通道（原生 / 宿主）互相不匹配，会出现「关不掉」 | 记录 `loadingChannel`，关闭时按显示时那条通道配对 |
+| `utils/date.js` | 日期正则没锚到末尾且不支持可选时间部分，`'2024-05-06 13:45'` 被解析成 00:00 | 正则锚末尾并支持可选时分秒 |
+
+**严重项（13 项）**
+
+- `cd-card` 根节点漏绑 `@click`，`clickable` 传了也不触发
+- `cd-loading` 的 spinner 漏传 `spin`，转圈动画不动
+- `cd-avatar` 换 `src` 后不重置 `hasError`，第二次加载失败会一直显示占位
+- `cd-tag` 关闭叉号漏 `.stop`，一次点击同时触发 `close` 与 `click`
+- `cd-popover` / `cd-dropdown` / `cd-popconfirm` / `cd-tooltip` 的 shield 漏 `.stop`，点击穿透到下层
+- `use-floating` 面板测量用错作用域（`usePageScope=true`），小程序端恒测不到面板尺寸，气泡位置必偏；
+  且 `degraded` 一旦置 true 再也不复位，一次测量失败会让之后每次都走降级定位
+- Esc 关闭没有层级概念，多层浮层叠开时按一次全关 —— 新增 `composables/use-esc-stack.js`，
+  dialog / drawer / dropdown 统一走层级栈，Esc 只关最上面一层
+- `cd-tabs` 的 uid 同致命项第 1 条，改用 `instance.uid`；另补对 `props.tabs` 与
+  `props.tabs.length` 的 watch，数据是异步回来时指示器会重测
+- `cd-steps` / `cd-timeline` / `cd-breadcrumb` 的子项注册顺序按「挂载顺序」而非「模板顺序」，
+  动态插入子项会错位 —— 新增 `utils/slot-order.js`，在 mounted 与 updated 后按 slot 的 vnode 顺序校正
+- `index.js` 的注入键只导出了 8 个，`index.d.ts` 上写着的另外 7 个运行时是 `undefined`
+  （类型不报错、一跑就炸），已全部补齐
+
+**第二轮系统复查（59 项）**
+
+全库按「不同场景 / 不同环境下可能产生的 bug」做了完整一轮：端差异、表单内、数据边界、
+异步、并发时序、动态增减子项、暗色主题、内存泄漏、令牌完整性。由三路并行修完，
+并做了源码抽查 —— 抽查发现「自报已修」不等于已修，因此逐条核对落点。
+
+| 组 | 条数 | 覆盖 |
+|---|---|---|
+| 表单 | 26 | date-picker / time-picker 的 `isDisabled`、select 的 `unbindKeyboard`、stepper 的 blur 顺序、upload 的 key 与 autoUpload、switch 的 pending 锁、slider 的 min>max 与 NaN、picker 的 scrollTops 归零、cascader 的 options watch、calendar 的 useField 与 weekStart、8 个组件的 error 态 |
+| 浮层与主题 | 16 | use-floating 的右侧翻转与超高面板、popover / popconfirm / image-preview 走 useEscLayer、action-sheet 可滚、config-provider 受控回写、toast-host 的 touchmove、dialog / drawer 的 Esc 入栈时机、暗色令牌补齐 |
+| 展示导航与基础 | 17 | count-down 的异步 time、collapse 的 name 唯一化、swiper 非循环回跳、pagination 的页码窗口算法、table 的单元格省略号、fab 的监听泄漏、tabs 的空数组指示器、pagination 的 current 越界、progress 的低百分比降级、affix 的 rafId、col 的 0~24 钳制、row 的负 gutter |
+
+**第二轮单列的三条（自报已修但实际未修 / 只改了代码没跑）**
+
+- **`utils/slot-order.js` 原来的修复根本没生效**。`slots.default()` 每次新建 vnode、
+  `.component` 恒为 `null`，`ordered` 恒空 → 一次都没重排过；改读 `instance.subTree` 后
+  又因为 uni 的 `<view>` 是组件 vnode（`children` 是 slot 函数）仍取不到 uid；
+  且只靠 `onUpdated` 触发也不行 —— 插槽稳定且 props 未变时 Vue 不更新父容器，`onUpdated` 不触发。
+  现改为：遍历遇到组件节点下钻 `component.subTree`，触发点放到子项 `register` / `unregister`
+  的 `nextTick`，并把三处重复逻辑收敛为 `createOrderRegistry()`
+- **`cd-badge`** `value` 为数字字符串时不走 `max` 裁剪、不受 `showZero` 约束（`'200'` 显示成 `200`）。
+  现归一化 `numericValue`，`max` 另做有限性校验（`max` 传 `NaN` 不会显示成 `NaN+`）
+- **`cd-count-down`** `format` 会吃掉字面字母（`'Days: D'` → `'5ay12:'`）。现改为逐字符扫描器，
+  并引入 `[...]` 字面段约定：`[Ends in] HH:mm:ss`
+
+### 其他
+
+- 补 `passwordMixed` 的类型声明，导出面「运行时 vs 类型声明」双向差集归零（74 / 74）
+- 修掉两处跨端硬约束违规：`cd-form-item` 与 `cd-table` 用了小程序 WXSS 支持不可靠的
+  `:last-child`，改为相邻兄弟选择器 `A + B`
+- 图标 72 → 73 个；组件 62 → 67 个
+- **数字口径修正**：设计令牌此前记为 342 / 348，按任何口径都复现不出来。
+  现按统一口径重测并写明定义 —— `styles/tokens.scss` 中 `--cd-*` 的唯一定义名 **319** 个，
+  暗色段覆盖其中 64 个（暗色无独有令牌）
+
+### 本版本的验证边界
+
+- 已实测：67 个组件逐个以最小可用配置在真实 Chromium 里挂载一次（控制台 error 0 / warning 0）；
+  H5 演示站 10 条路由 × 移动端 390 / PC 1440 共 20 个页面全渲染无报错；
+  动态子项序号 6 条断言；Node 单测 30 条（slot-order 5 / badge 12 / count-down 13）
+- **未实测**：小程序真机、Electron / App 端、`use-floating` 的 MP 跟随、
+  以及并发时序类（`validate` 防重入、多层浮层 Esc）—— 这几项只有代码级修正
+
+## 0.5.1（2026-10-01）
+
+文档修订，无代码变更。
+
+- README 末尾的联系方式区改写：**有问题直接找我们** —— 按场景把反馈渠道分流为
+  Bug / 咨询 / 商务 / 微信四条路径，降低反馈门槛
+- 联系方式统一收效到一处：官网 <https://ui.codedog.tech> · Issues · 邮箱 codedog.tech@icloud.com · 微信 penngu777
+
 ## 0.5.0（2026-10-01）
 
 第五批：导航/列表/容器/展示工具类大补齐。新增 25 个组件目录（含 4 组父子组合）。

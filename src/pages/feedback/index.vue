@@ -20,10 +20,10 @@
         <!-- ================= cd-drawer ================= -->
         <cd-card class="section" title="cd-drawer" desc="四向抽屉。auto：移动端从底部滑入、PC 从右侧滑入。与 dialog 的分工：drawer 承载工作区，dialog 承载决策。">
           <view class="row">
-            <cd-button size="small" @click="drawer = 'auto'">auto（默认）</cd-button>
-            <cd-button size="small" @click="drawer = 'left'">左侧</cd-button>
-            <cd-button size="small" @click="drawer = 'top'">顶部</cd-button>
-            <cd-button size="small" @click="drawer = 'right'">右侧（宽 400）</cd-button>
+            <cd-button size="small" @click="openDrawer('auto')">auto（默认）</cd-button>
+            <cd-button size="small" @click="openDrawer('left')">左侧</cd-button>
+            <cd-button size="small" @click="openDrawer('top')">顶部</cd-button>
+            <cd-button size="small" @click="openDrawer('right')">右侧（宽 400）</cd-button>
           </view>
         </cd-card>
 
@@ -113,6 +113,70 @@
           </view>
         </cd-card>
 
+        <!-- ================= cd-picker ================= -->
+        <cd-card class="section" title="cd-picker" desc="通用多列选择器：columns 传「列数组的数组」是独立多列，加 cascade 后传树即为级联。点「确定」才落到 modelValue，取消不污染外部值。">
+          <view class="grid2">
+            <view class="grid2__item">
+              <text class="field-label">独立两列（品牌 / 车系）</text>
+              <cd-button size="small" @click="flatPickerVisible = true">{{ flatPickerText }}</cd-button>
+            </view>
+            <view class="grid2__item">
+              <text class="field-label">级联三列（省 / 市 / 区）</text>
+              <cd-button size="small" @click="areaPickerVisible = true">{{ areaPickerText }}</cd-button>
+            </view>
+          </view>
+
+          <cd-picker
+            v-model="flatPickerValue"
+            v-model:visible="flatPickerVisible"
+            :columns="brandColumns"
+            title="选择车系"
+          />
+          <cd-picker
+            v-model="areaPickerValue"
+            v-model:visible="areaPickerVisible"
+            :columns="areaTree"
+            cascade
+            title="选择地区"
+          />
+        </cd-card>
+
+        <!-- ================= cd-cascader ================= -->
+        <cd-card class="section" title="cd-cascader" desc="级联选择：点选即提交，没有确定按钮。check-strictly 打开后父级也能选；emit-path 关掉则只回传末级值。">
+          <view class="grid2">
+            <view class="grid2__item">
+              <text class="field-label">只能选到叶子</text>
+              <cd-cascader v-model="cascaderValue" :options="areaTree" placeholder="请选择地区" clearable />
+            </view>
+            <view class="grid2__item">
+              <text class="field-label">任意层级可选（check-strictly）</text>
+              <cd-cascader v-model="cascaderStrictValue" :options="areaTree" check-strictly placeholder="省 / 市 / 区 都能停" />
+            </view>
+          </view>
+          <view class="result">
+            <text class="result__label">当前值</text>
+            <text class="result__value">{{ cascaderValue.join(' / ') || '—' }}　｜　{{ cascaderStrictValue.join(' / ') || '—' }}</text>
+          </view>
+        </cd-card>
+
+        <!-- ================= cd-calendar ================= -->
+        <cd-card class="section" title="cd-calendar" desc="常驻日历面板：single / multiple / range 三种模式。marks 支持打点与底部小字，formatter 可拦截单个格子的文案与可选性。">
+          <view class="grid2">
+            <view class="grid2__item">
+              <text class="field-label">单选（带打点）</text>
+              <cd-calendar v-model="calendarDate" :marks="calendarMarks" :show-confirm="false" />
+            </view>
+            <view class="grid2__item">
+              <text class="field-label">区间选择（最长 7 天）</text>
+              <cd-calendar v-model="calendarRange" mode="range" :max-range="7" />
+            </view>
+          </view>
+          <view class="result">
+            <text class="result__label">当前值</text>
+            <text class="result__value">{{ calendarDate || '—' }}　｜　{{ calendarRange.join(' ~ ') || '—' }}</text>
+          </view>
+        </cd-card>
+
         <!-- ================= cd-drawer 实体 ================= -->
         <cd-drawer v-model="drawerVisible" :position="drawer" :size="drawer === 'right' ? 400 : ''" :title="drawerTitle">
           <view class="drawer-demo">
@@ -140,6 +204,15 @@ function toggleDensity() {
 /* ---------- drawer ---------- */
 const drawer = ref('auto')
 const drawerVisible = ref(false)
+/**
+ * 点击即开抽屉。不能只改 direction：direction 初始值就是 'auto'，
+ * 再点「auto（默认）」是同值赋值，watch(direction) 不触发，抽屉永远弹不出来。
+ * 显式置 visible，方向值照旧供 :position 使用。
+ */
+function openDrawer(p) {
+  drawer.value = p
+  drawerVisible.value = true
+}
 
 /* watch 联动而不是在按钮上写两个动作，模板保持纯声明 */
 watch(drawer, () => {
@@ -181,9 +254,124 @@ function onMenuSelect(item) {
 /* ---------- 日期 / 时间 ---------- */
 const form = ref({ date: '', time: '' })
 
-/* ---------- upload ---------- */
-const images = ref([])
-const docs = ref([])
+/* ---------- upload ----------
+ * 预置回填两条，展示「已有内容」的真实形态：
+ * 空列表只能看到一个 + 号，看不出图片卡片和文件列表长什么样 */
+const INLINE_SVG_LOGO =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="96" height="96" rx="20" fill="#3b82f6"/><circle cx="38" cy="42" r="10" fill="#fff"/><circle cx="62" cy="42" r="10" fill="#fff"/><path d="M32 62q16 12 32 0" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/></svg>'
+  )
+const images = ref([
+  { url: INLINE_SVG_LOGO, name: 'brand-logo.svg', status: 'success' },
+])
+const docs = ref([
+  { url: '', name: '接入对接说明-v3.pdf', status: 'success' },
+])
+
+/* ---------- picker / cascader ---------- */
+const brandColumns = [
+  [
+    { label: '宝马', value: 'bmw' },
+    { label: '奔驰', value: 'benz' },
+    { label: '奥迪', value: 'audi' },
+    { label: '丰田', value: 'toyota' },
+  ],
+  [
+    { label: '1 系', value: 's1' },
+    { label: '3 系', value: 's3' },
+    { label: '5 系', value: 's5' },
+    { label: '7 系', value: 's7' },
+  ],
+]
+
+const areaTree = [
+  {
+    label: '浙江省',
+    value: 'zj',
+    children: [
+      {
+        label: '杭州市',
+        value: 'hz',
+        children: [
+          { label: '西湖区', value: 'xh' },
+          { label: '拱墅区', value: 'gs' },
+          { label: '滨江区', value: 'bj' },
+        ],
+      },
+      {
+        label: '宁波市',
+        value: 'nb',
+        children: [
+          { label: '海曙区', value: 'hs' },
+          { label: '鄞州区', value: 'yz' },
+        ],
+      },
+    ],
+  },
+  {
+    label: '江苏省',
+    value: 'js',
+    children: [
+      {
+        label: '南京市',
+        value: 'nj',
+        children: [
+          { label: '玄武区', value: 'xw' },
+          { label: '鼓楼区', value: 'gl' },
+        ],
+      },
+      {
+        label: '苏州市',
+        value: 'sz',
+        children: [
+          { label: '姑苏区', value: 'gsu' },
+          { label: '工业园区', value: 'sip' },
+        ],
+      },
+    ],
+  },
+]
+
+const flatPickerVisible = ref(false)
+const flatPickerValue = ref(['bmw', 's3'])
+
+const areaPickerVisible = ref(false)
+const areaPickerValue = ref(['zj', 'hz', 'xh'])
+
+/**
+ * 值数组 → 文案路径。
+ * 两种数据形态的「第 i 列从哪来」不一样，必须分开取：
+ *   级联（树）  ：第 i 列是「第 i-1 列选中节点的 children」
+ *   非级联（列数组的数组）：第 i 列就是 source[i]
+ * —— 混在一起写会让第一列拿到的还是「列」而不是「节点」，于是整条路径都是空的。
+ */
+function pathLabels(values, source, cascade) {
+  const out = []
+  let level = cascade ? source : source[0] || []
+  for (let i = 0; i < values.length; i += 1) {
+    const hit = level.find((node) => node.value === values[i])
+    if (!hit) break
+    out.push(hit.label)
+    level = cascade ? hit.children || [] : source[i + 1] || []
+  }
+  return out
+}
+
+const flatPickerText = computed(() => pathLabels(flatPickerValue.value, brandColumns, false).join(' / ') || '未选择')
+const areaPickerText = computed(() => pathLabels(areaPickerValue.value, areaTree, true).join(' / ') || '未选择')
+
+const cascaderValue = ref(['zj', 'hz', 'xh'])
+const cascaderStrictValue = ref(['js', 'sz'])
+
+/* ---------- calendar ---------- */
+const calendarDate = ref('')
+const calendarRange = ref([])
+const calendarMarks = [
+  { date: '2026-10-01', text: '国庆', type: 'text' },
+  { date: '2026-10-15', type: 'dot' },
+  { date: '2026-10-23', type: 'dot' },
+]
 </script>
 
 <style lang="scss">

@@ -65,6 +65,11 @@ onUnmounted(() => {
   if (breadcrumb) breadcrumb.unregister(uid)
 })
 
+/* 容器靠这个把 vnode 与注册表对上，才能按书写顺序校正「谁是最后一项」 */
+defineExpose({
+  __cdOrderUid: uid,
+})
+
 const isLast = computed(() => (breadcrumb ? breadcrumb.isLast(uid) : true))
 const separator = computed(() => (breadcrumb ? breadcrumb.separator.value : '/'))
 const separatorIcon = computed(() => (breadcrumb ? breadcrumb.separatorIcon.value : ''))

@@ -21,6 +21,8 @@
  *
  * 一个细节：数字超过 max 时显示 `max+`，这个判断必须放在 computed 里而不是模板里，
  * 因为 value 可能是字符串（如 'new'），`>` 比较前需要先确认它确实是数字。
+ * 反过来，数字字符串（接口常返回 '200'）也必须按数字处理 ——
+ * 否则同一个数字换个类型，裁剪与 showZero 的行为就不一样了。
  */
 import { computed, useSlots } from 'vue'
 
@@ -29,12 +31,12 @@ defineOptions({
 })
 
 const props = defineProps({
-  /** 展示内容。数字会自动按 max 裁剪，字符串原样展示 */
+  /** 展示内容。数字与「数字字符串」都会按 max 裁剪，其余字符串原样展示 */
   value: {
     type: [String, Number],
     default: '',
   },
-  /** 数字上限，超过显示 max+ */
+  /** 数字上限，超过显示 max+。传 NaN 等非有限数时不裁剪 */
   max: {
     type: Number,
     default: 99,
@@ -78,23 +80,54 @@ const emit = defineEmits(['click'])
 
 const slots = useSlots()
 
-const hasSlot = computed(() => !!(slots.default && slots.default().length))
+/**
+ * 只判存在性，不调用 slots.default()。
+ * 与 cd-divider 同源：mp 端调用会抛 TypeError: i.default is not a function。
+ * 详见 cd-divider.vue 中 hasContent 处的四条依据。
+ */
+const hasSlot = computed(() => !!slots.default)
+
+/**
+ * 把 value 归一成数字；不是数字时返回 null。
+ *
+ * 必须把「数字字符串」也算进来：接口返回的未读数常常是 '200' 而不是 200，
+ * 而 prop 又明写着接受 String。只判 typeof === 'number' 的话，
+ * '200' 会既不被裁剪（显示成 200 而非 99+），也不受 showZero 约束 ——
+ * 同一个数字换个类型行为就不一样，是典型的类型敏感性 bug。
+ * 非数字字符串（'new'、'hot'）返回 null，走原样展示。
+ */
+const numericValue = computed(() => {
+  const v = props.value
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null
+  if (typeof v === 'string') {
+    const s = v.trim()
+    if (s === '') return null
+    const n = Number(s)
+    return Number.isFinite(n) ? n : null
+  }
+  return null
+})
+
+/** max 也做一次有限性校验：传进 NaN / undefined 时不裁剪，而不是显示成 'NaN+' */
+const maxLimit = computed(() => (typeof props.max === 'number' && Number.isFinite(props.max) ? props.max : null))
 
 /** 有没有值可展示（0 需要 showZero 才作数） */
 const hasValue = computed(() => {
   const v = props.value
   if (v === '' || v === null || v === undefined) return false
-  if (typeof v === 'number') {
-    if (v === 0) return props.showZero
-    return v > 0
+  const n = numericValue.value
+  if (n !== null) {
+    if (n === 0) return props.showZero
+    return n > 0
   }
   return true
 })
 
 const displayValue = computed(() => {
-  const v = props.value
-  if (typeof v === 'number' && v > props.max) return `${props.max}+`
-  return String(v)
+  const n = numericValue.value
+  const max = maxLimit.value
+  if (n !== null && max !== null && n > max) return `${max}+`
+  return String(props.value)
 })
 
 const visible = computed(() => {

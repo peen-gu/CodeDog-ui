@@ -18,6 +18,13 @@ export function isValueEmpty(value) {
   if (value === null || value === undefined) return true
   if (typeof value === 'string') return value.trim() === ''
   if (Array.isArray(value)) return value.length === 0
+  /*
+   * NaN 必须算空值。
+   * 业务把 Number(未填的输入框) 写进 model 就会得到 NaN，
+   * 而 NaN 既不是 null 也不是空串 —— 不拦住它的话，
+   * { required: true } 会判定「已填写」并放行，NaN 直接被提交上去。
+   */
+  if (typeof value === 'number' && Number.isNaN(value)) return true
   return false
 }
 
@@ -96,29 +103,50 @@ async function runSingleRule(rule, value, context) {
   if (isValueEmpty(value)) return ''
 
   /* ---------- 长度 / 数值范围 ---------- */
-  const isString = typeof value === 'string'
+  /*
+   * 「数字字符串」按数值判定，而不是按长度。
+   *
+   * uni 的 <input type="number"> 回传的 event.detail.value 恒为字符串，
+   * 于是规则 { max: 3 } 配值 "100" 会走「长度为 3」这条分支 → 判定通过，
+   * 但语义上是 100 > 3、应该报错。反过来 { min: 10 } 配值 "abcd"
+   * 会按长度 4 判定 → 报出「不能小于 10」这种莫名奇妙的文案。
+   *
+   * 所以：看起来是数字的字符串，一律按数字比较。
+   */
+  const numericString = typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value))
+  const isString = typeof value === 'string' && !numericString
   const isNumber = typeof value === 'number' && !Number.isNaN(value)
   const isArray = Array.isArray(value)
-  const length = isString ? value.length : isNumber ? value : isArray ? value.length : undefined
+  const numberValue = isNumber ? value : numericString ? Number(value) : undefined
+  const length = isString ? value.length : isArray ? value.length : undefined
 
   if (rule.len !== undefined && length !== undefined && length !== rule.len) {
     return rule.message || fallbackMessage(rule, label)
   }
   if (rule.min !== undefined) {
-    const failed = isNumber ? value < rule.min : length !== undefined ? length < rule.min : false
+    const failed = numberValue !== undefined ? numberValue < rule.min : length !== undefined ? length < rule.min : false
     if (failed) return rule.message || fallbackMessage(rule, label)
   }
   if (rule.max !== undefined) {
-    const failed = isNumber ? value > rule.max : length !== undefined ? length > rule.max : false
+    const failed = numberValue !== undefined ? numberValue > rule.max : length !== undefined ? length > rule.max : false
     if (failed) return rule.message || fallbackMessage(rule, label)
   }
 
   /* ---------- 正则 ---------- */
   if (rule.pattern) {
+    /*
+     * pattern 允许传字符串 —— 业务从后端拿到的校验配置就是字符串，
+     * 要求他们先 new RegExp 一遍纯属额外负担。
+     * 但字符串没有 lastIndex，直接赋值会抛
+     * TypeError: Cannot create property 'lastIndex' on string，
+     * 而这个异常发生在 runRules 里，会让 cd-form.validate() 直接 throw ——
+     * 调用方 await 的不是一个 false，而是一个崩溃。
+     */
+    const re = typeof rule.pattern === 'string' ? new RegExp(rule.pattern) : rule.pattern
     /* 每次求值都重置 lastIndex：带 g 标志的正则是有状态的，
        复用同一个实例会让第二次校验随机失败 —— 这是个非常隐蔽的 bug */
-    rule.pattern.lastIndex = 0
-    if (!rule.pattern.test(String(value))) {
+    if (typeof re.lastIndex === 'number') re.lastIndex = 0
+    if (!re.test(String(value))) {
       return rule.message || fallbackMessage(rule, label)
     }
   }
@@ -176,8 +204,18 @@ export const PATTERNS = {
   email: /^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{2,}$/,
   /** 15 位老身份证 / 18 位新身份证（末位可为 X） */
   idcard: /^(^\d{15}$)|(^\d{17}(\d|X|x)$)/,
-  /** 6-16 位，需同时含字母与数字 */
-  password: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*._-]{6,16}$/,
+  /*
+   * 密码：6-16 位，字符集限定。
+   *
+   * 这里刻意**不用** lookahead 去写「必须同时含字母与数字」。
+   * lookahead 是 ECMAScript 标准语法、现代引擎都支持，
+   * 但本项目把它列为跨端禁用写法（见 scripts/check-hard-rules.mjs 的 no-lookahead 规则），
+   * 而 PATTERNS 是会被业务直接复用的 —— 库自己违反自己定的规矩最没说服力。
+   *
+   * 需要「同时含字母与数字」的强度校验时，用下面的 passwordMixed() 校验器，
+   * 它用两条无 lookahead 的正则分别判定，语义一样清楚。
+   */
+  password: /^[A-Za-z\d!@#$%^&*._-]{6,16}$/,
   /** 中文姓名 */
   chineseName: /^[\u4e00-\u9fa5·]{2,16}$/,
   /** 正整数 */
@@ -185,4 +223,24 @@ export const PATTERNS = {
   /** 金额，最多两位小数 */
   amount: /^\d+(\.\d{1,2})?$/,
   url: /^(https?:\/\/)[\w.-]+(:\d+)?(\/[\w./?%&=#-]*)?$/,
+}
+
+/**
+ * 密码强度校验：6-16 位，且**同时**含字母与数字。
+ *
+ * 用两次独立的正则分别判定，而不是一条带 lookahead 的大正则 ——
+ * 前者在各端都稳妥，后者是本项目禁用的写法。
+ *
+ * 可直接作为 rule.validator 使用：
+ *   rules: [{ validator: passwordMixed, message: '需 6-16 位且同时含字母与数字' }]
+ *
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+export function passwordMixed(value) {
+  const s = String(value ?? '')
+  if (s.length < 6 || s.length > 16) return false
+  if (!/[A-Za-z]/.test(s)) return false
+  if (!/\d/.test(s)) return false
+  return true
 }

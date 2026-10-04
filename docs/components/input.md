@@ -10,6 +10,8 @@ title: Input 输入框
 
 ## 用法
 
+<CdDemo id="input-0"></CdDemo>
+
 ```vue // 来自演示页 components
 <cd-row :gutter="[16, 16]">
   <cd-col :span="{ xs: 24, md: 12 }">
@@ -78,60 +80,6 @@ title: Input 输入框
 </cd-row>
 ```
 
-```vue // 来自演示页 components
-<template #extra>
-  <cd-button size="small" @click="toggleLabelPosition">
-    {{ labelPosition === 'top' ? '改成左标签' : '改成上标签' }}
-  </cd-button>
-</template>
-
-<cd-form
-  ref="formRef"
-  :model="form"
-  :rules="rules"
-  :label-position="labelPosition"
-  :label-width="96"
-  :disabled="formDisabled"
->
-  <cd-form-item label="用户名" prop="username">
-    <cd-input v-model="form.username" placeholder="4-16 位字母或数字" clearable />
-  </cd-form-item>
-
-  <cd-form-item label="手机号" prop="phone">
-    <cd-input v-model="form.phone" type="number" :maxlength="11" placeholder="11 位手机号" clearable />
-  </cd-form-item>
-
-  <cd-form-item label="邮箱" prop="email" help="选填。留空则不校验格式。">
-    <cd-input v-model="form.email" placeholder="name@example.com" clearable />
-  </cd-form-item>
-
-  <cd-form-item label="年龄" prop="age">
-    <cd-input v-model="form.age" type="number" align="right" placeholder="18 - 120" />
-  </cd-form-item>
-
-  <cd-form-item label="交付方式" prop="delivery">
-    <cd-select v-model="form.delivery" placeholder="请选择" clearable :options="deliveryOptions" />
-  </cd-form-item>
-
-  <cd-form-item label="备注" prop="remark">
-    <cd-input v-model="form.remark" type="textarea" :rows="2" :maxlength="50" show-word-limit placeholder="最多 50 字" />
-  </cd-form-item>
-</cd-form>
-
-<view class="row form-actions">
-  <cd-button type="primary" :loading="submitting" @click="handleSubmit">提交校验</cd-button>
-  <cd-button @click="handleReset">重置</cd-button>
-  <cd-button :type="formDisabled ? 'warning' : 'info'" plain @click="formDisabled = !formDisabled">
-    {{ formDisabled ? '解除禁用' : '整体禁用' }}
-  </cd-button>
-</view>
-
-<view class="result-block">
-  <text class="result-block__label">表单数据</text>
-  <text class="cd-code">{{ formSnapshot }}</text>
-</view>
-```
-
 ## Props
 
 | 属性 | 类型 | 默认值 | 必填 | 说明 |
@@ -140,7 +88,7 @@ title: Input 输入框
 | `type` | String | `'text'` | — | text / number / digit / idcard / password / textarea |
 | `placeholder` | String | `''` | — | — |
 | `disabled` | Boolean | `false` | — | — |
-| `readonly` | Boolean | `false` | — | — |
+| `readonly` | Boolean | `false` | — | 只读：可看不可改。 必须同时透传给原生 input / textarea —— 只加一个「看起来只读」的类名， 用户照样能往里打字。 |
 | `clearable` | Boolean | `false` | — | 有值且聚焦以外时显示清空按钮 |
 | `maxlength` | Number \| String | `-1` | — | 最大长度。-1 表示不限制。 刻意不采用小程序默认的 140 —— 一个 UI 框架不该在用户没要求时截断输入。 |
 | `showWordLimit` | Boolean | `false` | — | 显示 x/y 字数统计，仅在 maxlength > 0 时生效 |

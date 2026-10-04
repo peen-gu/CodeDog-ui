@@ -10,6 +10,8 @@ title: Collapse 折叠面板
 
 ## 用法
 
+<CdDemo id="collapse-0"></CdDemo>
+
 ```vue // 来自演示页 navigation
 <view class="split">
   <view class="split__col">
