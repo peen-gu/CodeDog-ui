@@ -26,6 +26,7 @@
     "dev:mp-weixin": "uni -p mp-weixin",
     "build:mp-weixin": "uni build -p mp-weixin",
     "docs:gen": "node scripts/gen-component-docs.mjs",
+    "check:site": "node scripts/check-site-facts.mjs",
     "docs:dev": "vitepress dev docs",
     "docs:build": "node scripts/gen-component-docs.mjs && vitepress build docs",
     "docs:preview": "vitepress preview docs",

@@ -71,6 +71,7 @@ node -e "console.log(require('./src/uni_modules/codedog-ui/package.json').versio
 
 - [ ] changelog 已补本次改动
 - [ ] 版本号已递增（遵循 semver）
+- [ ] **站点文案自检已跑**（`npm run check:site`）—— 拦截「官网还挂着旧版本号 / 组件数停在 68」这类肉眼难发现的过期文案
 - [ ] 双端构建通过（`npm run build:h5` + `npm run build:mp-weixin`）
 - [ ] 干跑产物中 80 个组件目录齐全、`LICENSE` 与 `README.md` 在列
 

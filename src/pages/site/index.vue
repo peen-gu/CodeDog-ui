@@ -8,7 +8,8 @@
             <cd-icon name="grid" :size="18" />
           </view>
           <text class="site-nav__name">CodeDogUI</text>
-          <cd-tag type="info" size="small" plain round>v0.5.0</cd-tag>
+          <!-- 版本号不写死：直接从包元信息取，避免发版后站点还挂着旧号（0.5.3 前一直是 v0.5.0） -->
+          <cd-tag type="info" size="small" plain round>{{ VERSION }}</cd-tag>
         </view>
 
         <view v-if="!isMobile" class="site-nav__links">
@@ -57,7 +58,7 @@
         <cd-col :span="isPC ? 11 : 24">
           <cd-card shadow title="组件预览" desc="全部元素取自 CodeDogUI 自身">
             <template #extra>
-              <cd-badge value="68" />
+              <cd-badge :value="String(COMPONENT_COUNT)" />
             </template>
 
             <view class="preview">
@@ -128,7 +129,7 @@
     <!-- ================= 组件总览 ================= -->
     <view class="section">
       <view class="section__head">
-        <text class="section__title">68 个组件，七类分组</text>
+        <text class="section__title">{{ COMPONENT_COUNT }} 个组件，七类分组</text>
         <text class="section__desc">双形态、通用、表单、反馈、导航——自下而上逐级依赖，改动只从上往下传导。</text>
       </view>
 
@@ -240,12 +241,18 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useBreakpoint, useTheme } from '@/uni_modules/codedog-ui'
+/* 站点上出现的版本号与组件数只允许来自这里：前者读包元信息，后者由 check-site-facts.mjs 盯着 */
+import pkg from '@/uni_modules/codedog-ui/package.json'
 
 const SITE = 'https://ui.codedog.tech'
 const DOC = 'https://doc.ui.codedog.tech'
 const REPO = 'https://github.com/peen-gu/CodeDog-ui'
 const NPM = 'https://www.npmjs.com/package/codedog-ui'
 const INSTALL = 'npm i codedog-ui'
+
+const VERSION = `v${pkg.version}`
+/** 组件总数：加/删组件后务必同步，运行 npm run check:site 会与实际目录数比对 */
+const COMPONENT_COUNT = 80
 
 const { isPC, isMobile } = useBreakpoint()
 const { isDark, toggle: toggleThemeMode } = useTheme()
@@ -283,7 +290,7 @@ const goDemo = () => {
 
 /* ---------------- 数据 ---------------- */
 const stats = [
-  { value: '68', label: '组件总数' },
+  { value: String(COMPONENT_COUNT), label: '组件总数' },
   { value: '9', label: '组合组件（provide/inject）' },
   { value: '4', label: '覆盖终端形态' },
   { value: 'MIT', label: '开源许可' },
@@ -389,6 +396,7 @@ const faqs = [
 ]
 
 const milestones = [
+  { timestamp: '2026-10-04', type: 'success', icon: 'grid', title: `v0.5.3 · 组件补到 ${COMPONENT_COUNT} 个`, desc: '新增 Schema 表单引擎与打字机 / 水印 / 取色器 / 手写签名 / 穿梭框等 13 个组件；补齐桌面浏览器的鼠标交互；修正整页横向溢出的标签页破版' },
   { timestamp: '2026-10-02', type: 'success', icon: 'check', title: 'v0.5.2 · 组件补到 67 个', desc: '新增日历、选择器、级联、轮播、图片预览；修掉 6 项致命项，第二轮全库复查 59 项全部落地' },
   { timestamp: '2026-10-01', type: 'primary', icon: 'home', title: 'v0.5.1 · 官网与文档中心改版', desc: '两个站点改用 CodeDogUI 自绘视觉，补上站点打包与部署脚本' },
   { timestamp: '2026-10-01', type: 'success', icon: 'check', title: 'v0.5.0 · 发布到 npm', desc: 'codedog-ui 正式上线（当时 62 个组件），MIT 许可' },
