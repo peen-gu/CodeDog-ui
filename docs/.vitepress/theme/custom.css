@@ -168,3 +168,11 @@
 .VPSidebarItem.is-active .text .cd-ver--new {
   color: var(--vp-c-brand-1);
 }
+
+/*
+ * 页脚「上一篇 / 下一篇」复用了侧边栏 item 的 text（HTML 也跟着带了过来），
+ * 那里只需要干净的标题 —— 版本标注是列表页的导航信息，不该出现在翻页按钮上。
+ */
+.VPDocFooter .pager-link .cd-ver {
+  display: none;
+}
