@@ -42,6 +42,47 @@ function read(p) {
 }
 
 /**
+ * 从 changelog 反推「每个组件从哪个版本开始有」。
+ *
+ * 文档站侧边栏要在组件名后面挂 `0.5.3` 这样的版本标注，标注本身必须来自同一个数据源，
+ * 否则一发新版本就又变成手抄、又漏一次（版本号过期就是这么来的）。
+ *
+ * 规则：
+ *   - changelog 里版本块按「新 → 旧」排列，逐个版本块扫描 **新增段落** 里出现的 `cd-xxx`
+ *   - 遇到 `### 修复` 之类的收尾小节就**停止扫该版本**，避免把「修复里被提到」误判成「本版新增」
+ *   - 由新到旧依次赋值，最后写进的（即最旧的那个版本）就是首次出现
+ *   - `component-meta.json` 里的 `since` 可**人工覆盖**，用于 changelog 没写清楚的历史组件
+ */
+function collectSinceFromChangelog() {
+  const file = path.join(ROOT, 'src/uni_modules/codedog-ui/changelog.md')
+  if (!fs.existsSync(file)) return {}
+  const STOP = /^### (修复|其他|架构结论|本版本的验证边界|已知限制与踩坑|已知取舍|设计决策记录)/
+  const blocks = []
+  let cur = null
+  let buf = []
+  for (const line of read(file).split('\n')) {
+    const m = line.match(/^## (\d+\.\d+\.\d+)/)
+    if (m) {
+      if (cur) blocks.push([cur, buf])
+      cur = m[1]
+      buf = []
+      continue
+    }
+    if (cur) buf.push(line)
+  }
+  if (cur) blocks.push([cur, buf])
+
+  const since = {}
+  for (const [ver, lines] of blocks) {
+    for (const line of lines) {
+      if (STOP.test(line)) break
+      for (const hit of line.matchAll(/cd-([a-z0-9-]+)/g)) since[hit[1]] = ver
+    }
+  }
+  return since
+}
+
+/**
  * 写产物，并把行尾统一成 LF。
  *
  * 演示页源码里混着 CRLF（实测 src/pages/navigation/index.vue 421 行里有 405 行是 CRLF），
@@ -1141,9 +1182,14 @@ function main() {
   )
 
   /* 4. 写侧边栏数据 + 总览页 */
+  const sinceFromChangelog = collectSinceFromChangelog()
+  /* 侧边栏版本标注取元信息优先：changelog 漏标或标不清时，可在 component-meta.json 里手填 since */
+  const sinceOf = (n) => metaRaw.meta[n]?.since || sinceFromChangelog[n] || null
   const data = {
     generatedAt: new Date().toISOString(),
     total: components.length,
+    /* 当前版本号：侧边栏用它判断哪些组件是「本次更新新增」，给高亮 */
+    version: JSON.parse(read(path.join(ROOT, 'src/uni_modules/codedog-ui/package.json'))).version,
     categories: metaRaw.categories.map((cat) => ({
       id: cat.id,
       title: cat.title,
@@ -1151,13 +1197,14 @@ function main() {
         .filter((n) => components.some((c) => c.name === n))
         .map((n) => {
           const c = components.find((x) => x.name === n)
-          return { name: n, title: c.meta.title, desc: c.meta.desc }
+          return { name: n, title: c.meta.title, desc: c.meta.desc, since: sinceOf(n) }
         }),
     })),
     components: components.map((c) => ({
       name: c.name,
       title: c.meta.title,
       desc: c.meta.desc,
+      since: sinceOf(c.name),
       category: c.meta.category,
       props: c.props.length,
       emits: c.emits.length,

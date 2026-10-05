@@ -10,18 +10,59 @@ CodeDogUI 有两种分发形态，按你的工程类型二选一。
 
 ::: code-group
 
-```bash [uni_modules（推荐）]
-# 把 src/uni_modules/codedog-ui 整个目录拷进你的 src/uni_modules/
-# 或从 HBuilderX 插件市场导入「CodeDogUI 跨端组件库」
+```bash [uni_modules（HBuilderX 工程用这个）]
+# 方式 A：拷贝源码 —— 把 src/uni_modules/codedog-ui 整个目录拷进你的 src/uni_modules/
+# 方式 B：插件市场导入 —— 详见下方「DCloud 插件市场」
 ```
 
-```bash [npm]
+```bash [npm（CLI 工程用这个）]
+# 安装最新版
 npm i codedog-ui
+
+# 安装指定版本（把 0.5.3 换成你要的版本号）
+npm i codedog-ui@0.5.3
+
+# 其它包管理器同理
+pnpm add codedog-ui@0.5.3
+yarn add codedog-ui@0.5.3
 ```
 
 :::
 
-uni_modules 是优先推荐的形态——uni-app 对它有一等公民级别的支持（自动发现、easycom 免配置、HBuilderX 一键更新）。
+uni_modules 是 HBuilderX 工程优先的形态——uni-app 对它有一等公民级别的支持（自动发现、easycom 免配置、一键更新）。
+
+### 怎么知道有哪些版本可以装
+
+```bash
+# 全部已发布版本
+npm view codedog-ui versions
+
+# 当前 latest 是哪个版本
+npm view codedog-ui version
+```
+
+版本号遵循 semver：同一个 minor 内（如 `0.5.2` → `0.5.3`）只做新增与修复，不删 API；跨 minor（如 `0.4.x` → `0.5.x`）可能调整 props 命名，升级前先看[更新日志](/changelog)。
+
+### DCloud 插件市场
+
+::: tip 上架中，敬请期待
+已在 uni-app 插件市场提交，审核通过后可在 HBuilderX 里一键导入：
+<https://ext.dcloud.net.cn/search?q=codedog-ui>
+
+在那之前请走上面的「拷贝源码」方式 —— 两种方式的文件结构与调用完全一致，插件上线后不需要改任何代码。
+:::
+
+### npm 形态的限制
+
+::: warning 只适用于 CLI 工程
+npm 形态依赖 uni-app 的编译管线，**不适用于 HBuilderX 工程**（后者请走 uni_modules 形态）。
+:::
+
+| 位置 | uni_modules 形态 | npm 形态 |
+|---|---|---|
+| easycom 规则 | `@/uni_modules/codedog-ui/components/cd-$1/cd-$1.vue` | `codedog-ui/components/cd-$1/cd-$1.vue` |
+| 全局样式引入 | `@import '@/uni_modules/codedog-ui/styles/index.scss';` | `@import 'codedog-ui/styles';` |
+| JS 运行时引入 | `@/uni_modules/codedog-ui` | `codedog-ui` |
 
 ## 依赖
 
@@ -142,13 +183,13 @@ import { PATTERNS } from '@/uni_modules/codedog-ui'
 
 可以，`npm i codedog-ui`。但组件依赖 uni-app 的编译管线，因此**只适用于 CLI 工程**，不适用于 HBuilderX 工程（后者请走 uni_modules 形态）。
 
-npm 形态下有两处路径与本文不同：
+装指定版本用 `npm i codedog-ui@0.5.3`（版本号换成你要的），可用版本列表见 `npm view codedog-ui versions`；上方「安装」一节也列出了 npm 形态下的三处路径差异。
 
-| 位置 | uni_modules 形态 | npm 形态 |
-|---|---|---|
-| easycom 规则 | `@/uni_modules/codedog-ui/components/cd-$1/cd-$1.vue` | `codedog-ui/components/cd-$1/cd-$1.vue` |
-| 全局样式引入 | `@import '@/uni_modules/codedog-ui/styles/index.scss';` | `@import 'codedog-ui/styles';` |
-| JS 运行时引入 | `@/uni_modules/codedog-ui` | `codedog-ui` |
+**安装到一半想确认装的是哪个版本？**
+
+```bash
+npm ls codedog-ui
+```
 
 ::: tip npm 形态已实测（0.5.0）
 曾有一个悬而未决的疑问：`service/index.js` 里靠 `/* #ifdef H5 */` 切分了同名的 `ensureHost()`（两个分支各写一个），

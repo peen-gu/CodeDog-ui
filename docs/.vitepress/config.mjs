@@ -24,11 +24,28 @@ const MAIL_ICON_SVG =
   '<rect width="20" height="16" x="2" y="4" rx="2"/>' +
   '<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>'
 
+/*
+ * 组件名后面的版本标注：让用户一眼看出「这个组件从哪一版开始有」「哪一版是新的」。
+ * `item.text` 在 VPSidebarItem 里是 v-html 渲染的，可以带行内标签。
+ *   - 普通行来的：低对比小字
+ *   - 恰好等于当前版本（本次更新新增）：品牌色高亮
+ * 数据来源：gen-component-docs.mjs 从 changelog 自动推导（`since` 字段），
+ * 不做手工维护 —— 版本号写死必然过期（官网曾长期挂着 v0.5.0）。
+ */
+const versionBadge = (i) => {
+  if (!i.since) return ''
+  const isNew = i.since === data.version
+  return `<span class="cd-ver${isNew ? ' cd-ver--new' : ''}" title="该组件自 ${i.since} 起提供">${i.since}</span>`
+}
+
 const componentsSidebar = [
   { text: '开始', items: [{ text: '组件总览', link: '/components/' }] },
   ...data.categories.map((c) => ({
     text: `${c.title} · ${c.items.length}`,
-    items: c.items.map((i) => ({ text: i.title, link: `/components/${i.name}` })),
+    items: c.items.map((i) => ({
+      text: `${i.title}${versionBadge(i)}`,
+      link: `/components/${i.name}`,
+    })),
   })),
 ]
 

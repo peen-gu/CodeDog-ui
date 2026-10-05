@@ -128,3 +128,43 @@
 .VPFeature .icon svg {
   color: var(--vp-c-brand-1);
 }
+
+/* ==================================================================
+ * 组件侧边栏的版本标注（由 config.mjs 生成，数据来自 changelog 自动推导）
+ * 例：「Watermark 水印 0.5.3」——让用户知道该组件从哪一版开始有，
+ * 以及哪几个是本次更新刚加的。
+ * ================================================================== */
+.VPSidebarItem .text .cd-ver {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  color: var(--vp-c-text-3);
+  font-family: var(--vp-font-family-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  vertical-align: 1px;
+  white-space: nowrap;
+  transition: color 0.25s, border-color 0.25s;
+}
+
+/* 鼠标悬停该条目时，标注跟着变醒目一点 */
+.VPSidebarItem .item:hover .text .cd-ver {
+  color: var(--vp-c-text-2);
+  border-color: var(--vp-c-brand-soft);
+}
+
+/* 本次版本新增的组件：品牌色高亮，一眼能挑出来 */
+.VPSidebarItem .text .cd-ver--new {
+  border-color: var(--vp-c-brand-soft);
+  background-color: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
+
+.VPSidebarItem .item:hover .text .cd-ver--new,
+.VPSidebarItem.is-active .text .cd-ver--new {
+  color: var(--vp-c-brand-1);
+}

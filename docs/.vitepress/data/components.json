@@ -1,6 +1,7 @@
 {
-  "generatedAt": "2026-10-04T14:18:54.918Z",
+  "generatedAt": "2026-10-04T23:50:16.418Z",
   "total": 80,
+  "version": "0.5.3",
   "categories": [
     {
       "id": "infrastructure",
@@ -9,12 +10,14 @@
         {
           "name": "config-provider",
           "title": "ConfigProvider 全局配置",
-          "desc": "所有页面的根节点。向下广播主题（亮/暗）、尺寸密度与圆角形态，并把 wot-design-uni 的 CSS 变量一并桥接过去。页面里必须包它，否则组件拿不到令牌，暗色模式下会呈现一套未经设计的颜色。"
+          "desc": "所有页面的根节点。向下广播主题（亮/暗）、尺寸密度与圆角形态，并把 wot-design-uni 的 CSS 变量一并桥接过去。页面里必须包它，否则组件拿不到令牌，暗色模式下会呈现一套未经设计的颜色。",
+          "since": "0.1.0"
         },
         {
           "name": "toast-host",
           "title": "ToastHost 反馈宿主",
-          "desc": "命令式反馈服务在小程序端的渲染宿主。H5 端服务会自动挂载、无需手写；小程序必须在页面里放一次，没放会自动降级到 uni.showToast 等原生 API。"
+          "desc": "命令式反馈服务在小程序端的渲染宿主。H5 端服务会自动挂载、无需手写；小程序必须在页面里放一次，没放会自动降级到 uni.showToast 等原生 API。",
+          "since": "0.4.0"
         }
       ]
     },
@@ -25,27 +28,32 @@
         {
           "name": "button",
           "title": "Button 按钮",
-          "desc": "自研而非二次封装：按钮没有遮罩、滚动锁、层级这些难点，自研能 100% 掌控设计语言。支持 5 种语义、3 档尺寸、加载态、描边与双形态圆角。"
+          "desc": "自研而非二次封装：按钮没有遮罩、滚动锁、层级这些难点，自研能 100% 掌控设计语言。支持 5 种语义、3 档尺寸、加载态、描边与双形态圆角。",
+          "since": "0.1.0"
         },
         {
           "name": "icon",
           "title": "Icon 图标",
-          "desc": "内置 72 个 24×24 描边图标，CSS mask + data URI 实现，颜色跟随 currentColor。刻意不复用 wd-icon——它在小程序走阿里图库外链字体，需配域名白名单且弱网闪空。"
+          "desc": "内置 72 个 24×24 描边图标，CSS mask + data URI 实现，颜色跟随 currentColor。刻意不复用 wd-icon——它在小程序走阿里图库外链字体，需配域名白名单且弱网闪空。",
+          "since": "0.2.0"
         },
         {
           "name": "divider",
           "title": "Divider 分割线",
-          "desc": "水平/垂直双向、支持中间标题与虚线。用 border 画线，因此切换 dashed 只是换一个 border-style。"
+          "desc": "水平/垂直双向、支持中间标题与虚线。用 border 画线，因此切换 dashed 只是换一个 border-style。",
+          "since": "0.3.0"
         },
         {
           "name": "typing",
           "title": "Typing 打字机",
-          "desc": "逐字输出的流式文本，给 AI 回复与引导文案用。调度用 setTimeout 链而非 setInterval（切后台回来不会一次性补一大段），推进用索引而非字符串拼接（中途换文案不会新旧串味）。"
+          "desc": "逐字输出的流式文本，给 AI 回复与引导文案用。调度用 setTimeout 链而非 setInterval（切后台回来不会一次性补一大段），推进用索引而非字符串拼接（中途换文案不会新旧串味）。",
+          "since": "0.5.3"
         },
         {
           "name": "watermark",
           "title": "Watermark 水印",
-          "desc": "纯 text 节点平铺，不用 canvas 生成背景图。画布放大倍数由旋转角算出来，而不是硬写 1.5 —— 宽屏上能少铺近一半节点。整层 pointer-events:none，绝不会挡住底下的操作。"
+          "desc": "纯 text 节点平铺，不用 canvas 生成背景图。画布放大倍数由旋转角算出来，而不是硬写 1.5 —— 宽屏上能少铺近一半节点。整层 pointer-events:none，绝不会挡住底下的操作。",
+          "since": "0.5.3"
         }
       ]
     },
@@ -56,37 +64,44 @@
         {
           "name": "row",
           "title": "Row 行",
-          "desc": "24 栅格的行容器，与 cd-col 配合使用。栅格宽度在编译期算成百分比，不赌小程序的 calc 除法；响应式走媒体查询类而非 JS。"
+          "desc": "24 栅格的行容器，与 cd-col 配合使用。栅格宽度在编译期算成百分比，不赌小程序的 calc 除法；响应式走媒体查询类而非 JS。",
+          "since": "0.2.0"
         },
         {
           "name": "col",
           "title": "Col 列",
-          "desc": "24 栅格的列，支持 xs/sm/md/lg/xl 五档响应式 span 与 gutter 间距。必须作为 cd-row 的子项使用。"
+          "desc": "24 栅格的列，支持 xs/sm/md/lg/xl 五档响应式 span 与 gutter 间距。必须作为 cd-row 的子项使用。",
+          "since": "0.2.0"
         },
         {
           "name": "grid",
           "title": "Grid 宫格",
-          "desc": "等分宫格容器。列宽由 JS 预算成 `--cd-grid-item-w` 下发，边框采用「容器画外框、格子画内线」的方案，全程零 nth-child——小程序 WXSS 对该选择器支持不一致。"
+          "desc": "等分宫格容器。列宽由 JS 预算成 `--cd-grid-item-w` 下发，边框采用「容器画外框、格子画内线」的方案，全程零 nth-child——小程序 WXSS 对该选择器支持不一致。",
+          "since": "0.5.0"
         },
         {
           "name": "grid-item",
           "title": "GridItem 宫格项",
-          "desc": "宫格中的一个单元格，支持图标、文字、角标（数字/红点）、showZero 与整格跳转（navigateTo 失败自动降级 switchTab）。"
+          "desc": "宫格中的一个单元格，支持图标、文字、角标（数字/红点）、showZero 与整格跳转（navigateTo 失败自动降级 switchTab）。",
+          "since": "0.5.0"
         },
         {
           "name": "cell",
           "title": "Cell 单元格",
-          "desc": "一行一项的列表单元。arrow 是三态属性：不传时跟随 clickable——能点的格子才该有箭头。放进 cd-cell-group 后由容器负责分隔线，自身的 border 不再生效。"
+          "desc": "一行一项的列表单元。arrow 是三态属性：不传时跟随 clickable——能点的格子才该有箭头。放进 cd-cell-group 后由容器负责分隔线，自身的 border 不再生效。",
+          "since": "0.5.0"
         },
         {
           "name": "cell-group",
           "title": "CellGroup 单元格组",
-          "desc": "单元格容器，用相邻选择器统一补分隔线，支持 inset 卡片形态与分组标题。"
+          "desc": "单元格容器，用相邻选择器统一补分隔线，支持 inset 卡片形态与分组标题。",
+          "since": "0.5.0"
         },
         {
           "name": "affix",
           "title": "Affix 图钉",
-          "desc": "页面滚动到指定位置后把内容钉住。实现是占位壳 + 固定内层：外层越过阈值后内层切 position:fixed 并抄录 width/left，外层用 height 顶住，避免布局跳动。"
+          "desc": "页面滚动到指定位置后把内容钉住。实现是占位壳 + 固定内层：外层越过阈值后内层切 position:fixed 并抄录 width/left，外层用 height 顶住，避免布局跳动。",
+          "since": "0.5.0"
         }
       ]
     },
@@ -97,117 +112,140 @@
         {
           "name": "form",
           "title": "Form 表单",
-          "desc": "表单容器，向下广播 rules、label 布局与整表禁用。validate() 返回 boolean 而非 reject——校验失败是业务分支，不是异常。"
+          "desc": "表单容器，向下广播 rules、label 布局与整表禁用。validate() 返回 boolean 而非 reject——校验失败是业务分支，不是异常。",
+          "since": "0.2.0"
         },
         {
           "name": "form-item",
           "title": "FormItem 表单项",
-          "desc": "单个字段的上下文提供者：向下给控件传 value/disabled，向上回报 blur/change 触发校验。自定义控件只要 useField() 就能接入同一套校验链。"
+          "desc": "单个字段的上下文提供者：向下给控件传 value/disabled，向上回报 blur/change 触发校验。自定义控件只要 useField() 就能接入同一套校验链。",
+          "since": "0.2.0"
         },
         {
           "name": "form-render",
           "title": "FormRender Schema 表单引擎",
-          "desc": "给一份字段描述数组（schema）和一个对象，自动渲染整张表单：内建 12 种控件、显隐与禁用联动、栅格布局、默认值注入，校验直接复用 cd-form 那套规则。适合中后台里大量「结构相似、字段不同」的表单页。"
+          "desc": "给一份字段描述数组（schema）和一个对象，自动渲染整张表单：内建 12 种控件、显隐与禁用联动、栅格布局、默认值注入，校验直接复用 cd-form 那套规则。适合中后台里大量「结构相似、字段不同」的表单页。",
+          "since": "0.5.3"
         },
         {
           "name": "input",
           "title": "Input 输入框",
-          "desc": "支持清除按钮、密码可见切换、字数统计与前后缀插槽；type=\"textarea\" 时切换为多行形态。placeholder 颜色必须走 placeholder-class——原生组件解析不了 CSS var()。"
+          "desc": "支持清除按钮、密码可见切换、字数统计与前后缀插槽；type=\"textarea\" 时切换为多行形态。placeholder 颜色必须走 placeholder-class——原生组件解析不了 CSS var()。",
+          "since": "0.2.0"
         },
         {
           "name": "search-bar",
           "title": "SearchBar 搜索框",
-          "desc": "无边框药丸形搜索容器，右侧可挂动作位（取消/搜索）。已接入 useField 校验链。"
+          "desc": "无边框药丸形搜索容器，右侧可挂动作位（取消/搜索）。已接入 useField 校验链。",
+          "since": "0.5.0"
         },
         {
           "name": "select",
           "title": "Select 选择器",
-          "desc": "移动端呈现底部动作面板、PC 呈现下拉面板。复用 wd-action-sheet 内核并做主题桥接，PC 端支持键盘导航。"
+          "desc": "移动端呈现底部动作面板、PC 呈现下拉面板。复用 wd-action-sheet 内核并做主题桥接，PC 端支持键盘导航。",
+          "since": "0.1.0"
         },
         {
           "name": "checkbox",
           "title": "Checkbox 复选框",
-          "desc": "独立使用时绑定布尔值，放进 cd-checkbox-group 后绑定数组的成员。校验由组统一触发，避免一次点击触发 N 次校验。"
+          "desc": "独立使用时绑定布尔值，放进 cd-checkbox-group 后绑定数组的成员。校验由组统一触发，避免一次点击触发 N 次校验。",
+          "since": "0.3.0"
         },
         {
           "name": "checkbox-group",
           "title": "CheckboxGroup 复选框组",
-          "desc": "多选容器，支持 button 分段控件形态。差异全在 CSS，圆点用 display:none 切换而非 v-if。"
+          "desc": "多选容器，支持 button 分段控件形态。差异全在 CSS，圆点用 display:none 切换而非 v-if。",
+          "since": "0.3.0"
         },
         {
           "name": "radio",
           "title": "Radio 单选框",
-          "desc": "配合 cd-radio-group 使用，支持 radio 与 button（分段控件）两种形态。"
+          "desc": "配合 cd-radio-group 使用，支持 radio 与 button（分段控件）两种形态。",
+          "since": "0.3.0"
         },
         {
           "name": "radio-group",
           "title": "RadioGroup 单选组",
-          "desc": "单选容器，统一触发 change 并向下广播选中态与禁用。"
+          "desc": "单选容器，统一触发 change 并向下广播选中态与禁用。",
+          "since": "0.3.0"
         },
         {
           "name": "switch",
           "title": "Switch 开关",
-          "desc": "两种状态之间的即时切换，支持加载态与自定义选中/未选中文案。已接入表单校验。"
+          "desc": "两种状态之间的即时切换，支持加载态与自定义选中/未选中文案。已接入表单校验。",
+          "since": "0.3.0"
         },
         {
           "name": "slider",
           "title": "Slider 滑块",
-          "desc": "支持单选与范围双滑块。按下时缓存轨道矩形避免每次取反算时读取；量化顺序是「先量化再钳制」；双滑块取最近的一个并允许交错。"
+          "desc": "支持单选与范围双滑块。按下时缓存轨道矩形避免每次取反算时读取；量化顺序是「先量化再钳制」；双滑块取最近的一个并允许交错。",
+          "since": "0.5.0"
         },
         {
           "name": "rate",
           "title": "Rate 评分",
-          "desc": "支持半星，实现方式是双层叠加 + 像素级裁切：上层已选中层按 value*(size+gap) px 宽度裁切。size 与 gap 声明为 Number 以便同时下发 CSS 变量。"
+          "desc": "支持半星，实现方式是双层叠加 + 像素级裁切：上层已选中层按 value*(size+gap) px 宽度裁切。size 与 gap 声明为 Number 以便同时下发 CSS 变量。",
+          "since": "0.5.0"
         },
         {
           "name": "stepper",
           "title": "Stepper 步进器",
-          "desc": "按住连加、边界钳制并抛出 overlimit。同时绑 touchstart 与 mousedown；手动输入不即时提交，避免输 15 时先经过 1。"
+          "desc": "按住连加、边界钳制并抛出 overlimit。同时绑 touchstart 与 mousedown；手动输入不即时提交，避免输 15 时先经过 1。",
+          "since": "0.3.0"
         },
         {
           "name": "upload",
           "title": "Upload 上传",
-          "desc": "受控优先——列表真值在 modelValue，可用 customRequest 完全接管上传接口。图片卡片与文件列表双形态，含进度、重试、超量与超大回调。刻意不做拖拽：小程序没有 drag 事件体系。"
+          "desc": "受控优先——列表真值在 modelValue，可用 customRequest 完全接管上传接口。图片卡片与文件列表双形态，含进度、重试、超量与超大回调。刻意不做拖拽：小程序没有 drag 事件体系。",
+          "since": "0.4.0"
         },
         {
           "name": "date-picker",
           "title": "DatePicker 日期选择",
-          "desc": "移动端走系统原生滚轮、PC 端自研日历面板——自研滚轮要处理 scroll-top 回环与惯性判定，而原生控件在移动端本来就是正确设计。range 范围选择暂未实现。"
+          "desc": "移动端走系统原生滚轮、PC 端自研日历面板——自研滚轮要处理 scroll-top 回环与惯性判定，而原生控件在移动端本来就是正确设计。range 范围选择暂未实现。",
+          "since": "0.4.0"
         },
         {
           "name": "time-picker",
           "title": "TimePicker 时间选择",
-          "desc": "移动端原生、PC 双列（时/分）。刻意不做秒。"
+          "desc": "移动端原生、PC 双列（时/分）。刻意不做秒。",
+          "since": "0.4.0"
         },
         {
           "name": "calendar",
           "title": "Calendar 日历",
-          "desc": "常驻日历面板（不是弹层），single / multiple / range 三种模式。与 date-picker 的分工：date-picker 是「点一下选完就走」的录入控件，calendar 是「要一直看着月份做安排」的展示面板。marks 支持打点与底部小字，formatter 可拦截单个格子的文案与可选性。"
+          "desc": "常驻日历面板（不是弹层），single / multiple / range 三种模式。与 date-picker 的分工：date-picker 是「点一下选完就走」的录入控件，calendar 是「要一直看着月份做安排」的展示面板。marks 支持打点与底部小字，formatter 可拦截单个格子的文案与可选性。",
+          "since": "0.5.2"
         },
         {
           "name": "picker",
           "title": "Picker 多列选择器",
-          "desc": "选自定义数据的通用弹层：columns 传「列数组的数组」是独立多列，加 cascade 后传树即为级联。用 scroll-view 受控定位而不是原生 picker-view——后者在 H5 与小程序上的手感与样式差异太大且几乎不可控。草稿与提交分离：点确定才落到 modelValue。"
+          "desc": "选自定义数据的通用弹层：columns 传「列数组的数组」是独立多列，加 cascade 后传树即为级联。用 scroll-view 受控定位而不是原生 picker-view——后者在 H5 与小程序上的手感与样式差异太大且几乎不可控。草稿与提交分离：点确定才落到 modelValue。",
+          "since": "0.5.2"
         },
         {
           "name": "cascader",
           "title": "Cascader 级联选择",
-          "desc": "省市区、品类树这类「选一条从根到叶路径」的控件。与 picker 的分工：picker 是弹层、要点确定；cascader 是表单字段、点选即提交。面板多列并排而不是一级一屏，一眼能看到完整路径。check-strictly 控制父级是否可选，emit-path 决定回传整条路径还是末级值。"
+          "desc": "省市区、品类树这类「选一条从根到叶路径」的控件。与 picker 的分工：picker 是弹层、要点确定；cascader 是表单字段、点选即提交。面板多列并排而不是一级一屏，一眼能看到完整路径。check-strictly 控制父级是否可选，emit-path 决定回传整条路径还是末级值。",
+          "since": "0.5.2"
         },
         {
           "name": "color-picker",
           "title": "ColorPicker 颜色选择器",
-          "desc": "HSV 面板 + 色相条 + 透明度，纯 view 实现不用 canvas。输入与面板双向驱动，粘贴任意合法色值都能解析。"
+          "desc": "HSV 面板 + 色相条 + 透明度，纯 view 实现不用 canvas。输入与面板双向驱动，粘贴任意合法色值都能解析。",
+          "since": "0.5.3"
         },
         {
           "name": "transfer",
           "title": "Transfer 穿梭框",
-          "desc": "左右两栏 + 搜索过滤 + 全选。禁用项不可移，direction 可调（窄屏自动竖排）。"
+          "desc": "左右两栏 + 搜索过滤 + 全选。禁用项不可移，direction 可调（窄屏自动竖排）。",
+          "since": "0.5.3"
         },
         {
           "name": "signature",
           "title": "Signature 手写签名",
-          "desc": "笔画拼成 SVG 再以内联 data URI 交给背景图渲染（与 cd-icon 同一套路），不用 canvas 因此四端一致。已完成笔画与正在画的一笔分成两组节点，移动时只重建后者。"
+          "desc": "笔画拼成 SVG 再以内联 data URI 交给背景图渲染（与 cd-icon 同一套路），不用 canvas 因此四端一致。已完成笔画与正在画的一笔分成两组节点，移动时只重建后者。",
+          "since": "0.5.3"
         }
       ]
     },
@@ -218,107 +256,128 @@
         {
           "name": "avatar",
           "title": "Avatar 头像",
-          "desc": "图片 → 插槽 → 图标 → 文字的降级链，任何一级失败都不会出现破图。无底色时用稳定哈希生成背景色，避免每次刷新变色。"
+          "desc": "图片 → 插槽 → 图标 → 文字的降级链，任何一级失败都不会出现破图。无底色时用稳定哈希生成背景色，避免每次刷新变色。",
+          "since": "0.3.0"
         },
         {
           "name": "badge",
           "title": "Badge 徽标",
-          "desc": "无插槽时是独立标签，有插槽时自动变成角标。支持数字封顶（99+）与小红点形态。"
+          "desc": "无插槽时是独立标签，有插槽时自动变成角标。支持数字封顶（99+）与小红点形态。",
+          "since": "0.3.0"
         },
         {
           "name": "card",
           "title": "Card 卡片",
-          "desc": "通用容器，提供 header / extra / footer 插槽与 hoverable。刻意与工具类 .cd-panel 职责分离，避免类名撞车导致 padding 叠加。"
+          "desc": "通用容器，提供 header / extra / footer 插槽与 hoverable。刻意与工具类 .cd-panel 职责分离，避免类名撞车导致 padding 叠加。",
+          "since": "0.2.0"
         },
         {
           "name": "table",
           "title": "Table 表格",
-          "desc": "PC 端多列数据表，移动端自动降级为卡片列表（首列升格为卡片标题）。未实现虚拟滚动与列宽拖拽，大数据量场景需自行接入。"
+          "desc": "PC 端多列数据表，移动端自动降级为卡片列表（首列升格为卡片标题）。未实现虚拟滚动与列宽拖拽，大数据量场景需自行接入。",
+          "since": "0.1.0"
         },
         {
           "name": "tag",
           "title": "Tag 标签",
-          "desc": "type 只声明颜色、形态决定用法，因此新增语义色只需两行 CSS。尺寸类名统一带 size- 前缀——type 与 size 都有 default，不带前缀会撞名。"
+          "desc": "type 只声明颜色、形态决定用法，因此新增语义色只需两行 CSS。尺寸类名统一带 size- 前缀——type 与 size 都有 default，不带前缀会撞名。",
+          "since": "0.3.0"
         },
         {
           "name": "progress",
           "title": "Progress 进度条",
-          "desc": "线形与环形两种形态。环形用 conic-gradient + mask 实现，刻意不用 canvas——避开小程序 canvas-id、层级与绘制时机的坑。"
+          "desc": "线形与环形两种形态。环形用 conic-gradient + mask 实现，刻意不用 canvas——避开小程序 canvas-id、层级与绘制时机的坑。",
+          "since": "0.3.0"
         },
         {
           "name": "collapse",
           "title": "Collapse 折叠面板",
-          "desc": "容器持有展开状态，accordion 模式下 v-model 为单值、否则为数组。"
+          "desc": "容器持有展开状态，accordion 模式下 v-model 为单值、否则为数组。",
+          "since": "0.5.0"
         },
         {
           "name": "collapse-item",
           "title": "CollapseItem 折叠项",
-          "desc": "高度动画走实测道路：用 createSelectorQuery 量取内容真实高度后以 CSS 变量下发。固定 max-height: 999px 的做法会让动画在视觉上失效。"
+          "desc": "高度动画走实测道路：用 createSelectorQuery 量取内容真实高度后以 CSS 变量下发。固定 max-height: 999px 的做法会让动画在视觉上失效。",
+          "since": "0.5.0"
         },
         {
           "name": "timeline",
           "title": "Timeline 时间线",
-          "desc": "按时间顺序展示事件流。reverse 通过 flex-direction: column-reverse 实现而不是反转数组——保持数据顺序可读。"
+          "desc": "按时间顺序展示事件流。reverse 通过 flex-direction: column-reverse 实现而不是反转数组——保持数据顺序可读。",
+          "since": "0.5.0"
         },
         {
           "name": "timeline-item",
           "title": "TimelineItem 时间线项",
-          "desc": "单个时间节点，支持实心/空心/大号圆点与自定义 dot 插槽。首尾的引线会被替换为透明占位。"
+          "desc": "单个时间节点，支持实心/空心/大号圆点与自定义 dot 插槽。首尾的引线会被替换为透明占位。",
+          "since": "0.5.0"
         },
         {
           "name": "image",
           "title": "Image 图片",
-          "desc": "统一封装 loading / loaded / error 三态，并内置 uni 的 image mode 与 CSS object-fit 的映射表，让同一套写法在两个端表现一致。"
+          "desc": "统一封装 loading / loaded / error 三态，并内置 uni 的 image mode 与 CSS object-fit 的映射表，让同一套写法在两个端表现一致。",
+          "since": "0.5.0"
         },
         {
           "name": "image-preview",
           "title": "ImagePreview 图片预览",
-          "desc": "全屏图片预览。声明式用 v-model 控制开关，命令式直接 previewImage({ urls, current })——后者在 H5 动态挂载宿主、小程序降级 uni.previewImage。支持手势滑动翻页、双指与滚轮缩放、循环、角标计数。刻意不依赖 wd 的预览组件：那套只覆盖小程序原生通道，H5 上的缩放与手势行为要靠自己实现。"
+          "desc": "全屏图片预览。声明式用 v-model 控制开关，命令式直接 previewImage({ urls, current })——后者在 H5 动态挂载宿主、小程序降级 uni.previewImage。支持手势滑动翻页、双指与滚轮缩放、循环、角标计数。刻意不依赖 wd 的预览组件：那套只覆盖小程序原生通道，H5 上的缩放与手势行为要靠自己实现。",
+          "since": "0.5.2"
         },
         {
           "name": "swiper",
           "title": "Swiper 轮播",
-          "desc": "底层是 uni 原生 swiper（手感与惯性由端上保证），上层补一层统一的设计语言：指示点样式、桌面形态的左右翻页箭头、list 既接受 { image, text } 也接受纯图片地址。autoplay 由组件内部按 visible 状态自行启停，避免页面切走后定时器还在跑。"
+          "desc": "底层是 uni 原生 swiper（手感与惯性由端上保证），上层补一层统一的设计语言：指示点样式、桌面形态的左右翻页箭头、list 既接受 { image, text } 也接受纯图片地址。autoplay 由组件内部按 visible 状态自行启停，避免页面切走后定时器还在跑。",
+          "since": "0.5.2"
         },
         {
           "name": "count-down",
           "title": "CountDown 倒计时",
-          "desc": "锚定结束时间戳而非递减计数：每次都重算 endAt - Date.now()，定时器只负责「多久看一眼」。这样切后台、改系统时间、GC 停顿都不会漂移。"
+          "desc": "锚定结束时间戳而非递减计数：每次都重算 endAt - Date.now()，定时器只负责「多久看一眼」。这样切后台、改系统时间、GC 停顿都不会漂移。",
+          "since": "0.5.0"
         },
         {
           "name": "count-to",
           "title": "CountTo 数字滚动",
-          "desc": "数字从起始值缓动到目标值。内部只存裸数字，千分位在格式化阶段用 split/join 添加——避开 lookahead 正则在小程序引擎上的差异。"
+          "desc": "数字从起始值缓动到目标值。内部只存裸数字，千分位在格式化阶段用 split/join 添加——避开 lookahead 正则在小程序引擎上的差异。",
+          "since": "0.5.0"
         },
         {
           "name": "empty",
           "title": "Empty 空状态",
-          "desc": "固化了 5 种高频空状态预设（无数据/无搜索结果/加载失败/无网络/无权限），避免每次业务方各写一套文案导致漂移。"
+          "desc": "固化了 5 种高频空状态预设（无数据/无搜索结果/加载失败/无网络/无权限），避免每次业务方各写一套文案导致漂移。",
+          "since": "0.3.0"
         },
         {
           "name": "skeleton",
           "title": "Skeleton 骨架屏",
-          "desc": "加载占位，最后一行默认收窄 60% 让轮廓更像真实文本。暗色下必须显式重定义块色——亮色比背景深，暗色要反过来。"
+          "desc": "加载占位，最后一行默认收窄 60% 让轮廓更像真实文本。暗色下必须显式重定义块色——亮色比背景深，暗色要反过来。",
+          "since": "0.3.0"
         },
         {
           "name": "result",
           "title": "Result 结果页",
-          "desc": "操作结果反馈页，内置成功/失败预设，提供 icon、title、desc、extra、actions 五个插槽。"
+          "desc": "操作结果反馈页，内置成功/失败预设，提供 icon、title、desc、extra、actions 五个插槽。",
+          "since": "0.5.0"
         },
         {
           "name": "tree",
           "title": "Tree 树形控件",
-          "desc": "勾选走「向下全量 + 向上回算」两趟，父子联动带半选态；checkStrictly 打开时父子各算各的。扁平渲染而非嵌套递归，节点再多也不会爆栈。"
+          "desc": "勾选走「向下全量 + 向上回算」两趟，父子联动带半选态；checkStrictly 打开时父子各算各的。扁平渲染而非嵌套递归，节点再多也不会爆栈。",
+          "since": "0.5.3"
         },
         {
           "name": "descriptions",
           "title": "Descriptions 描述列表",
-          "desc": "一份 items 渲染整张详情表，支持列数、跨列与横竖两种排布。比手写一堆 cell 少 80% 的模板代码。"
+          "desc": "一份 items 渲染整张详情表，支持列数、跨列与横竖两种排布。比手写一堆 cell 少 80% 的模板代码。",
+          "since": "0.5.3"
         },
         {
           "name": "qrcode",
           "title": "Qrcode 二维码",
-          "desc": "编码核心自研零依赖（版本 1~10 / L M Q H / 字节模式），与 npm qrcode 包逐位比对通过。渲染是纯 view 节点且坐标全部取整，不会出现 1px 白缝。"
+          "desc": "编码核心自研零依赖（版本 1~10 / L M Q H / 字节模式），与 npm qrcode 包逐位比对通过。渲染是纯 view 节点且坐标全部取整，不会出现 1px 白缝。",
+          "since": "0.5.3"
         }
       ]
     },
@@ -329,62 +388,74 @@
         {
           "name": "tabs",
           "title": "Tabs 标签页",
-          "desc": "line / card 两种视觉，支持 badge 与横向滚动。等宽模式的指示器用纯百分比定位（零测量），仅 scrollable 模式才用 createSelectorQuery 且测不到自动降级。"
+          "desc": "line / card 两种视觉，支持 badge 与横向滚动。等宽模式的指示器用纯百分比定位（零测量），仅 scrollable 模式才用 createSelectorQuery 且测不到自动降级。",
+          "since": "0.2.0"
         },
         {
           "name": "pagination",
           "title": "Pagination 分页",
-          "desc": "移动端只显示上一页/下一页，PC 显示完整页码。页码数量恒定，翻到末尾不会忽然变窄导致按钮跳动。"
+          "desc": "移动端只显示上一页/下一页，PC 显示完整页码。页码数量恒定，翻到末尾不会忽然变窄导致按钮跳动。",
+          "since": "0.1.0"
         },
         {
           "name": "steps",
           "title": "Steps 步骤条",
-          "desc": "横向/纵向流程指引。序号由容器注册表派生——子项不接受业务传 index，避免增删步骤时序号错位。容器用普通数组存 uid（不上 ref，防止 Proxy 破坏引用比对）配合 version ref 建立响应式依赖。"
+          "desc": "横向/纵向流程指引。序号由容器注册表派生——子项不接受业务传 index，避免增删步骤时序号错位。容器用普通数组存 uid（不上 ref，防止 Proxy 破坏引用比对）配合 version ref 建立响应式依赖。",
+          "since": "0.5.0"
         },
         {
           "name": "step",
           "title": "Step 步骤",
-          "desc": "单个步骤节点。连线配色按「左边那一步」计算：前置线 index <= current、后置线 index < current，首尾再用透明线占位撑住图标居中。"
+          "desc": "单个步骤节点。连线配色按「左边那一步」计算：前置线 index <= current、后置线 index < current，首尾再用透明线占位撑住图标居中。",
+          "since": "0.5.0"
         },
         {
           "name": "breadcrumb",
           "title": "Breadcrumb 面包屑",
-          "desc": "层级位置导航。容器判定最后一项并让它不可点击、颜色更重。"
+          "desc": "层级位置导航。容器判定最后一项并让它不可点击、颜色更重。",
+          "since": "0.5.0"
         },
         {
           "name": "breadcrumb-item",
           "title": "BreadcrumbItem 面包屑项",
-          "desc": "面包屑中的一环，to 属性跳转走 navigateTo，失败自动降级 switchTab。"
+          "desc": "面包屑中的一环，to 属性跳转走 navigateTo，失败自动降级 switchTab。",
+          "since": "0.5.0"
         },
         {
           "name": "dropdown",
           "title": "Dropdown 下拉菜单",
-          "desc": "命令型动作菜单，与 cd-select 的表单语义刻意分离。PC 端支持 hover/click 触发切换与键盘导航（↑↓/Enter/Esc）。"
+          "desc": "命令型动作菜单，与 cd-select 的表单语义刻意分离。PC 端支持 hover/click 触发切换与键盘导航（↑↓/Enter/Esc）。",
+          "since": "0.4.0"
         },
         {
           "name": "fab",
           "title": "Fab 悬浮按钮",
-          "desc": "可拖拽的悬浮操作按钮。H5 通过 document 监听鼠标实现拖拽，小程序用 touch 事件。提供 offset-right 让位给同角落的其他浮层。"
+          "desc": "可拖拽的悬浮操作按钮。H5 通过 document 监听鼠标实现拖拽，小程序用 touch 事件。提供 offset-right 让位给同角落的其他浮层。",
+          "since": "0.5.0"
         },
         {
           "name": "backtop",
           "title": "BackTop 回到顶部",
-          "desc": "滚动超过 visibility-height 后出现的回顶按钮，与 cd-affix 共用 usePageScroll 处理「H5 自动监听 / 小程序页面传入」的差异。"
+          "desc": "滚动超过 visibility-height 后出现的回顶按钮，与 cd-affix 共用 usePageScroll 处理「H5 自动监听 / 小程序页面传入」的差异。",
+          "since": "0.5.0"
         },
         {
           "name": "navbar",
           "title": "Navbar 导航栏",
-          "desc": "顶部导航栏。状态栏留白由 statusBar 开关 × 实测高度决定，拿不到就退回 0；标题绝对居中，左右内容不等长也不偏心。"
+          "desc": "顶部导航栏。状态栏留白由 statusBar 开关 × 实测高度决定，拿不到就退回 0；标题绝对居中，左右内容不等长也不偏心。",
+          "since": "0.5.3"
         },
         {
           "name": "tabbar",
           "title": "Tabbar 底部标签栏",
-          "desc": "支持徽标与小红点，fixed 时自动等高占位，safeArea 走小程序安全区。选中值可以是 value 也可以是下标。"
+          "desc": "支持徽标与小红点，fixed 时自动等高占位，safeArea 走小程序安全区。选中值可以是 value 也可以是下标。",
+          "since": "0.5.3"
         },
         {
           "name": "index-bar",
           "title": "IndexBar 字母索引栏",
-          "desc": "只做「手指落在第几个字母」，结果 emit 出去由业务用 scroll-into-view 自己跳 —— 锚点滚动要遍历业务列表的 offsetTop，组件既量不准也管不动。整条 pointer-events:none，只有字母本身可点。"
+          "desc": "只做「手指落在第几个字母」，结果 emit 出去由业务用 scroll-into-view 自己跳 —— 锚点滚动要遍历业务列表的 offsetTop，组件既量不准也管不动。整条 pointer-events:none，只有字母本身可点。",
+          "since": "0.5.3"
         }
       ]
     },
@@ -395,52 +466,62 @@
         {
           "name": "alert",
           "title": "Alert 提示条",
-          "desc": "静态区域里的常驻提示。四种语义色、支持描边、通铺 banner 与右侧操作区。"
+          "desc": "静态区域里的常驻提示。四种语义色、支持描边、通铺 banner 与右侧操作区。",
+          "since": "0.3.0"
         },
         {
           "name": "dialog",
           "title": "Dialog 对话框",
-          "desc": "双形态弹窗：移动端从底部升起成抽屉、PC 居中模态。复用 wd-popup 内核，支持 Esc 关闭与 beforeClose 异步拦截。"
+          "desc": "双形态弹窗：移动端从底部升起成抽屉、PC 居中模态。复用 wd-popup 内核，支持 Esc 关闭与 beforeClose 异步拦截。",
+          "since": "0.1.0"
         },
         {
           "name": "drawer",
           "title": "Drawer 抽屉",
-          "desc": "四向抽屉，auto 模式下移动端从底部、PC 从右侧。左右方向时内层必须显式给 height:100%——wd-popup 只拉高定位壳。"
+          "desc": "四向抽屉，auto 模式下移动端从底部、PC 从右侧。左右方向时内层必须显式给 height:100%——wd-popup 只拉高定位壳。",
+          "since": "0.4.0"
         },
         {
           "name": "loading",
           "title": "Loading 加载",
-          "desc": "加载指示器，spinner 形态复用 cd-icon 的 loader 图标加旋转动画。"
+          "desc": "加载指示器，spinner 形态复用 cd-icon 的 loader 图标加旋转动画。",
+          "since": "0.3.0"
         },
         {
           "name": "notice-bar",
           "title": "NoticeBar 通知栏",
-          "desc": "滚动通告。跑马灯用 padding-left:100% + translate3d(-100%) 实现无缝循环，速度按字数估算而不是等测量完成——换来首屏一次成型、不闪跳。"
+          "desc": "滚动通告。跑马灯用 padding-left:100% + translate3d(-100%) 实现无缝循环，速度按字数估算而不是等测量完成——换来首屏一次成型、不闪跳。",
+          "since": "0.5.0"
         },
         {
           "name": "action-sheet",
           "title": "ActionSheet 动作面板",
-          "desc": "移动端底部动作面板，支持 disabled / danger / description 三种行态。复用 wd-popup + useWotScope 保证主题作用域。"
+          "desc": "移动端底部动作面板，支持 disabled / danger / description 三种行态。复用 wd-popup + useWotScope 保证主题作用域。",
+          "since": "0.5.0"
         },
         {
           "name": "popconfirm",
           "title": "PopConfirm 气泡确认",
-          "desc": "轻量二次确认气泡，复用 useFloating 定位内核。宽度要用独立的 computed 拼到 panelStyle 上——customStyle 是字符串契约，直接传 computed 会被拼成 [object Object]。"
+          "desc": "轻量二次确认气泡，复用 useFloating 定位内核。宽度要用独立的 computed 拼到 panelStyle 上——customStyle 是字符串契约，直接传 computed 会被拼成 [object Object]。",
+          "since": "0.5.0"
         },
         {
           "name": "popover",
           "title": "Popover 气泡卡片",
-          "desc": "可承载任意内容的气泡。面板内点击不自动关闭，支持 Esc 与 v-model 外部受控。"
+          "desc": "可承载任意内容的气泡。面板内点击不自动关闭，支持 Esc 与 v-model 外部受控。",
+          "since": "0.4.0"
         },
         {
           "name": "tooltip",
           "title": "Tooltip 文字提示",
-          "desc": "纯文字气泡。PC 端 hover 触发且进出都带延迟（防鼠标轨迹穿越时闪烁），移动端长按或点击触发。"
+          "desc": "纯文字气泡。PC 端 hover 触发且进出都带延迟（防鼠标轨迹穿越时闪烁），移动端长按或点击触发。",
+          "since": "0.4.0"
         },
         {
           "name": "guide",
           "title": "Guide 用户指引",
-          "desc": "分步遮罩引导。遮罩用 box-shadow 挖洞而不是四块挡板拼，圆角与位置动画都只需改一个节点；placement 支持 auto，目标下方空间不足自动翻到上方。"
+          "desc": "分步遮罩引导。遮罩用 box-shadow 挖洞而不是四块挡板拼，圆角与位置动画都只需改一个节点；placement 支持 auto，目标下方空间不足自动翻到上方。",
+          "since": "0.5.3"
         }
       ]
     }
@@ -450,6 +531,7 @@
       "name": "action-sheet",
       "title": "ActionSheet 动作面板",
       "desc": "移动端底部动作面板，支持 disabled / danger / description 三种行态。复用 wd-popup + useWotScope 保证主题作用域。",
+      "since": "0.5.0",
       "category": "feedback",
       "props": 11,
       "emits": 5,
@@ -463,6 +545,7 @@
       "name": "affix",
       "title": "Affix 图钉",
       "desc": "页面滚动到指定位置后把内容钉住。实现是占位壳 + 固定内层：外层越过阈值后内层切 position:fixed 并抄录 width/left，外层用 height 顶住，避免布局跳动。",
+      "since": "0.5.0",
       "category": "layout",
       "props": 4,
       "emits": 1,
@@ -476,6 +559,7 @@
       "name": "alert",
       "title": "Alert 提示条",
       "desc": "静态区域里的常驻提示。四种语义色、支持描边、通铺 banner 与右侧操作区。",
+      "since": "0.3.0",
       "category": "feedback",
       "props": 11,
       "emits": 2,
@@ -489,6 +573,7 @@
       "name": "avatar",
       "title": "Avatar 头像",
       "desc": "图片 → 插槽 → 图标 → 文字的降级链，任何一级失败都不会出现破图。无底色时用稳定哈希生成背景色，避免每次刷新变色。",
+      "since": "0.3.0",
       "category": "data",
       "props": 10,
       "emits": 2,
@@ -502,6 +587,7 @@
       "name": "backtop",
       "title": "BackTop 回到顶部",
       "desc": "滚动超过 visibility-height 后出现的回顶按钮，与 cd-affix 共用 usePageScroll 处理「H5 自动监听 / 小程序页面传入」的差异。",
+      "since": "0.5.0",
       "category": "navigation",
       "props": 12,
       "emits": 1,
@@ -515,6 +601,7 @@
       "name": "badge",
       "title": "Badge 徽标",
       "desc": "无插槽时是独立标签，有插槽时自动变成角标。支持数字封顶（99+）与小红点形态。",
+      "since": "0.3.0",
       "category": "data",
       "props": 9,
       "emits": 1,
@@ -528,6 +615,7 @@
       "name": "breadcrumb",
       "title": "Breadcrumb 面包屑",
       "desc": "层级位置导航。容器判定最后一项并让它不可点击、颜色更重。",
+      "since": "0.5.0",
       "category": "navigation",
       "props": 4,
       "emits": 0,
@@ -541,6 +629,7 @@
       "name": "breadcrumb-item",
       "title": "BreadcrumbItem 面包屑项",
       "desc": "面包屑中的一环，to 属性跳转走 navigateTo，失败自动降级 switchTab。",
+      "since": "0.5.0",
       "category": "navigation",
       "props": 4,
       "emits": 1,
@@ -554,6 +643,7 @@
       "name": "button",
       "title": "Button 按钮",
       "desc": "自研而非二次封装：按钮没有遮罩、滚动锁、层级这些难点，自研能 100% 掌控设计语言。支持 5 种语义、3 档尺寸、加载态、描边与双形态圆角。",
+      "since": "0.1.0",
       "category": "general",
       "props": 9,
       "emits": 1,
@@ -567,6 +657,7 @@
       "name": "calendar",
       "title": "Calendar 日历",
       "desc": "常驻日历面板（不是弹层），single / multiple / range 三种模式。与 date-picker 的分工：date-picker 是「点一下选完就走」的录入控件，calendar 是「要一直看着月份做安排」的展示面板。marks 支持打点与底部小字，formatter 可拦截单个格子的文案与可选性。",
+      "since": "0.5.2",
       "category": "form",
       "props": 16,
       "emits": 5,
@@ -580,6 +671,7 @@
       "name": "card",
       "title": "Card 卡片",
       "desc": "通用容器，提供 header / extra / footer 插槽与 hoverable。刻意与工具类 .cd-panel 职责分离，避免类名撞车导致 padding 叠加。",
+      "since": "0.2.0",
       "category": "data",
       "props": 9,
       "emits": 1,
@@ -593,6 +685,7 @@
       "name": "cascader",
       "title": "Cascader 级联选择",
       "desc": "省市区、品类树这类「选一条从根到叶路径」的控件。与 picker 的分工：picker 是弹层、要点确定；cascader 是表单字段、点选即提交。面板多列并排而不是一级一屏，一眼能看到完整路径。check-strictly 控制父级是否可选，emit-path 决定回传整条路径还是末级值。",
+      "since": "0.5.2",
       "category": "form",
       "props": 15,
       "emits": 4,
@@ -606,6 +699,7 @@
       "name": "cell",
       "title": "Cell 单元格",
       "desc": "一行一项的列表单元。arrow 是三态属性：不传时跟随 clickable——能点的格子才该有箭头。放进 cd-cell-group 后由容器负责分隔线，自身的 border 不再生效。",
+      "since": "0.5.0",
       "category": "layout",
       "props": 12,
       "emits": 1,
@@ -619,6 +713,7 @@
       "name": "cell-group",
       "title": "CellGroup 单元格组",
       "desc": "单元格容器，用相邻选择器统一补分隔线，支持 inset 卡片形态与分组标题。",
+      "since": "0.5.0",
       "category": "layout",
       "props": 4,
       "emits": 0,
@@ -632,6 +727,7 @@
       "name": "checkbox",
       "title": "Checkbox 复选框",
       "desc": "独立使用时绑定布尔值，放进 cd-checkbox-group 后绑定数组的成员。校验由组统一触发，避免一次点击触发 N 次校验。",
+      "since": "0.3.0",
       "category": "form",
       "props": 8,
       "emits": 2,
@@ -645,6 +741,7 @@
       "name": "checkbox-group",
       "title": "CheckboxGroup 复选框组",
       "desc": "多选容器，支持 button 分段控件形态。差异全在 CSS，圆点用 display:none 切换而非 v-if。",
+      "since": "0.3.0",
       "category": "form",
       "props": 8,
       "emits": 3,
@@ -658,6 +755,7 @@
       "name": "col",
       "title": "Col 列",
       "desc": "24 栅格的列，支持 xs/sm/md/lg/xl 五档响应式 span 与 gutter 间距。必须作为 cd-row 的子项使用。",
+      "since": "0.2.0",
       "category": "layout",
       "props": 4,
       "emits": 0,
@@ -671,6 +769,7 @@
       "name": "collapse",
       "title": "Collapse 折叠面板",
       "desc": "容器持有展开状态，accordion 模式下 v-model 为单值、否则为数组。",
+      "since": "0.5.0",
       "category": "data",
       "props": 5,
       "emits": 2,
@@ -684,6 +783,7 @@
       "name": "collapse-item",
       "title": "CollapseItem 折叠项",
       "desc": "高度动画走实测道路：用 createSelectorQuery 量取内容真实高度后以 CSS 变量下发。固定 max-height: 999px 的做法会让动画在视觉上失效。",
+      "since": "0.5.0",
       "category": "data",
       "props": 8,
       "emits": 1,
@@ -697,6 +797,7 @@
       "name": "color-picker",
       "title": "ColorPicker 颜色选择器",
       "desc": "HSV 面板 + 色相条 + 透明度，纯 view 实现不用 canvas。输入与面板双向驱动，粘贴任意合法色值都能解析。",
+      "since": "0.5.3",
       "category": "form",
       "props": 6,
       "emits": 2,
@@ -710,6 +811,7 @@
       "name": "config-provider",
       "title": "ConfigProvider 全局配置",
       "desc": "所有页面的根节点。向下广播主题（亮/暗）、尺寸密度与圆角形态，并把 wot-design-uni 的 CSS 变量一并桥接过去。页面里必须包它，否则组件拿不到令牌，暗色模式下会呈现一套未经设计的颜色。",
+      "since": "0.1.0",
       "category": "infrastructure",
       "props": 5,
       "emits": 1,
@@ -723,6 +825,7 @@
       "name": "count-down",
       "title": "CountDown 倒计时",
       "desc": "锚定结束时间戳而非递减计数：每次都重算 endAt - Date.now()，定时器只负责「多久看一眼」。这样切后台、改系统时间、GC 停顿都不会漂移。",
+      "since": "0.5.0",
       "category": "data",
       "props": 6,
       "emits": 2,
@@ -736,6 +839,7 @@
       "name": "count-to",
       "title": "CountTo 数字滚动",
       "desc": "数字从起始值缓动到目标值。内部只存裸数字，千分位在格式化阶段用 split/join 添加——避开 lookahead 正则在小程序引擎上的差异。",
+      "since": "0.5.0",
       "category": "data",
       "props": 11,
       "emits": 3,
@@ -749,6 +853,7 @@
       "name": "date-picker",
       "title": "DatePicker 日期选择",
       "desc": "移动端走系统原生滚轮、PC 端自研日历面板——自研滚轮要处理 scroll-top 回环与惯性判定，而原生控件在移动端本来就是正确设计。range 范围选择暂未实现。",
+      "since": "0.4.0",
       "category": "form",
       "props": 10,
       "emits": 3,
@@ -762,6 +867,7 @@
       "name": "descriptions",
       "title": "Descriptions 描述列表",
       "desc": "一份 items 渲染整张详情表，支持列数、跨列与横竖两种排布。比手写一堆 cell 少 80% 的模板代码。",
+      "since": "0.5.3",
       "category": "data",
       "props": 10,
       "emits": 0,
@@ -775,6 +881,7 @@
       "name": "dialog",
       "title": "Dialog 对话框",
       "desc": "双形态弹窗：移动端从底部升起成抽屉、PC 居中模态。复用 wd-popup 内核，支持 Esc 关闭与 beforeClose 异步拦截。",
+      "since": "0.1.0",
       "category": "feedback",
       "props": 16,
       "emits": 5,
@@ -788,6 +895,7 @@
       "name": "divider",
       "title": "Divider 分割线",
       "desc": "水平/垂直双向、支持中间标题与虚线。用 border 画线，因此切换 dashed 只是换一个 border-style。",
+      "since": "0.3.0",
       "category": "general",
       "props": 6,
       "emits": 0,
@@ -801,6 +909,7 @@
       "name": "drawer",
       "title": "Drawer 抽屉",
       "desc": "四向抽屉，auto 模式下移动端从底部、PC 从右侧。左右方向时内层必须显式给 height:100%——wd-popup 只拉高定位壳。",
+      "since": "0.4.0",
       "category": "feedback",
       "props": 10,
       "emits": 3,
@@ -814,6 +923,7 @@
       "name": "dropdown",
       "title": "Dropdown 下拉菜单",
       "desc": "命令型动作菜单，与 cd-select 的表单语义刻意分离。PC 端支持 hover/click 触发切换与键盘导航（↑↓/Enter/Esc）。",
+      "since": "0.4.0",
       "category": "navigation",
       "props": 6,
       "emits": 2,
@@ -827,6 +937,7 @@
       "name": "empty",
       "title": "Empty 空状态",
       "desc": "固化了 5 种高频空状态预设（无数据/无搜索结果/加载失败/无网络/无权限），避免每次业务方各写一套文案导致漂移。",
+      "since": "0.3.0",
       "category": "data",
       "props": 7,
       "emits": 0,
@@ -840,6 +951,7 @@
       "name": "fab",
       "title": "Fab 悬浮按钮",
       "desc": "可拖拽的悬浮操作按钮。H5 通过 document 监听鼠标实现拖拽，小程序用 touch 事件。提供 offset-right 让位给同角落的其他浮层。",
+      "since": "0.5.0",
       "category": "navigation",
       "props": 13,
       "emits": 3,
@@ -853,6 +965,7 @@
       "name": "form",
       "title": "Form 表单",
       "desc": "表单容器，向下广播 rules、label 布局与整表禁用。validate() 返回 boolean 而非 reject——校验失败是业务分支，不是异常。",
+      "since": "0.2.0",
       "category": "form",
       "props": 11,
       "emits": 2,
@@ -866,6 +979,7 @@
       "name": "form-item",
       "title": "FormItem 表单项",
       "desc": "单个字段的上下文提供者：向下给控件传 value/disabled，向上回报 blur/change 触发校验。自定义控件只要 useField() 就能接入同一套校验链。",
+      "since": "0.2.0",
       "category": "form",
       "props": 11,
       "emits": 0,
@@ -879,6 +993,7 @@
       "name": "form-render",
       "title": "FormRender Schema 表单引擎",
       "desc": "给一份字段描述数组（schema）和一个对象，自动渲染整张表单：内建 12 种控件、显隐与禁用联动、栅格布局、默认值注入，校验直接复用 cd-form 那套规则。适合中后台里大量「结构相似、字段不同」的表单页。",
+      "since": "0.5.3",
       "category": "form",
       "props": 14,
       "emits": 3,
@@ -892,6 +1007,7 @@
       "name": "grid",
       "title": "Grid 宫格",
       "desc": "等分宫格容器。列宽由 JS 预算成 `--cd-grid-item-w` 下发，边框采用「容器画外框、格子画内线」的方案，全程零 nth-child——小程序 WXSS 对该选择器支持不一致。",
+      "since": "0.5.0",
       "category": "layout",
       "props": 5,
       "emits": 0,
@@ -905,6 +1021,7 @@
       "name": "grid-item",
       "title": "GridItem 宫格项",
       "desc": "宫格中的一个单元格，支持图标、文字、角标（数字/红点）、showZero 与整格跳转（navigateTo 失败自动降级 switchTab）。",
+      "since": "0.5.0",
       "category": "layout",
       "props": 10,
       "emits": 1,
@@ -918,6 +1035,7 @@
       "name": "guide",
       "title": "Guide 用户指引",
       "desc": "分步遮罩引导。遮罩用 box-shadow 挖洞而不是四块挡板拼，圆角与位置动画都只需改一个节点；placement 支持 auto，目标下方空间不足自动翻到上方。",
+      "since": "0.5.3",
       "category": "feedback",
       "props": 14,
       "emits": 4,
@@ -931,6 +1049,7 @@
       "name": "icon",
       "title": "Icon 图标",
       "desc": "内置 72 个 24×24 描边图标，CSS mask + data URI 实现，颜色跟随 currentColor。刻意不复用 wd-icon——它在小程序走阿里图库外链字体，需配域名白名单且弱网闪空。",
+      "since": "0.2.0",
       "category": "general",
       "props": 6,
       "emits": 1,
@@ -944,6 +1063,7 @@
       "name": "image",
       "title": "Image 图片",
       "desc": "统一封装 loading / loaded / error 三态，并内置 uni 的 image mode 与 CSS object-fit 的映射表，让同一套写法在两个端表现一致。",
+      "since": "0.5.0",
       "category": "data",
       "props": 15,
       "emits": 3,
@@ -957,6 +1077,7 @@
       "name": "image-preview",
       "title": "ImagePreview 图片预览",
       "desc": "全屏图片预览。声明式用 v-model 控制开关，命令式直接 previewImage({ urls, current })——后者在 H5 动态挂载宿主、小程序降级 uni.previewImage。支持手势滑动翻页、双指与滚轮缩放、循环、角标计数。刻意不依赖 wd 的预览组件：那套只覆盖小程序原生通道，H5 上的缩放与手势行为要靠自己实现。",
+      "since": "0.5.2",
       "category": "data",
       "props": 0,
       "emits": 0,
@@ -970,6 +1091,7 @@
       "name": "index-bar",
       "title": "IndexBar 字母索引栏",
       "desc": "只做「手指落在第几个字母」，结果 emit 出去由业务用 scroll-into-view 自己跳 —— 锚点滚动要遍历业务列表的 offsetTop，组件既量不准也管不动。整条 pointer-events:none，只有字母本身可点。",
+      "since": "0.5.3",
       "category": "navigation",
       "props": 8,
       "emits": 1,
@@ -983,6 +1105,7 @@
       "name": "input",
       "title": "Input 输入框",
       "desc": "支持清除按钮、密码可见切换、字数统计与前后缀插槽；type=\"textarea\" 时切换为多行形态。placeholder 颜色必须走 placeholder-class——原生组件解析不了 CSS var()。",
+      "since": "0.2.0",
       "category": "form",
       "props": 20,
       "emits": 7,
@@ -996,6 +1119,7 @@
       "name": "loading",
       "title": "Loading 加载",
       "desc": "加载指示器，spinner 形态复用 cd-icon 的 loader 图标加旋转动画。",
+      "since": "0.3.0",
       "category": "feedback",
       "props": 9,
       "emits": 0,
@@ -1009,6 +1133,7 @@
       "name": "navbar",
       "title": "Navbar 导航栏",
       "desc": "顶部导航栏。状态栏留白由 statusBar 开关 × 实测高度决定，拿不到就退回 0；标题绝对居中，左右内容不等长也不偏心。",
+      "since": "0.5.3",
       "category": "navigation",
       "props": 14,
       "emits": 3,
@@ -1022,6 +1147,7 @@
       "name": "notice-bar",
       "title": "NoticeBar 通知栏",
       "desc": "滚动通告。跑马灯用 padding-left:100% + translate3d(-100%) 实现无缝循环，速度按字数估算而不是等测量完成——换来首屏一次成型、不闪跳。",
+      "since": "0.5.0",
       "category": "feedback",
       "props": 12,
       "emits": 3,
@@ -1035,6 +1161,7 @@
       "name": "pagination",
       "title": "Pagination 分页",
       "desc": "移动端只显示上一页/下一页，PC 显示完整页码。页码数量恒定，翻到末尾不会忽然变窄导致按钮跳动。",
+      "since": "0.1.0",
       "category": "navigation",
       "props": 10,
       "emits": 3,
@@ -1048,6 +1175,7 @@
       "name": "picker",
       "title": "Picker 多列选择器",
       "desc": "选自定义数据的通用弹层：columns 传「列数组的数组」是独立多列，加 cascade 后传树即为级联。用 scroll-view 受控定位而不是原生 picker-view——后者在 H5 与小程序上的手感与样式差异太大且几乎不可控。草稿与提交分离：点确定才落到 modelValue。",
+      "since": "0.5.2",
       "category": "form",
       "props": 15,
       "emits": 5,
@@ -1061,6 +1189,7 @@
       "name": "popconfirm",
       "title": "PopConfirm 气泡确认",
       "desc": "轻量二次确认气泡，复用 useFloating 定位内核。宽度要用独立的 computed 拼到 panelStyle 上——customStyle 是字符串契约，直接传 computed 会被拼成 [object Object]。",
+      "since": "0.5.0",
       "category": "feedback",
       "props": 13,
       "emits": 5,
@@ -1074,6 +1203,7 @@
       "name": "popover",
       "title": "Popover 气泡卡片",
       "desc": "可承载任意内容的气泡。面板内点击不自动关闭，支持 Esc 与 v-model 外部受控。",
+      "since": "0.4.0",
       "category": "feedback",
       "props": 7,
       "emits": 3,
@@ -1087,6 +1217,7 @@
       "name": "progress",
       "title": "Progress 进度条",
       "desc": "线形与环形两种形态。环形用 conic-gradient + mask 实现，刻意不用 canvas——避开小程序 canvas-id、层级与绘制时机的坑。",
+      "since": "0.3.0",
       "category": "data",
       "props": 13,
       "emits": 0,
@@ -1100,6 +1231,7 @@
       "name": "qrcode",
       "title": "Qrcode 二维码",
       "desc": "编码核心自研零依赖（版本 1~10 / L M Q H / 字节模式），与 npm qrcode 包逐位比对通过。渲染是纯 view 节点且坐标全部取整，不会出现 1px 白缝。",
+      "since": "0.5.3",
       "category": "data",
       "props": 12,
       "emits": 2,
@@ -1113,6 +1245,7 @@
       "name": "radio",
       "title": "Radio 单选框",
       "desc": "配合 cd-radio-group 使用，支持 radio 与 button（分段控件）两种形态。",
+      "since": "0.3.0",
       "category": "form",
       "props": 8,
       "emits": 2,
@@ -1126,6 +1259,7 @@
       "name": "radio-group",
       "title": "RadioGroup 单选组",
       "desc": "单选容器，统一触发 change 并向下广播选中态与禁用。",
+      "since": "0.3.0",
       "category": "form",
       "props": 7,
       "emits": 2,
@@ -1139,6 +1273,7 @@
       "name": "rate",
       "title": "Rate 评分",
       "desc": "支持半星，实现方式是双层叠加 + 像素级裁切：上层已选中层按 value*(size+gap) px 宽度裁切。size 与 gap 声明为 Number 以便同时下发 CSS 变量。",
+      "since": "0.5.0",
       "category": "form",
       "props": 14,
       "emits": 2,
@@ -1152,6 +1287,7 @@
       "name": "result",
       "title": "Result 结果页",
       "desc": "操作结果反馈页，内置成功/失败预设，提供 icon、title、desc、extra、actions 五个插槽。",
+      "since": "0.5.0",
       "category": "data",
       "props": 7,
       "emits": 0,
@@ -1165,6 +1301,7 @@
       "name": "row",
       "title": "Row 行",
       "desc": "24 栅格的行容器，与 cd-col 配合使用。栅格宽度在编译期算成百分比，不赌小程序的 calc 除法；响应式走媒体查询类而非 JS。",
+      "since": "0.2.0",
       "category": "layout",
       "props": 6,
       "emits": 0,
@@ -1178,6 +1315,7 @@
       "name": "search-bar",
       "title": "SearchBar 搜索框",
       "desc": "无边框药丸形搜索容器，右侧可挂动作位（取消/搜索）。已接入 useField 校验链。",
+      "since": "0.5.0",
       "category": "form",
       "props": 15,
       "emits": 7,
@@ -1191,6 +1329,7 @@
       "name": "select",
       "title": "Select 选择器",
       "desc": "移动端呈现底部动作面板、PC 呈现下拉面板。复用 wd-action-sheet 内核并做主题桥接，PC 端支持键盘导航。",
+      "since": "0.1.0",
       "category": "form",
       "props": 10,
       "emits": 5,
@@ -1204,6 +1343,7 @@
       "name": "signature",
       "title": "Signature 手写签名",
       "desc": "笔画拼成 SVG 再以内联 data URI 交给背景图渲染（与 cd-icon 同一套路），不用 canvas 因此四端一致。已完成笔画与正在画的一笔分成两组节点，移动时只重建后者。",
+      "since": "0.5.3",
       "category": "form",
       "props": 12,
       "emits": 6,
@@ -1217,6 +1357,7 @@
       "name": "skeleton",
       "title": "Skeleton 骨架屏",
       "desc": "加载占位，最后一行默认收窄 60% 让轮廓更像真实文本。暗色下必须显式重定义块色——亮色比背景深，暗色要反过来。",
+      "since": "0.3.0",
       "category": "data",
       "props": 11,
       "emits": 0,
@@ -1230,6 +1371,7 @@
       "name": "slider",
       "title": "Slider 滑块",
       "desc": "支持单选与范围双滑块。按下时缓存轨道矩形避免每次取反算时读取；量化顺序是「先量化再钳制」；双滑块取最近的一个并允许交错。",
+      "since": "0.5.0",
       "category": "form",
       "props": 10,
       "emits": 3,
@@ -1243,6 +1385,7 @@
       "name": "step",
       "title": "Step 步骤",
       "desc": "单个步骤节点。连线配色按「左边那一步」计算：前置线 index <= current、后置线 index < current，首尾再用透明线占位撑住图标居中。",
+      "since": "0.5.0",
       "category": "navigation",
       "props": 6,
       "emits": 0,
@@ -1256,6 +1399,7 @@
       "name": "stepper",
       "title": "Stepper 步进器",
       "desc": "按住连加、边界钳制并抛出 overlimit。同时绑 touchstart 与 mousedown；手动输入不即时提交，避免输 15 时先经过 1。",
+      "since": "0.3.0",
       "category": "form",
       "props": 13,
       "emits": 5,
@@ -1269,6 +1413,7 @@
       "name": "steps",
       "title": "Steps 步骤条",
       "desc": "横向/纵向流程指引。序号由容器注册表派生——子项不接受业务传 index，避免增删步骤时序号错位。容器用普通数组存 uid（不上 ref，防止 Proxy 破坏引用比对）配合 version ref 建立响应式依赖。",
+      "since": "0.5.0",
       "category": "navigation",
       "props": 6,
       "emits": 0,
@@ -1282,6 +1427,7 @@
       "name": "swiper",
       "title": "Swiper 轮播",
       "desc": "底层是 uni 原生 swiper（手感与惯性由端上保证），上层补一层统一的设计语言：指示点样式、桌面形态的左右翻页箭头、list 既接受 { image, text } 也接受纯图片地址。autoplay 由组件内部按 visible 状态自行启停，避免页面切走后定时器还在跑。",
+      "since": "0.5.2",
       "category": "data",
       "props": 15,
       "emits": 3,
@@ -1295,6 +1441,7 @@
       "name": "switch",
       "title": "Switch 开关",
       "desc": "两种状态之间的即时切换，支持加载态与自定义选中/未选中文案。已接入表单校验。",
+      "since": "0.3.0",
       "category": "form",
       "props": 13,
       "emits": 3,
@@ -1308,6 +1455,7 @@
       "name": "tabbar",
       "title": "Tabbar 底部标签栏",
       "desc": "支持徽标与小红点，fixed 时自动等高占位，safeArea 走小程序安全区。选中值可以是 value 也可以是下标。",
+      "since": "0.5.3",
       "category": "navigation",
       "props": 13,
       "emits": 2,
@@ -1321,6 +1469,7 @@
       "name": "table",
       "title": "Table 表格",
       "desc": "PC 端多列数据表，移动端自动降级为卡片列表（首列升格为卡片标题）。未实现虚拟滚动与列宽拖拽，大数据量场景需自行接入。",
+      "since": "0.1.0",
       "category": "data",
       "props": 9,
       "emits": 1,
@@ -1334,6 +1483,7 @@
       "name": "tabs",
       "title": "Tabs 标签页",
       "desc": "line / card 两种视觉，支持 badge 与横向滚动。等宽模式的指示器用纯百分比定位（零测量），仅 scrollable 模式才用 createSelectorQuery 且测不到自动降级。",
+      "since": "0.2.0",
       "category": "navigation",
       "props": 7,
       "emits": 3,
@@ -1347,6 +1497,7 @@
       "name": "tag",
       "title": "Tag 标签",
       "desc": "type 只声明颜色、形态决定用法，因此新增语义色只需两行 CSS。尺寸类名统一带 size- 前缀——type 与 size 都有 default，不带前缀会撞名。",
+      "since": "0.3.0",
       "category": "data",
       "props": 10,
       "emits": 2,
@@ -1360,6 +1511,7 @@
       "name": "time-picker",
       "title": "TimePicker 时间选择",
       "desc": "移动端原生、PC 双列（时/分）。刻意不做秒。",
+      "since": "0.4.0",
       "category": "form",
       "props": 9,
       "emits": 3,
@@ -1373,6 +1525,7 @@
       "name": "timeline",
       "title": "Timeline 时间线",
       "desc": "按时间顺序展示事件流。reverse 通过 flex-direction: column-reverse 实现而不是反转数组——保持数据顺序可读。",
+      "since": "0.5.0",
       "category": "data",
       "props": 3,
       "emits": 0,
@@ -1386,6 +1539,7 @@
       "name": "timeline-item",
       "title": "TimelineItem 时间线项",
       "desc": "单个时间节点，支持实心/空心/大号圆点与自定义 dot 插槽。首尾的引线会被替换为透明占位。",
+      "since": "0.5.0",
       "category": "data",
       "props": 9,
       "emits": 0,
@@ -1399,6 +1553,7 @@
       "name": "toast-host",
       "title": "ToastHost 反馈宿主",
       "desc": "命令式反馈服务在小程序端的渲染宿主。H5 端服务会自动挂载、无需手写；小程序必须在页面里放一次，没放会自动降级到 uni.showToast 等原生 API。",
+      "since": "0.4.0",
       "category": "infrastructure",
       "props": 0,
       "emits": 0,
@@ -1412,6 +1567,7 @@
       "name": "tooltip",
       "title": "Tooltip 文字提示",
       "desc": "纯文字气泡。PC 端 hover 触发且进出都带延迟（防鼠标轨迹穿越时闪烁），移动端长按或点击触发。",
+      "since": "0.4.0",
       "category": "feedback",
       "props": 7,
       "emits": 1,
@@ -1425,6 +1581,7 @@
       "name": "transfer",
       "title": "Transfer 穿梭框",
       "desc": "左右两栏 + 搜索过滤 + 全选。禁用项不可移，direction 可调（窄屏自动竖排）。",
+      "since": "0.5.3",
       "category": "form",
       "props": 13,
       "emits": 2,
@@ -1438,6 +1595,7 @@
       "name": "tree",
       "title": "Tree 树形控件",
       "desc": "勾选走「向下全量 + 向上回算」两趟，父子联动带半选态；checkStrictly 打开时父子各算各的。扁平渲染而非嵌套递归，节点再多也不会爆栈。",
+      "since": "0.5.3",
       "category": "data",
       "props": 15,
       "emits": 5,
@@ -1451,6 +1609,7 @@
       "name": "typing",
       "title": "Typing 打字机",
       "desc": "逐字输出的流式文本，给 AI 回复与引导文案用。调度用 setTimeout 链而非 setInterval（切后台回来不会一次性补一大段），推进用索引而非字符串拼接（中途换文案不会新旧串味）。",
+      "since": "0.5.3",
       "category": "general",
       "props": 10,
       "emits": 4,
@@ -1464,6 +1623,7 @@
       "name": "upload",
       "title": "Upload 上传",
       "desc": "受控优先——列表真值在 modelValue，可用 customRequest 完全接管上传接口。图片卡片与文件列表双形态，含进度、重试、超量与超大回调。刻意不做拖拽：小程序没有 drag 事件体系。",
+      "since": "0.4.0",
       "category": "form",
       "props": 15,
       "emits": 8,
@@ -1477,6 +1637,7 @@
       "name": "watermark",
       "title": "Watermark 水印",
       "desc": "纯 text 节点平铺，不用 canvas 生成背景图。画布放大倍数由旋转角算出来，而不是硬写 1.5 —— 宽屏上能少铺近一半节点。整层 pointer-events:none，绝不会挡住底下的操作。",
+      "since": "0.5.3",
       "category": "general",
       "props": 13,
       "emits": 0,
