@@ -1,7 +1,7 @@
 # 发布到 npm
 
-::: tip ✅ codedog-ui@0.5.2 已上线（当前 latest）
-发布时间 **2026-10-02**（`dist-tags: latest → 0.5.2`），详见 <https://www.npmjs.com/package/codedog-ui>。
+::: tip ✅ codedog-ui@0.5.3 已上线（当前 latest）
+发布时间 **2026-10-05**（`dist-tags: latest → 0.5.3`），详见 <https://www.npmjs.com/package/codedog-ui>。
 首发 0.5.0 于 2026-10-01，已通过真实安装核验：`npm i codedog-ui` → 组件目录 + LICENSE + README + index.d.ts 齐全。
 下文是完整操作记录与下次发版流程。
 :::
@@ -13,6 +13,7 @@
 | 0.5.0 | 2026-10-01 | 首版上线，当时 62 个组件 |
 | 0.5.1 | 2026-10-01 | 官网与文档中心改用 CodeDogUI 自绘视觉，补站点打包与部署脚本 |
 | 0.5.2 | 2026-10-02 | 组件 62 → 67（日历 / 选择器 / 级联 / 轮播 / 图片预览），修 6 项致命 + 第二轮全库复查 59 项 |
+| 0.5.3 | 2026-10-05 | 组件 67 → 80（水印 / 表单渲染 / 二维码 / 图片预览等），补齐桌面端交互与破版门禁；发布需改用带 **Bypass 2FA** 的 granular token（否则 `EOTP`） |
 
 这个包在发布前控制权归我们（`registry.npmjs.org/codedog-ui` 曾返回 404），包名未被占用，已顺利注册为公开包。
 
@@ -85,9 +86,9 @@ npm login --registry=https://registry.npmjs.org/
 npm run release:publish
 ```
 
-### ⚠️ 必须先创建 Granular Token，否则必定 403（已实测两次）
+### ⚠️ 必须先创建带 Bypass 2FA 的 Granular Token，否则必定 403 / EOTP（已实测多次）
 
-两次失败的完整记录：
+历次失败的完整记录：
 
 | # | 命令 | 结果 |
 |---|---|---|
@@ -95,6 +96,13 @@ npm run release:publish
 | 2 | `npm publish --otp=00242346` | **同样的 E403**，一字未变 |
 | 3 | 新粘贴的 granular token `whoami` 自检 | **401** `{}` —— token 串本身无效（同一调用方式下 session token 能正常 whoami 返回 `penngu`） |
 | 4 | `npm run release:interactive` + 新 granular token | ✅ **成功**，见顶部提示 |
+| 5 | 发 0.5.3 时用**未勾 Bypass 2FA** 的 granular token `npm publish` | **EOTP** `This operation requires a one-time password from your authenticator.` —— `whoami` 正常返回 `penngu`，说明 token 有效，只是没有 bypass 权限 |
+| 6 | 换成**勾了 Bypass 2FA** 的 granular token 重发 | ✅ **成功**，`+ codedog-ui@0.5.3` |
+
+::: tip 一句话结论
+403 = 用了 session token（npm 已移除 legacy token，session token 不能发任何包，加 `--otp` 也没用）；
+**EOTP = token 本身有效但没勾 Bypass 2FA**，换个勾了的 token 即可，不必去翻动态码。
+:::
 
 **最后成功的 token 配置**（对照检查）：
 
